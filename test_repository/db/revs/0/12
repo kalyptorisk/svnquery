@@ -1,0 +1,50 @@
+id: 0-12.0.r12/0
+type: dir
+count: 0
+cpath: /Folder/C#
+copyroot: 0 /
+
+PLAIN
+K 2
+C#
+V 16
+dir 0-12.0.r12/0
+K 12
+Neuer Ordner
+V 17
+dir 0-6.0.r10/854
+K 6
+Second
+V 16
+dir 0-3.0.r8/453
+END
+ENDREP
+id: 0-1.0.r12/189
+type: dir
+pred: 0-1.0.r11/91
+count: 11
+text: 12 69 107 107 f167bc6d8bfde3b88d78578680ff61d4
+cpath: /Folder
+copyroot: 0 /
+minfo-cnt: 3
+
+PLAIN
+K 6
+Folder
+V 17
+dir 0-1.0.r12/189
+END
+ENDREP
+id: 0.0.r12/393
+type: dir
+pred: 0.0.r11/292
+count: 12
+text: 12 342 38 38 45d30b1b9014443a2cfacff2d6a94bf0
+cpath: /
+copyroot: 0 /
+minfo-cnt: 3
+
+_0.0.t11-b add false false /Folder/C#
+
+
+393 536

@@ -1,0 +1,117 @@
+PLAIN
+K 13
+svn:mergeinfo
+V 0
+
+END
+ENDREP
+id: 1-3.1-10.r10/41
+type: file
+pred: 1-3.0-6.r9/54
+count: 2
+text: 9 0 34 22 7a808f324aee9fa45cda8da9ff143842
+props: 10 0 28 0 72af4f84c1360e263a3b63bcc912ac4e
+cpath: /Folder/Neuer Ordner/Second/second.txt
+copyfrom: 9 /Folder/Neuer Ordner/CopiedAndRenamed/second.txt
+minfo-cnt: 1
+minfo-here: y
+
+PLAIN
+K 9
+first.txt
+V 16
+file 0-8.0.r8/75
+K 10
+second.txt
+V 20
+file 1-3.1-10.r10/41
+END
+ENDREP
+PLAIN
+K 7
+cr:test
+V 12
+Nur ein Test
+K 13
+svn:mergeinfo
+V 0
+
+END
+ENDREP
+id: 0-3.0-10.r10/501
+type: dir
+pred: 0-3.0.r8/453
+count: 3
+text: 10 335 82 82 7c934205fb9744a570f53732bae00da1
+props: 10 430 58 0 407fdaa568235458cfe0d92d6496dd0e
+cpath: /Folder/Neuer Ordner/Second
+copyfrom: 8 /Folder/Second
+minfo-cnt: 2
+minfo-here: y
+
+PLAIN
+K 16
+CopiedAndRenamed
+V 18
+dir 0-3.0-6.r9/324
+K 6
+Second
+V 20
+dir 0-3.0-10.r10/501
+END
+ENDREP
+id: 0-6.0.r10/854
+type: dir
+pred: 0-6.0.r9/668
+count: 2
+text: 10 754 87 87 0eabf535794842df3ffe31534f3098bb
+cpath: /Folder/Neuer Ordner
+copyroot: 0 /
+minfo-cnt: 3
+
+PLAIN
+K 12
+Neuer Ordner
+V 17
+dir 0-6.0.r10/854
+K 6
+Second
+V 16
+dir 0-3.0.r8/453
+K 8
+text.txt
+V 16
+file 2-3.0.r3/53
+END
+ENDREP
+id: 0-1.0.r10/1144
+type: dir
+pred: 0-1.0.r9/955
+count: 9
+text: 10 1018 113 113 efa5f7f03ddf0a517b04d7819a552a92
+cpath: /Folder
+copyroot: 0 /
+minfo-cnt: 3
+
+PLAIN
+K 6
+Folder
+V 18
+dir 0-1.0.r10/1144
+END
+ENDREP
+id: 0.0.r10/1351
+type: dir
+pred: 0.0.r9/1156
+count: 10
+text: 10 1299 39 39 8ae90fd137516b9733dab08baff57784
+cpath: /
+copyroot: 0 /
+minfo-cnt: 3
+
+1-3._1.t9-9 replace false true /Folder/Neuer Ordner/Second/second.txt
+9 /Folder/Neuer Ordner/CopiedAndRenamed/second.txt
+0-3._0.t9-9 add false true /Folder/Neuer Ordner/Second
+8 /Folder/Second
+
+1351 1496

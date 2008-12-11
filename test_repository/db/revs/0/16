@@ -1,0 +1,56 @@
+PLAIN
+K 6
+Second
+V 20
+dir 0-3.0-10.r10/501
+END
+ENDREP
+PLAIN
+K 13
+svn:mergeinfo
+V 0
+
+END
+ENDREP
+id: 0-6.0-16.r16/95
+type: dir
+pred: 0-6.0.r10/854
+count: 3
+text: 16 0 41 41 7f472a6a78f6339991e9a0742be1161b
+props: 16 54 28 0 72af4f84c1360e263a3b63bcc912ac4e
+cpath: /CopyWithDeletedFolder
+copyfrom: 15 /Folder/Neuer Ordner
+minfo-cnt: 3
+minfo-here: y
+
+PLAIN
+K 21
+CopyWithDeletedFolder
+V 19
+dir 0-6.0-16.r16/95
+K 6
+Folder
+V 17
+dir 0-1.0.r15/342
+K 16
+Ümläute öäü
+V 18
+dir 0-13.0.r14/501
+END
+ENDREP
+id: 0.0.r16/496
+type: dir
+pred: 0.0.r15/594
+count: 16
+text: 16 347 136 136 45311bec118c3c2efac9c4b73c8b0ecf
+props: 13 171 40 0 7389e645121053447b3f2c073c489217
+cpath: /
+copyroot: 0 /
+minfo-cnt: 6
+
+0-6._0.t15-f add false true /CopyWithDeletedFolder
+15 /Folder/Neuer Ordner
+0-3.0-6.r9/324 delete false false /CopyWithDeletedFolder/CopiedAndRenamed
+
+
+496 693

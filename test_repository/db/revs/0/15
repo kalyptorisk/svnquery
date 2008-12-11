@@ -1,0 +1,68 @@
+PLAIN
+K 13
+svn:externals
+V 22
+/Folder/Second second
+
+END
+ENDREP
+id: 0-15.0.r15/64
+type: dir
+count: 0
+props: 15 0 51 0 9b71e0284656312f1b136a440ec21128
+cpath: /Folder/import
+copyroot: 0 /
+
+PLAIN
+K 2
+C#
+V 16
+dir 0-12.0.r12/0
+K 12
+Neuer Ordner
+V 17
+dir 0-6.0.r10/854
+K 6
+Second
+V 16
+dir 0-3.0.r8/453
+K 6
+import
+V 17
+dir 0-15.0.r15/64
+END
+ENDREP
+id: 0-1.0.r15/342
+type: dir
+pred: 0-1.0.r12/189
+count: 12
+text: 15 188 141 141 3aac61bd65fc64ba1fdc56d1e038c32a
+cpath: /Folder
+copyroot: 0 /
+minfo-cnt: 3
+
+PLAIN
+K 6
+Folder
+V 17
+dir 0-1.0.r15/342
+K 16
+Ümläute öäü
+V 18
+dir 0-13.0.r14/501
+END
+ENDREP
+id: 0.0.r15/594
+type: dir
+pred: 0.0.r14/747
+count: 15
+text: 15 497 84 84 36cf2ea2f48ee1778353673138beb905
+props: 13 171 40 0 7389e645121053447b3f2c073c489217
+cpath: /
+copyroot: 0 /
+minfo-cnt: 3
+
+_0.0.t14-e add false true /Folder/import
+
+
+594 789

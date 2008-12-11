@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Query Syntax Help</title>
+   
+</head>
+<body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
+<p style="text-align: right; position: relative; top: 0px;  width: 72px; float: right; margin-right: 4px;">
+    <a href="Default.aspx">Back</a></p>
+    <h1 style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic; ">
+        Subversion Search Help</h1>
+
+<p>
+    This is a fulltext search engine into a subversion repository for every document 
+    that was ever present in a revision. It uses Lucene.NET as a fulltext engine.</p>
+    <p>
+    First rule: Don&#39;t think too much about the query syntax, just enter what you are searching for. Examples</p>
+    <ul>
+        <li>debughelper.cpp-&gt; finds all occurrences of 
+            the file debughelper .cpp</li>
+        <li>*.dll -&gt; finds all files with the extension .dll</li>
+        <li>shared/* find all files directly below shared</li>
+        <li>internal/shared/**/ finds all files and folders below shared</li>
+        <li>Commodore Amiga&nbsp; finds all files containing the words &quot;Commodore&quot; and 
+            &quot;Amiga&quot;</li>
+    </ul>
+    <p>
+        You can also search for svn:externals:</p>
+    <ul>
+        <li>x:/Internal/shared/general</li>
+    </ul>
+    <h3>
+        Hints</h3>
+<p>
+        Use the &#39;/&#39; character with care to mark directory. So &quot;shared/&quot; means the 
+        directory &quot;shared&quot; and &quot;shared&quot; means all filenames (without extension) 
+        &quot;shared&quot;. The singe &#39;/&#39; means that a path must start at the root. &quot;/shared/&quot; 
+        will find all directories named &quot;shared&quot; directly below the root.</p>
+    <h3>
+        Query Language</h3>
+<p>
+        With a simple query language you can do more sophisticated queries. </p>
+    <h4>
+        Operators</h4>
+    <p>
+        You can 
+        control through prefixes if a word <b>must</b> (+), <b>should</b> (#) or <b>must 
+        not</b> (-) be included in a document. </p>
+    <h4>
+        Fields</h4>
+    <p>
+        You can state which field of a document to search. Curently the following 
+        fields are recognized:</p>
+<ol>
+    <li>path: (p:)</li>
+    <li>content: (c:)</li>
+    <li>externals: (x: or e:)</li>
+</ol>
+<p>
+    If you don&#39;t specify a field the field of your parent group is used. If there is 
+    no parent a heuristic is used to determine if the word could be a path. If the 
+    heuristic fails first the path and then the content is searched.</p>
+    <h4>
+        Grouping</h4>
+    <p>
+        You can create subexpressions by grouping them in parantheses (). For your 
+        convenience a group inherits its&nbsp; field if you give one explicitely.</p>
+    <ul>
+        <li>c:(max und moritz)&nbsp; -&gt; search for&nbsp; &#39;max&#39;, &#39;und&#39; und &#39;moritz&quot; im 
+            content field </li>
+        <li>#(audio video) -&gt; short for #(+audio +video)</li>
+        <li>c:&quot;max und moritz&quot; -&gt; search for the phrase &quot;max und moritz&quot; im content field</li>
+        <li>#p:(.cpp .h .hpp) -&gt; searches for files with one of the given extensions cpp or 
+            .</li>
+        <li>bla -(#(audio video) -&gt; searchdes for documents that contain bla but not audio 
+            or video (same as bla -(</li>
+    </ul>
+    <h3>
+        Index Organisation</h3>
+    <p>
+        To fully exploit the subversion index you need to understand how the index is 
+        organized.
+        The index contains every document of the head revisions of the repository. Each 
+        document has three searchable fields:</p>
+    <ul>
+        <li>Path: This field contains the path for every document (a folder is also a 
+            document in the index)</li>
+        <li>Content: For every document with a mimetype of text the content is indexed.</li>
+        <li>Externals: </li>
+    </ul>
+    <p>
+&nbsp;Constraints:</p>
+    <ul>
+        <li>You cannot search for non characters like &lt;&gt;&quot;!&quot;§$%&amp;%/()=?#+</li>
+    </ul>
+
+</body>
+</html>

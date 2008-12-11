@@ -1,0 +1,40 @@
+id: 0-13.0.r13/0
+type: dir
+count: 0
+cpath: /Ümläute öäü
+copyroot: 0 /
+
+PLAIN
+K 6
+Folder
+V 17
+dir 0-1.0.r12/189
+K 16
+Ümläute öäü
+V 16
+dir 0-13.0.r13/0
+END
+ENDREP
+PLAIN
+K 5
+dummy
+V 20
+dummy change on root
+END
+ENDREP
+id: 0.0.r13/224
+type: dir
+pred: 0.0.r12/393
+count: 13
+text: 13 76 82 82 8edd136ee2df5c468fe29c10d76456c3
+props: 13 171 40 0 7389e645121053447b3f2c073c489217
+cpath: /
+copyroot: 0 /
+minfo-cnt: 3
+
+_0.0.t12-c add false false /Ümläute öäü
+
+0.0.t12-c modify false true /
+
+
+224 418

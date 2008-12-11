@@ -1,0 +1,117 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" ValidateRequest="false" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>SVN Query</title>
+
+    <script type="text/javascript">
+        function toggleRevisionRange() {
+            var textRevision = document.getElementById('textRevision');
+            var optAll = document.getElementById('optAll');
+            var optHead = document.getElementById('optHead');
+            var toggle = document.getElementById('toggle');     
+            if (textRevision.style.display == "none" ) {
+                textRevision.style.display = "";
+                optGroup.style.display = "none";
+                textRevision.value = "";
+            }
+            else {
+                textRevision.style.display = "none";
+                textRevision.value = "$hidden$";
+                optGroup.style.display = "";
+            }
+        }                    
+    </script>
+
+</head>
+<body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
+    <form id="form1" runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">
+    <table style="margin-left: -3px; padding: 0px">
+        <tr style="margin-bottom: 0px; padding-bottom: 0px">
+            <td style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic;">
+                SVN Query
+            </td>
+            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px">
+                <input type="text" style="visibility: hidden; width: 10px;" />
+                <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision</a>
+                <asp:TextBox ID="textRevision" runat="server" Text="$hidden$" Font-Size="8pt" ToolTip="Enter a revision or a revision range" Width="83px" />
+                <span id="optGroup" runat="server" style="text-align: right">
+                    <asp:RadioButton ID="optHead" runat="server" Text="Head" Font-Size="8pt" GroupName="revisionGroup" Checked="True" ToolTip="Search only in head revision" />
+                    <asp:RadioButton ID="optAll" runat="server" Text="All&nbsp;&nbsp;" Font-Size="8pt" GroupName="revisionGroup" ToolTip="Search in all revisions" />
+                </span>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr style="margin-top: -4px;">
+            <td colspan="2">
+                <asp:TextBox ID="inputQuery" runat="server" Width="480px" />
+            </td>
+            <td>
+                <asp:Button ID="btnSearch" runat="server" OnClick="OnSearch" Text="Search" />
+            </td>
+            <td style="font-size: 9pt; padding-left: 12px; text-align: right; vertical-align: middle;">
+                <a href="Help.htm">Help</a>
+            </td>
+        </tr>
+    </table>
+    <asp:Label ID="messsageLabel" runat="server" />
+    <asp:Panel ID="resultsPanel" runat="server" Visible="False">
+        <table width="100%" style="background-color: #FFCC99; border-top-width: 1px; margin-bottom: 8px; border-top-color: #CC6600; border-top-style: solid;">
+            <tr>
+                <td align="left">
+                    <asp:Label ID="hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
+                </td>
+                <td align="right">
+                    <asp:Label ID="statisticsLabel" runat="server" Text="<span style='color:#808080'>(23440 documents searched in 789ms)</span>" />
+                </td>
+            </tr>
+        </table>
+        <asp:ListView ID="listView" runat="server" DataSourceID="dataSource">
+            <LayoutTemplate>
+                <div id="itemPlaceholderContainer" runat="server">
+                    <span id="itemPlaceholder" runat="server"></span>
+                </div>
+                <div style="margin-top: 12px;">
+                </div>
+            </LayoutTemplate>
+            <EmptyDataTemplate>
+                -
+            </EmptyDataTemplate>
+            <ItemTemplate>
+                <div style="margin-top: 3px;">
+                    <a style="" href='<%# Eval("Url") %>'>
+                        <%# Eval("Path") %></a>
+                    <br />
+                    <span style="font-size: 8pt; color: #707060">
+                        <%# Eval("Summary") %>
+                    </span>
+                </div>
+            </ItemTemplate>
+        </asp:ListView>
+        <p style="word-spacing: 3px">
+            <asp:DataPager ID="dataPager" PagedControlID="listView" runat="server" PageSize="20">
+                <Fields>
+                    <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
+                    <asp:NumericPagerField />
+                    <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
+                </Fields>
+            </asp:DataPager>
+        </p>
+    </asp:Panel>
+    <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="App_Code.QueryApplicationIndex">
+        <SelectParameters>
+            <asp:ControlParameter Name="query" ControlID="query" PropertyName="Value" />
+            <asp:ControlParameter Name="revFirst" ControlID="revFirst" PropertyName="Value" />
+            <asp:ControlParameter Name="revLast" ControlID="revLast" PropertyName="Value" />
+        </SelectParameters>
+    </asp:ObjectDataSource>
+    <asp:HiddenField ID="query" runat="server" />
+    <asp:HiddenField ID="revFirst" runat="server" />
+    <asp:HiddenField ID="revLast" runat="server" />
+    </form>
+</body>
+</html>

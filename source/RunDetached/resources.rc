@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,1,0
+ PRODUCTVERSION 1,0,1,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -67,20 +67,21 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040704b0"
+        BLOCK "000004b0"
         BEGIN
-            VALUE "FileDescription", "Starts a detached process"
-            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "Comments", "Apache License 2.0"
+            VALUE "FileDescription", "Starts a detached process from inside a subversion hook script"
+            VALUE "FileVersion", "1, 0, 1, 0"
             VALUE "InternalName", "RunDetached"
             VALUE "LegalCopyright", "Copyright (C) 2008 Christian Rodemeyer"
             VALUE "OriginalFilename", "RunDetached.exe"
             VALUE "ProductName", "RunDetached"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "ProductVersion", "1, 0, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x407, 1200
+        VALUE "Translation", 0x0, 1200
     END
 END
 

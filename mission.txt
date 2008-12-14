@@ -1,0 +1,21 @@
+
+Mission:
+
+Enable fast full text search in subversion repositories. 
+Search should be possible for file content, path name, 
+svn-properties, author and comments. Every revision will
+be searched not only the head or current revision. 
+
+The subversion Search Service is intended to be used 
+from different front ends, e.g. a simple google like web 
+interface or a Visual Studio plugin. For the web frontend
+we can use WebSVN to display the content of the found
+documents, perhaps with some slight modifications to 
+highlight found terms.
+
+The implementation will be done in C# using Lucene.NET 
+as a full text search engine. The interface to subersion
+will be isolated so that the svn command line client
+or something like SharpSvn can be used. Porting to Java
+using the Java implementation of Lucene should be easy.
+

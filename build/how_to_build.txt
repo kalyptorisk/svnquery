@@ -1,0 +1,44 @@
+
+How to build SVN Query
+======================
+
+
+Prerequisites:
+--------------
+
+ - .NET Framework 3.5 
+ - Optional: Visual Studio 2008 or better (for manual build)
+
+The build mechanism is as self contained as possible. 
+3rdParty things are are directly used from the "3rdParty" folder, 
+no additional installations are necessary. 
+
+To build a local SVN Query release just doubleclick make.cmd 
+or call it from the command prompt. After building and testing
+the binaries can be found in the build/builds/ folder 
+
+
+Details:
+--------
+
+SVNQuery MSBuild from the .NET framework for automatic builds and 
+tests. All build related stuff lives in the folder "build". The
+build project "build.proj" defines the following targets:
+
+Clean    : Deletes all intermediate output folders
+Build    : Builds all projects
+Rebuild  : Clean, then Build
+RunTests : Build, then run all NUnit tests
+Publish  : Rebuild, RunTests, copy output below the builds folder
+
+You can build from a command line like this (msbuild in path) 
+
+msbuild /t:<target>  [/p:Configuration=Release|Debug]
+
+Example: msbuild /t:make 
+
+or you can use one of the convenient cmd files:
+
+run_tests.cmd : just build and run all unit tests
+make.cmd      : Rebuild, RunTests and Publish (Release only)
+

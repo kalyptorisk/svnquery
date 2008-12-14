@@ -1,0 +1,12 @@
+
+Lucene.Net is a port from the original Lucene based on Java
+
+Lucene is a high-speed index/search library especially suited 
+for full text indexing.
+
+
+For more details see here:
+
+http://lucene.apache.org/
+http://incubator.apache.org/lucene.net/
+

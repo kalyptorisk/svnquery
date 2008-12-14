@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\..\3rdParty\msbuildtasks</MSBuildCommunityTasksPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyVersion Include="..\source\**\AssemblyInfo.cs" />
+    <Projects Include="..\source\**\*.csproj" />
+    <FilesToClean Include="..\source\**\bin\$(Configuration)\*;..\source\**\obj\$(Configuration)\*" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets"/>
+
+  <Target Name="Clean" DependsOnTargets="GetPublishFolder">
+    <RemoveDir Directories="%(FilesToClean.RelativeDir)" />
+    <RemoveDir Directories="$(PublishFolder)" />
+  </Target>
+  
+  <Target Name="Build" DependsOnTargets="GetPublishFolder">
+    <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <AspNetCompiler PhysicalPath="..\source\WebSite" VirtualPath="SvnWebQuery" TargetPath="$(PublishFolder)\SvnWebQuery" Force="true" />
+  </Target>
+
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+  <Target Name="RunTests" DependsOnTargets="Build">
+    <ItemGroup>
+      <Tests Include="..\source\**\bin\$(Configuration)\*Test.dll" />
+    </ItemGroup>    
+    <NUnit Assemblies="@(Tests)" 
+           DisableShadowCopy="true" 
+           OutputXmlFile="builds\nunit-results.xml"
+           ToolPath="$(MSBuildProjectDirectory)\..\3rdParty\nunit" />
+  </Target>
+
+  <Target Name="GetVersion">
+    <ReadLinesFromFile File="version.txt" >
+      <Output TaskParameter="Lines" PropertyName="Version"/>
+    </ReadLinesFromFile>    
+  </Target>
+
+  <Target Name="GetPublishFolder" DependsOnTargets="GetVersion">
+    <CreateProperty Value="builds\SvnQuery_$(Version)">
+      <Output PropertyName="PublishFolder" TaskParameter="Value" />
+    </CreateProperty>
+  </Target>
+
+  <Target Name="Publish" DependsOnTargets="Build;GetPublishFolder">
+    <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
+    <ItemGroup>
+      <SvnIndex Include="..\source\SvnIndex\bin\$(Configuration)\*" 
+                Exclude="..\source\SvnIndex\bin\$(Configuration)\*.xml;
+                         ..\source\SvnIndex\bin\$(Configuration)\*.pdb;
+                         ..\source\SvnIndex\bin\$(Configuration)\*.vshost.exe;" />
+    </ItemGroup>
+    <RemoveDir Directories="$(PublishFolder)\SvnIndex"></RemoveDir>
+    <Copy DestinationFolder="$(PublishFolder)\SvnIndex"         
+          SourceFiles="@(SvnIndex);..\source\RunDetached\Release\RunDetached.exe" />
+    <!-- SvnWebQuery is build in place, no need to copy it again -->
+  </Target> 
+
+</Project>
+
+

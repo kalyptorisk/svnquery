@@ -21,7 +21,7 @@
   
   <Target Name="Build" DependsOnTargets="GetPublishFolder">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
-    <AspNetCompiler PhysicalPath="..\source\WebSite" VirtualPath="SvnWebQuery" TargetPath="$(PublishFolder)\SvnWebQuery" Force="true" />
+    <AspNetCompiler PhysicalPath="..\source\SvnWebQuery" VirtualPath="/SvnWebQuery" TargetPath="$(PublishFolder)\SvnWebQuery" Force="true" />
   </Target>
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />

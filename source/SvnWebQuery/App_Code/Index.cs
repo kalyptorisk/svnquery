@@ -22,7 +22,7 @@ using Lucene.Net.Search;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
-using SvnIndex;
+using SvnQuery;
 
 namespace App_Code
 {

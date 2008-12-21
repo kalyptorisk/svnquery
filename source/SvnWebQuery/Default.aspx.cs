@@ -21,7 +21,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using App_Code;
-using SvnIndex;
+using SvnQuery;
 
 public partial class _Default : Page
 {

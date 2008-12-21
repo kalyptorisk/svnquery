@@ -17,7 +17,7 @@
 #endregion
 
 using System.Web.Configuration;
-using SvnIndex;
+using SvnQuery;
 
 namespace App_Code
 {

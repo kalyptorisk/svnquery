@@ -2,7 +2,7 @@
 <page visibility="1">
   <component_list>
     <component visibility="1" type="ProjectMetadata" order="1">
-      <title localize="false">SVN Query</title>
+      <title localize="false">SvnQuery</title>
     </component>
     <component visibility="1" type="Html" order="2">
       <title localize="false" />

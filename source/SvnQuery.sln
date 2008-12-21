@@ -25,9 +25,9 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "SvnWebQuery", "SvnWebQuery\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnIndex", "SvnIndex\SvnIndex.csproj", "{7015FFBE-DFF9-4E6B-BC4C-8129EB1CDD2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQuery", "SvnIndexLib\SvnQuery.csproj", "{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQuery", "SvnQuery\SvnQuery.csproj", "{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQueryTests", "SvnIndexTest\SvnQueryTests.csproj", "{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQueryTests", "SvnQueryTests\SvnQueryTests.csproj", "{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -53,7 +53,7 @@
     <Compile Include="LexerTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SvnIndexLib\SvnQuery.csproj">
+    <ProjectReference Include="..\SvnQuery\SvnQuery.csproj">
       <Project>{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}</Project>
       <Name>SvnQuery</Name>
     </ProjectReference>

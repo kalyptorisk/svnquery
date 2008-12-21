@@ -21,12 +21,12 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     static class Program
     {
 
-        const string usage_msg = "svnindex action index_path repository_path [revision] \r\n  action := create | update \r\n";
+        const string usage_msg = "SvnQuery action index_path repository_path [revision] \r\n  action := create | update \r\n";
 
         static void Main(string[] args)
         {

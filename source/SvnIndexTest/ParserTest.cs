@@ -16,11 +16,10 @@
 
 #endregion
 
-
 using System;
 using NUnit.Framework;
-using SvnIndex;
-namespace SvnIndexTest
+
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class ParserTest
@@ -103,6 +102,5 @@ namespace SvnIndexTest
             AssertParserQuery("\"max und moritz\"", 10);
             AssertParserQuery("c:\"moritz und max\"", 11);
         }
-
     }
 }

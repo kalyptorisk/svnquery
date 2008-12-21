@@ -24,7 +24,7 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     /// <summary>
     /// 

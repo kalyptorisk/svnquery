@@ -16,28 +16,25 @@
 
 #endregion
 
-using System;
-using System.IO;
 using Lucene.Net.Analysis;
 
-namespace SvnIndex
+namespace SvnQuery
 {
-
     /// <summary>
     /// Splits a svn path into its token parts
     /// </summary>
     /// <remarks>
     /// No need to override Reset() or Close()
     /// </remarks>
-    public  class PathTokenStream : TokenStream
-    {       
-
+    public class PathTokenStream : TokenStream
+    {
         const int MaxPathComponentLen = 250;
         string path;
         int position;
 
         public PathTokenStream()
-        {}
+        {
+        }
 
         public PathTokenStream(string path_to_tokenize)
         {
@@ -66,8 +63,8 @@ namespace SvnIndex
                 if (c == '\\') c = '/';
                 buffer[length++] = c;
                 if (c == '/') break;
-                if (position < path.Length) continue; 
-                
+                if (position < path.Length) continue;
+
                 // Backtrack
                 for (int i = length; --i > 0;)
                 {
@@ -80,10 +77,9 @@ namespace SvnIndex
                 }
                 break;
             }
-            token.SetTermLength(length);            
+            token.SetTermLength(length);
             token.SetEndOffset(position - 1);
             return token;
         }
-
     }
 }

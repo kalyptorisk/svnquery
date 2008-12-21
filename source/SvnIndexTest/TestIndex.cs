@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -25,46 +24,74 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
-using SvnIndex;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     public static class TestIndex
     {
-      
-        readonly static string[,] data = new[,]
-        {
-            {" 0", "/csharp/fileio.cs",                         "The quick brown fox jumps over the lazy dog", ""},  
-            {" 1", "/shared/general/FileIO/FileIO.cpp",         "class Special:Abstract", ""}, 
-            {" 2", "/shared/general/FileIO/FileIO.design.cpp",  "obj.method(arg1, arg2, arg3) < 4711", ""}, 
-            {" 3", "/shared/general/FileIO/FileIO.h",           "", ""}, 
-            {" 4", "/shared/general/FileIO/FileIO.xml",         "", ""}, 
-            {" 5", "/shared/general/bla/FileIO/FileIO.h",       "", ""}, 
-            {" 6", "/shared/general/FileIO/anders.h",           "flip fileio cpp shared general", ""}, 
-            {" 7", "/shared/general/FileIO/anders.cpp",         "", ""}, 
-            {" 8", "/tags/shared/general/FileIO/FileIO.cpp",    "", ""}, 
-            {" 9", "/tags/shared/general/FileIO/FileIO.h",      "", ""}, 
-            {"10", "/tags/shared/general/FileIO/anders.h",      "max und moritz sind anders", ""}, 
-            {"11", "/tags/shared/general/FileIO/anders.cpp",    "anders sind moritz und max", ""}, 
-            {"12", "/woanders/FileIO.cpp",                      "elephant", ""}, 
-            {"13", "/woanders/FileIO.h",                        "cat and mice", ""}, 
-            {"14", "/woanders/flip.cs",                         "cat and dog", ""}, 
-            {"15", "/woanders/FileIO/hier/und/dort/fileio.cpp", "elefant, cat, dog, mice, rabbit, hedgehog and", ""}, 
-            {"16", "/woanders/FileIO/hier/und/dort/fileio.h",   "Elefant Katze Maus Hase Igel", ""}, 
-            {"17", "/selt.sam/source/form1.design.cs",          "Der Elefant sitzt auf dem Trommelklo", ""}, 
-            {"18", "/woanders/",                                "", "/shared shared"}, 
-            {"19", "/project/import/",                          "", "/Shared/General general\r\n /woanders woanders"},
-            {"20", "/project_zwei/import/",                     "", "/Shared/Animals animals"},
-            // special revision entries start with /revision, if so the next two fields are firtst rev and alst rev
-            {"21", "/revisions/bla.cpp", "1", "5"},
-            {"22", "/revisions/bla.cpp", "6", "6"},
-            {"23", "/revisions/bla.cpp", "7", "8"},
-            {"24", "/revisions/bla.cpp", "9", null},
-            {"25", "/revisions/deleted.cpp", "6", "8"},
-            {"26", "/revisions/current.cpp", "9", null},
-        };
+        static readonly string[,] data = new[,]
+                                             {
+                                                 {
+                                                     " 0", "/csharp/fileio.cs",
+                                                     "The quick brown fox jumps over the lazy dog", ""
+                                                 },
+                                                 {
+                                                     " 1", "/shared/general/FileIO/FileIO.cpp", "class Special:Abstract",
+                                                     ""
+                                                 },
+                                                 {
+                                                     " 2", "/shared/general/FileIO/FileIO.design.cpp",
+                                                     "obj.method(arg1, arg2, arg3) < 4711", ""
+                                                 },
+                                                 {" 3", "/shared/general/FileIO/FileIO.h", "", ""},
+                                                 {" 4", "/shared/general/FileIO/FileIO.xml", "", ""},
+                                                 {" 5", "/shared/general/bla/FileIO/FileIO.h", "", ""},
+                                                 {
+                                                     " 6", "/shared/general/FileIO/anders.h",
+                                                     "flip fileio cpp shared general", ""
+                                                 },
+                                                 {" 7", "/shared/general/FileIO/anders.cpp", "", ""},
+                                                 {" 8", "/tags/shared/general/FileIO/FileIO.cpp", "", ""},
+                                                 {" 9", "/tags/shared/general/FileIO/FileIO.h", "", ""},
+                                                 {
+                                                     "10", "/tags/shared/general/FileIO/anders.h",
+                                                     "max und moritz sind anders", ""
+                                                 },
+                                                 {
+                                                     "11", "/tags/shared/general/FileIO/anders.cpp",
+                                                     "anders sind moritz und max", ""
+                                                 },
+                                                 {"12", "/woanders/FileIO.cpp", "elephant", ""},
+                                                 {"13", "/woanders/FileIO.h", "cat and mice", ""},
+                                                 {"14", "/woanders/flip.cs", "cat and dog", ""},
+                                                 {
+                                                     "15", "/woanders/FileIO/hier/und/dort/fileio.cpp",
+                                                     "elefant, cat, dog, mice, rabbit, hedgehog and", ""
+                                                 },
+                                                 {
+                                                     "16", "/woanders/FileIO/hier/und/dort/fileio.h",
+                                                     "Elefant Katze Maus Hase Igel", ""
+                                                 },
+                                                 {
+                                                     "17", "/selt.sam/source/form1.design.cs",
+                                                     "Der Elefant sitzt auf dem Trommelklo", ""
+                                                 },
+                                                 {"18", "/woanders/", "", "/shared shared"},
+                                                 {
+                                                     "19", "/project/import/", "",
+                                                     "/Shared/General general\r\n /woanders woanders"
+                                                 },
+                                                 {"20", "/project_zwei/import/", "", "/Shared/Animals animals"},
+                                                 // special revision entries start with /revision, if so the next two fields are firtst rev and alst rev
+                                                 {"21", "/revisions/bla.cpp", "1", "5"},
+                                                 {"22", "/revisions/bla.cpp", "6", "6"},
+                                                 {"23", "/revisions/bla.cpp", "7", "8"},
+                                                 {"24", "/revisions/bla.cpp", "9", null},
+                                                 {"25", "/revisions/deleted.cpp", "6", "8"},
+                                                 {"26", "/revisions/current.cpp", "9", null},
+                                             };
 
-        readonly static IndexSearcher searcher;
+        static readonly IndexSearcher searcher;
 
         public static IndexSearcher Searcher
         {
@@ -99,7 +126,7 @@ namespace SvnIndexTest
         public static Hits Search(Query q, int revFirst, int revLast)
         {
             return searcher.Search(q, new RevisionFilter(revFirst, revLast));
-        }        
+        }
 
         public static void AssertQuery(Query q, params int[] expected)
         {
@@ -160,11 +187,11 @@ namespace SvnIndexTest
             {
                 string path = hits.Doc(i).Get("id");
                 bool found = false;
-                for (int ii = 0; ii < expectedIndex.Length ; ++ii)
+                for (int ii = 0; ii < expectedIndex.Length; ++ii)
                 {
                     if (path == GetId(expectedIndex[ii]))
                     {
-                        found = true; 
+                        found = true;
                         break;
                     }
                 }
@@ -196,7 +223,7 @@ namespace SvnIndexTest
             ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
             Field field_id = new Field("id", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
             Field field_rev_first = new Field("rev_first", "", Field.Store.NO, Field.Index.UN_TOKENIZED);
-            Field field_rev_last =  new Field("rev_last", "", Field.Store.NO, Field.Index.UN_TOKENIZED);    
+            Field field_rev_last = new Field("rev_last", "", Field.Store.NO, Field.Index.UN_TOKENIZED);
             Document doc = new Document();
             doc.Add(field_id);
             doc.Add(new Field("path", pathTokenStream));
@@ -238,7 +265,7 @@ namespace SvnIndexTest
                     field_rev_last.SetValue(RevisionFieldValue(rev_last));
                     id += "@" + rev_first;
                     data[i, 1] = id;
-                    field_id.SetValue(id);                    
+                    field_id.SetValue(id);
                     writer.AddDocument(doc);
                 }
             }
@@ -248,6 +275,5 @@ namespace SvnIndexTest
             searcher = new IndexSearcher(directory);
             Assert.AreEqual(data.GetLength(0), searcher.MaxDoc());
         }
-
     }
 }

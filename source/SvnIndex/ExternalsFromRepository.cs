@@ -20,7 +20,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public class ExternalsFromRepository : ExternalsTokenStream
     {

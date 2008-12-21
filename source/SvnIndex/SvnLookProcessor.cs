@@ -22,7 +22,7 @@ using System.Text;
 using System.Threading;
 using System.IO;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public class SvnLookProcessor
     {

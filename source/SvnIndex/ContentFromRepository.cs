@@ -22,7 +22,7 @@ using System.IO;
 using System.Text;
 using Lucene.Net.Analysis;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public class ContentFromRepository : ContentTokenStream
     {

@@ -16,13 +16,10 @@
 
 #endregion
 
-using System;
-using System.Collections.Generic;
 using Lucene.Net.Search;
 using NUnit.Framework;
-using SvnIndex;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class LexerTest
@@ -39,14 +36,14 @@ namespace SvnIndexTest
 
         static BooleanClause.Occur NextOperatorToken(Lexer l)
         {
-            return ((Lexer.OperatorToken)l.NextToken()).Clause;   
+            return ((Lexer.OperatorToken) l.NextToken()).Clause;
         }
 
         [Test]
         public void SimpleTokens()
         {
             var l = new Lexer(" The quick brown fox  ");
-            
+
             Assert.AreEqual("The", NextTermToken(l));
             Assert.AreEqual("quick", NextTermToken(l));
             Assert.AreEqual("brown", NextTermToken(l));
@@ -58,7 +55,7 @@ namespace SvnIndexTest
         public void Escaping()
         {
             var l = new Lexer("c:\"The:-((quick +brown -#fox()\" bla");
-            
+
             Assert.AreEqual("c", NextFieldToken(l));
             Assert.AreEqual("The:-((quick +brown -#fox()", NextTermToken(l));
             Assert.AreEqual("bla", NextTermToken(l));
@@ -84,13 +81,13 @@ namespace SvnIndexTest
             Assert.AreEqual(BooleanClause.Occur.MUST_NOT, NextOperatorToken(l));
             Assert.AreEqual("bla", NextTermToken(l));
             Assert.AreEqual(BooleanClause.Occur.SHOULD, NextOperatorToken(l));
-            Assert.IsAssignableFrom(typeof(Lexer.LeftToken), l.NextToken());
+            Assert.IsAssignableFrom(typeof (Lexer.LeftToken), l.NextToken());
             Assert.AreEqual(BooleanClause.Occur.MUST, NextOperatorToken(l));
             Assert.AreEqual("hullebulle", NextTermToken(l));
             Assert.AreEqual(BooleanClause.Occur.SHOULD, NextOperatorToken(l));
             Assert.AreEqual("p", NextFieldToken(l));
             Assert.AreEqual(".cpp", NextTermToken(l));
-            Assert.IsAssignableFrom(typeof(Lexer.RightToken), l.NextToken());
+            Assert.IsAssignableFrom(typeof (Lexer.RightToken), l.NextToken());
             Assert.IsNull(l.NextToken());
         }
 
@@ -106,7 +103,6 @@ namespace SvnIndexTest
             Assert.AreEqual("bla", NextTermToken(l));
             Assert.AreEqual(BooleanClause.Occur.MUST, NextOperatorToken(l));
             Assert.AreEqual("blub", NextTermToken(l));
-
         }
 
         [Test]
@@ -121,8 +117,6 @@ namespace SvnIndexTest
             Assert.AreEqual("bla", NextTermToken(l));
             Assert.AreEqual(BooleanClause.Occur.MUST, NextOperatorToken(l));
             Assert.AreEqual("blub", NextTermToken(l));
-
         }
-
     }
 }

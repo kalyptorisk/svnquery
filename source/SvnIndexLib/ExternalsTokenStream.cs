@@ -18,7 +18,7 @@
 
 using System.IO;
 using Lucene.Net.Analysis;
-namespace SvnIndex
+namespace SvnQuery
 {
     public class ExternalsTokenStream: TokenStream
     {

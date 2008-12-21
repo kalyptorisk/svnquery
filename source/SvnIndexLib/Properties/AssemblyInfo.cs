@@ -23,11 +23,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SvnIndexLib")]
-[assembly: AssemblyDescription("Classes used to create and query a lucene subversion index")]
+[assembly: AssemblyTitle("SvnQuery")]
+[assembly: AssemblyDescription("Create and query a lucene subversion index")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Subversion Search")]
+[assembly: AssemblyProduct("SvnQuery")]
 [assembly: AssemblyCopyright("Copyright © 2008 by Christian Rodemeyer")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

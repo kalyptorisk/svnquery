@@ -23,7 +23,7 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Search.Spans;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     static class Test
     {

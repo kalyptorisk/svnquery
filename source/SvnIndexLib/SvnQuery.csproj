@@ -8,8 +8,8 @@
     <ProjectGuid>{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SvnIndex</RootNamespace>
-    <AssemblyName>SvnIndexLib</AssemblyName>
+    <RootNamespace>SvnQuery</RootNamespace>
+    <AssemblyName>SvnQuery</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

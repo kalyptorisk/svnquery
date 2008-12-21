@@ -17,16 +17,11 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using System.Diagnostics;
 
-namespace SvnIndex
+namespace SvnQuery
 {
-
     public static class MaxIndexRevision
     {
         public static int Get(string index)
@@ -35,7 +30,7 @@ namespace SvnIndex
             try
             {
                 s = new IndexSearcher(index);
-                return Get(s.Reader);                
+                return Get(s.Reader);
             }
             finally
             {
@@ -67,6 +62,5 @@ namespace SvnIndex
 
             return Math.Max(int.Parse(max_rev_first), int.Parse(max_rev_last));
         }
-
     }
 }

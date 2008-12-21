@@ -19,7 +19,7 @@
 using System;
 using System.Globalization;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public static class PackedSizeConverter
     {

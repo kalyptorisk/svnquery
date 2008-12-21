@@ -21,7 +21,7 @@ using System.Diagnostics;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public class RevisionFilter: Filter
     {
@@ -92,7 +92,7 @@ namespace SvnIndex
             return last_bits.And(first_bits);
         }
 
-        void Print(string name, BitArray bits)
+        internal static void Print(string name, BitArray bits)
         {
             Debug.Write(name + ": ");
             for (int i = 0; i < bits.Length; ++i)

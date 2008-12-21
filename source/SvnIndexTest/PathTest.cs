@@ -20,28 +20,25 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Search.Spans;
 using NUnit.Framework;
-using SvnIndex;
-using System.Diagnostics;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class PathTest
-    {                                  
-
+    {
         [Test]
         public void ManualSpanQuery()
         {
             SpanQuery shared = new SpanTermQuery(new Term("path", "shared/"));
             SpanQuery fileio = new SpanTermQuery(new Term("path", "fileio"));
-            SpanQuery firstSpan = new SpanNearQuery(new [] { shared, fileio }, 10, true);
+            SpanQuery firstSpan = new SpanNearQuery(new[] {shared, fileio}, 10, true);
             SpanQuery cpp = new SpanTermQuery(new Term("path", ".cpp"));
             SpanQuery h = new SpanTermQuery(new Term("path", ".h"));
             SpanQuery xml = new SpanTermQuery(new Term("path", ".xml"));
-            SpanQuery ext = new SpanOrQuery(new []{cpp, h, xml}); // simulates .*
-            Query q = new SpanNearQuery(new [] {firstSpan, ext}, 0, true);
-            
-            TestIndex.AssertQuery(q, 1, 3, 4, 5, 8, 9);  
+            SpanQuery ext = new SpanOrQuery(new[] {cpp, h, xml}); // simulates .*
+            Query q = new SpanNearQuery(new[] {firstSpan, ext}, 0, true);
+
+            TestIndex.AssertQuery(q, 1, 3, 4, 5, 8, 9);
         }
 
         static Query PathQuery(string query)
@@ -90,7 +87,6 @@ namespace SvnIndexTest
         }
 
 
-
         [Test]
         public void PartialPath()
         {
@@ -102,7 +98,5 @@ namespace SvnIndexTest
         {
             TestIndex.AssertQuery(PathQuery(""));
         }
-
-
     }
 }

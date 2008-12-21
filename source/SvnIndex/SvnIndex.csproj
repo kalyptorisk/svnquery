@@ -8,7 +8,7 @@
     <ProjectGuid>{7015FFBE-DFF9-4E6B-BC4C-8129EB1CDD2E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SvnIndex</RootNamespace>
+    <RootNamespace>SvnQuery</RootNamespace>
     <AssemblyName>SvnIndex</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -91,9 +91,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SvnIndexLib\SvnIndexLib.csproj">
+    <ProjectReference Include="..\SvnIndexLib\SvnQuery.csproj">
       <Project>{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}</Project>
-      <Name>SvnIndexLib</Name>
+      <Name>SvnQuery</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

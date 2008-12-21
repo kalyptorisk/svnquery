@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.Text;
 using Lucene.Net.Search;
 
-namespace SvnIndex
+namespace SvnQuery
 {
     public class Lexer
     {

@@ -19,9 +19,8 @@
 using System;
 using Lucene.Net.Analysis;
 using NUnit.Framework;
-using SvnIndex;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class ExternalsTest

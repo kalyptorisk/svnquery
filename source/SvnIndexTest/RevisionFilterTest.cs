@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class RevisionFilterTest
@@ -38,13 +38,13 @@ namespace SvnIndexTest
         {
             TestIndex.AssertQueryFromRevision(int.MaxValue, "p:deleted.cpp"); // HEAD should find nothing   
             TestIndex.AssertQueryFromRevision(0, "p:deleted.cpp", 25); // ALL should find it
-            TestIndex.AssertQueryFromRevision(5, "p:deleted.cpp"); 
-            TestIndex.AssertQueryFromRevision(6, "p:deleted.cpp", 25); 
-            TestIndex.AssertQueryFromRevision(7, "p:deleted.cpp", 25); 
-            TestIndex.AssertQueryFromRevision(8, "p:deleted.cpp", 25); 
-            TestIndex.AssertQueryFromRevision(9, "p:deleted.cpp"); 
+            TestIndex.AssertQueryFromRevision(5, "p:deleted.cpp");
+            TestIndex.AssertQueryFromRevision(6, "p:deleted.cpp", 25);
+            TestIndex.AssertQueryFromRevision(7, "p:deleted.cpp", 25);
+            TestIndex.AssertQueryFromRevision(8, "p:deleted.cpp", 25);
+            TestIndex.AssertQueryFromRevision(9, "p:deleted.cpp");
         }
-        
+
         [Test]
         public void RangeQuery4to8()
         {

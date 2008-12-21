@@ -17,9 +17,8 @@
 #endregion
 
 using NUnit.Framework;
-using SvnIndex;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class PackedSizeConverterTest

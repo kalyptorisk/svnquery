@@ -16,29 +16,17 @@
 
 #endregion
 
-using System;
-using System.Collections;
-using System.Diagnostics;
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using Lucene.Net.Search;
 using NUnit.Framework;
-using Lucene.Net.Store;
-using SvnIndex;
 
-namespace SvnIndexTest
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class ContentTest
     {
-
         [Test]
         public void Wildcards()
         {
             TestIndex.AssertQuery("c:Ele*ant", 12, 15, 16, 17);
         }
-
     }
 }

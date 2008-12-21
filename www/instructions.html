@@ -14,15 +14,15 @@ code {
 
 <body>
 
-<h1>SvnQuery Documentation</h1>
+<h2>Documentation</h2>
 
-<h2>Summary
+<h3>Summary
 
-</h2>
+</h3>
 <p>SvnQuery helps you finding files in your subversion repository like Google helps you finding pages on the internet. It can do a full text
 search for content and certain metadata like filename, path, author
 and so on.</p>
-<h2>How does it work?</h2>
+<h3>How does it work?</h3>
 <p>SvnQuery maintains a full text index (powered by <span lang="de">L</span>ucene) of the repository which 
 is used for fast querying.
 This index needs to be created once for an existing repository. When the
@@ -42,16 +42,16 @@ There is one core library, SvnQuery.dll, which implements a simple but
 powerful query language especially suited to query code repositories.
 Hopefully other application, tools or addins will make
 use of this library. </p>
-<h2>Detailed Documentation</h2>
+<h3>Detailed Documentation</h3>
 <p>SVN Query currently consists of three parts</p>
 
 <ol>
 	<li>SvnIndex, a command line tool for creating and updating the full text index </li>
-	<li>SVN Query, an ASP.NET web application for querying the index </li>
+	<li>SVN WebQuery, an ASP.NET web application for querying the index </li>
 	<li>SvnQuery.dll, a programmers library which can be used to query the index </li>
 </ol>
 
-<h3>SvnIndex - Maintaining the repository index</h3>
+<h4>SvnIndex - Maintaining the repository index</h4>
 <p>
 The command line tool SvnIndex maintains the full text index of a
 subversion repository. It has two subcommands for creating and updating an index.
@@ -83,13 +83,13 @@ Known limitations:</p>
 	<li>b) currently indexing is quite slow, because for each file in the document there are several calls to svnclient and svnlook
 	</li>
 </ul>
-<h3>SVN Query</h3>
+<h4>SVN WebQuery</h4>
 <ul>
 	<li>create virtual directory</li>
 	<li>open web page, enter query, press search or enter</li>
 	<li>detailed help is available on the associated help page</li>
 </ul>
-<h3>SvnQuery</h3>
+<h4>SvnQuery Code Librarry</h4>
 <ul>
 	<li>get the source</li>
 	<li>look into the tests and the SVN Query implementation </li>

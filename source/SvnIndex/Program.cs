@@ -1,13 +1,13 @@
 ﻿#region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,21 +18,21 @@
 
 using System;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 
 namespace SvnQuery
 {
     static class Program
     {
-
-        const string usage_msg = "SvnQuery action index_path repository_path [revision] \r\n  action := create | update \r\n";
+        const string usage_msg =
+            "SvnIndex action index_path repository_url [revision] \r\n  action := create | update \r\n";
+        // -r max revision -t number of threads
 
         static void Main(string[] args)
         {
             Mutex mutex = null;
             try
-            {                
+            {
                 if (args.Length < 3) throw new Exception(usage_msg);
                 string action = args[0].ToLowerInvariant();
                 string index = Path.GetFullPath(args[1]).ToLowerInvariant();
@@ -41,7 +41,7 @@ namespace SvnQuery
 
                 mutex = new Mutex(false, index.Replace('\\', '_').Replace(':', '_'));
                 try
-                {                    
+                {
                     mutex.WaitOne();
                 }
                 catch (AbandonedMutexException)
@@ -52,24 +52,13 @@ namespace SvnQuery
                 Indexer indexer = new Indexer(index, repository, revision);
                 if (action == "create")
                 {
-                    indexer.CreateIndex();                    
+                    indexer.CreateIndex();
                 }
                 else if (action == "update")
                 {
                     indexer.UpdateIndex();
                 }
-#if DEBUG
-                else if (action == "debug")
-                {
-                    
-                    //Console.WriteLine("MaxRevision:" + MaxIndexRevision.Get(index));
-
-                    indexer.UpdateIndex(); 
-                    Console.WriteLine("press any key");
-                    Console.ReadKey();
-                }
-#endif
-                else throw new Exception(usage_msg);                
+                else throw new Exception(usage_msg);
             }
 #if !DEBUG
             catch (Exception x)
@@ -89,7 +78,5 @@ namespace SvnQuery
                 }
             }
         }
-
-
     }
 }

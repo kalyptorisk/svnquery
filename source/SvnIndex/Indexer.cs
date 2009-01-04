@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -111,7 +110,7 @@ namespace SvnQuery
             {
                 Console.WriteLine("Update index ...");
                 indexWriter = new IndexWriter(FSDirectory.GetDirectory(index), false, new StandardAnalyzer(), false);
-                WalkRevisions(startRevision, revision);
+                WalkRevisions(startRevision, revision);          
                 if (revision % 25 == 0 || revision - startRevision > 5)
                     indexWriter.Optimize();
                 indexWriter.Close();
@@ -122,8 +121,8 @@ namespace SvnQuery
 
         void WalkRevisions(int startRevision, int stopRevision)
         {
-            processedDocCount = 0;
             indexWriter.SetRAMBufferSizeMB(32);
+            processedDocCount = 0;
             for (revision = startRevision; revision <= stopRevision; ++revision)
             {
                 createdDocs.Clear();
@@ -145,7 +144,7 @@ namespace SvnQuery
                 case 'A':
                     CreateDocument(path);
                     break;
-                case '_':
+                case '_':         // property change
                 case 'U':
                     UpdateDocument(path);
                     break;
@@ -179,7 +178,8 @@ namespace SvnQuery
             if (path[path.Length - 1] == '/' && !treeWalking)
             {
                 treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + revision, CreateDocument); // need "/" to prefix pathes            
+                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + revision, CreateDocument);
+                    // need "/" to prefix pathes            
                 treeWalking = false;
             }
             PrintProgress('A', path);
@@ -209,7 +209,8 @@ namespace SvnQuery
             if (path[path.Length - 1] == '/' && !treeWalking)
             {
                 treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + (revision - 1), DeleteDocument); // need "/" to prefix pathes            
+                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + (revision - 1), DeleteDocument);
+                    // need "/" to prefix pathes            
                 treeWalking = false;
             }
 

@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQuery", "SvnQuery\SvnQue
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQueryTests", "SvnQueryTests\SvnQueryTests.csproj", "{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnIndexTests", "SvnIndexTests\SvnIndexTests.csproj", "{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

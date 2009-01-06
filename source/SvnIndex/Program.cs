@@ -26,7 +26,9 @@ namespace SvnQuery
     {
         const string usage_msg =
             "SvnIndex action index_path repository_url [revision] \r\n  action := create | update \r\n";
-        // -r max revision -t number of threads
+        // -r max revision 
+        // -t number of threads
+        // -f regex to filter path that should not be indexed, e.g. .*/tags/.*
 
         static void Main(string[] args)
         {

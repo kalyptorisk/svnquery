@@ -116,7 +116,84 @@ namespace SvnIndexTests
             return list;
         }
 
+        [Test]
+        public void GetPathData_Revision17_Properties()
+        {
+            PathData data = api.GetPathData("/Folder/Second", 17);
+            Assert.That(data.Properties, Has.Count(3));
+            Assert.That(data.Properties["cr:test"], Is.EqualTo("Nur ein Test"));
+            Assert.That(data.Properties["cr:test2"], Is.EqualTo("Another test"));
+            Assert.That(data.Properties["cr:test3"], Is.EqualTo("more tests"));            
+        }
 
+        [Test]
+        public void GetPathData_Revision17_Content()
+        {
+            PathData data = api.GetPathData("/Folder/Second/first.txt", 17);
+            Assert.That(data.Text, Is.EqualTo("hullebulle"));            
+        }
+
+        [Test]
+        public void GetPathData_Revision17_BinaryHasNoText()
+        {
+            PathData data = api.GetPathData("/Folder/Second/SvnQuery.dll", 17);
+
+            Assert.That(data.Properties["svn:mime-type"], Is.Not.StartsWith("text/"));
+            Assert.That(data.Text, Is.Null);            
+        }
+
+        [Test]
+        public void GetPathData_Revision17_Size()
+        {
+            Assert.That(api.GetPathData("/Folder/Second/first.txt", 17).Size, Is.EqualTo(10));
+            Assert.That(api.GetPathData("/Folder/Second/SvnQuery.dll", 17).Size, Is.EqualTo(13312));            
+        }
+
+        public Exception CatchException(Action action)
+        {
+            Exception exception = null;
+            try
+            {
+                action();
+            }
+            catch (Exception x)
+            {
+                exception = x;
+                Console.WriteLine(exception);
+            }
+            return exception;
+        }
+
+        [Test]
+        public void Api_InvalidUrl_Exception()
+        {
+            Exception exception = CatchException(delegate
+            {
+                ISvnApi invalid = new SharpSvnApi("svn://www.atombrenner.de");
+                invalid.GetYoungestRevision();
+            });
+            Assert.That(exception, Is.Not.Null);
+        } 
+        
+        [Test]
+        public void ForEachChange_InvalidRevision_Exception()
+        {
+            Exception exception = CatchException(delegate
+            {
+                api.ForEachChange(5000, 10000, delegate {});
+            });
+            Assert.That(exception, Is.Not.Null);
+        }
+
+        [Test]
+        public void GetPath_InvalidPath_Exception()
+        {
+            Exception exception = CatchException(delegate
+            {
+                api.GetPathData("/Folder/hullebulle.txt", 15);
+            });
+            Assert.That(exception, Is.Not.Null);
+        }
 
 
 

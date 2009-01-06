@@ -19,6 +19,9 @@
 using System;
 using SharpSvn;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 
 namespace SvnQuery
 {
@@ -93,16 +96,37 @@ namespace SvnQuery
             Uri pathUri = new Uri(uri + path);
             SvnTarget target = new SvnUriTarget(pathUri, revision);
 
-            SvnInfoEventArgs e;
             using (SvnClient client = new SvnClient())
             {
-                client.GetInfo(target, out e);
+                SvnInfoEventArgs info;
+                client.GetInfo(target, out info);
 
                 PathData data = new PathData();
-                data.Size = (int) e.RepositorySize;
-                data.Author = e.LastChangeAuthor;
-                data.Timestamp = e.LastChangeTime;
-                data.IsDirectory = e.NodeKind == SvnNodeKind.Directory;
+                data.Size = (int) info.RepositorySize;
+                data.Author = info.LastChangeAuthor;
+                data.Timestamp = info.LastChangeTime;
+                data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
+
+                Collection<SvnPropertyListEventArgs> pc;
+                client.GetPropertyList(target, out pc);
+                foreach (var proplist in pc)
+                {
+                    foreach (var property in proplist.Properties)
+                    {
+                        data.Properties.Add(property.Key, property.StringValue);
+                    }
+                }
+
+                string mime;
+                data.Properties.TryGetValue("svn:mime-type", out mime);
+                const int MaxFileSize = 128 * 1024 * 1024;
+                if ((string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) && data.Size < MaxFileSize)
+                {
+                    MemoryStream stream = new MemoryStream(data.Size);
+                    client.Write(target, stream);
+                    data.Text = new StreamReader(stream).ReadToEnd(); // default utf-8 encoding, does not work with codepages
+                    stream.Dispose();
+                }
 
                 return data;
             }

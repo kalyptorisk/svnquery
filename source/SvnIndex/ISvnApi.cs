@@ -61,7 +61,7 @@ namespace SvnQuery
         public DateTime Timestamp;
         public bool IsDirectory;
         public Dictionary<string, string> Properties = new Dictionary<string, string>();        
-        public string Content; // null if binary
+        public string Text; // null if binary
         public int Size;
     } 
     

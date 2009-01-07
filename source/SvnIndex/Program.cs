@@ -18,30 +18,37 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 
 namespace SvnQuery
 {
     static class Program
     {
-        const string usage_msg =
-            "SvnIndex action index_path repository_url [revision] \r\n  action := create | update \r\n";
-        // -r max revision 
-        // -t number of threads
-        // -f regex to filter path that should not be indexed, e.g. .*/tags/.*
+        const string usage_msg = @"          
+SvnIndex action index_path repository_url [Options] 
+  action := create | update
+  Options:
+  -r max revision to be included in the index
+  -u User
+  -p Password
+  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
+  -t max number of threads used to query the repository 
+     use low numbers for local and high numbers for remote repositories
+"; 
 
         static void Main(string[] args)
         {
+#if !DEBUG
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+#endif
+
             Mutex mutex = null;
             try
             {
-                if (args.Length < 3) throw new Exception(usage_msg);
-                string action = args[0].ToLowerInvariant();
-                string index = Path.GetFullPath(args[1]).ToLowerInvariant();
-                string repository = Path.GetFullPath(args[2]);
-                string revision = (args.Length < 4) ? null : args[3];
+                var indexerArgs = new IndexerArgs(args);
 
-                mutex = new Mutex(false, index.Replace('\\', '_').Replace(':', '_'));
+                mutex = new Mutex(false, indexerArgs.IndexPath.ToLowerInvariant().Replace('\\', '_').Replace(':', '_'));
                 try
                 {
                     mutex.WaitOne();
@@ -51,26 +58,9 @@ namespace SvnQuery
                     Console.WriteLine("Warning: Mutex was abandoned from another Process");
                 }
 
-                Indexer indexer = new Indexer(index, repository, revision);
-                if (action == "create")
-                {
-                    indexer.CreateIndex();
-                }
-                else if (action == "update")
-                {
-                    indexer.UpdateIndex();
-                }
-                else throw new Exception(usage_msg);
+                Indexer indexer = new Indexer(indexerArgs);
+                indexer.Run();
             }
-#if !DEBUG
-            catch (Exception x)
-            {
-                Console.Error.WriteLine(x);
-                File.AppendAllText(
-                    Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
-                    Environment.CommandLine + Environment.NewLine + x);
-            }
-#endif
             finally
             {
                 if (mutex != null)
@@ -80,5 +70,19 @@ namespace SvnQuery
                 }
             }
         }
+
+        public static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception x = e.ExceptionObject as Exception;
+            if (x != null)
+            {
+                Console.Error.WriteLine(x.Message);
+                File.AppendAllText(
+                    Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
+                    Environment.CommandLine + Environment.NewLine + x);
+            }
+            Console.WriteLine(usage_msg);            
+        }
+       
     }
 }

@@ -35,12 +35,16 @@ namespace SvnQuery
     {
         const int headRevision = 99999999; // the longest revision svnlook is able to produce
 
+        readonly IndexerArgs args;
+
+        readonly string index;
+        readonly string repository;
+        readonly ISvnApi svn;
+
         readonly HashSet<string> createdDocs = new HashSet<string>();
         readonly HashSet<string> deletedDocs = new HashSet<string>();
         readonly SvnLookProcessor svnlook = new SvnLookProcessor();
         readonly SvnPathInfoReader svninfo;
-        readonly string index;
-        readonly string repository;
         int revision;
 
         IndexWriter indexWriter;
@@ -62,14 +66,21 @@ namespace SvnQuery
         readonly ContentFromRepository contentTokenStream;
         readonly ExternalsFromRepository externalsTokenStream;
 
-        public Indexer(string index, string repository, string revision)
+        public enum Command
         {
-            this.index = index;
-            this.repository = repository;
+            Create,
+            Update
+        } ;
 
-            int youngest = 0;
-            svnlook.Run("youngest " + repository, r => youngest = int.Parse(r));
-            this.revision = Math.Min(int.Parse(revision), youngest);
+        public Indexer(IndexerArgs args)
+        {
+            this.args = args;
+            this.index = args.IndexPath;
+            this.repository = args.RepositoryUri;
+
+            svn = new SharpSvnApi(repository, args.User, args.Password);
+
+            this.revision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
 
             svninfo = new SvnPathInfoReader(repository);
 
@@ -88,35 +99,19 @@ namespace SvnQuery
             doc.Add(authorField);
         }
 
-        public void CreateIndex()
+        public void Run()
         {
             Console.WriteLine("Create index ...");
-            indexWriter = new IndexWriter(FSDirectory.GetDirectory(index), true, new StandardAnalyzer(), true);
-            WalkRevisions(1, revision);
+            bool create = args.Command == Command.Create;
+            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
+            int startRevision = create ? 1 : MaxIndexRevision.Get(index) + 1;
+            WalkRevisions(startRevision, revision);
+            if (create || revision % 25 == 0 || revision - startRevision > 5)
+                indexWriter.Optimize();
             indexWriter.Optimize();
             indexWriter.Close();
             indexWriter = null;
-            Console.WriteLine("Index created from revision 1 to " + revision);
-        }
-
-        public void UpdateIndex()
-        {
-            int startRevision = MaxIndexRevision.Get(index) + 1;
-            if (startRevision > revision)
-            {
-                Console.WriteLine("Index is up to date");
-            }
-            else
-            {
-                Console.WriteLine("Update index ...");
-                indexWriter = new IndexWriter(FSDirectory.GetDirectory(index), false, new StandardAnalyzer(), false);
-                WalkRevisions(startRevision, revision);          
-                if (revision % 25 == 0 || revision - startRevision > 5)
-                    indexWriter.Optimize();
-                indexWriter.Close();
-                indexWriter = null;
-                Console.WriteLine("Index updated from revision {0} to {1}", startRevision, revision);
-            }
+            Console.WriteLine("Index created from revision " + startRevision + " to " + revision);
         }
 
         void WalkRevisions(int startRevision, int stopRevision)

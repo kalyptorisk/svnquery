@@ -36,15 +36,10 @@ namespace SvnIndexTests
             repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
         }
 
-        public SvnApiTest()
-        {
-            
-        }
-
         [Test]        
         public void GetYoungestRevision()
         {                       
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(16));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(17));
         }
 
         [Test]
@@ -169,7 +164,7 @@ namespace SvnIndexTests
         {
             Exception exception = CatchException(delegate
             {
-                ISvnApi invalid = new SharpSvnApi("svn://www.atombrenner.de");
+                ISvnApi invalid = new SharpSvnApi("svn://bli.bla.blub");
                 invalid.GetYoungestRevision();
             });
             Assert.That(exception, Is.Not.Null);

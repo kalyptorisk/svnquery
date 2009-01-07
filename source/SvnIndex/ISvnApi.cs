@@ -24,9 +24,6 @@ namespace SvnQuery
    
     public interface ISvnApi
     {
-        string User { get; set; }
-        string Password { get; set; }
-
         int GetYoungestRevision();
 
         void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback);

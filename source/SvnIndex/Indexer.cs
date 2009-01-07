@@ -39,6 +39,7 @@ namespace SvnQuery
 
         readonly string index;
         readonly string repository;
+        readonly string tempUri;
         readonly ISvnApi svn;
 
         readonly HashSet<string> createdDocs = new HashSet<string>();
@@ -77,10 +78,11 @@ namespace SvnQuery
             this.args = args;
             this.index = args.IndexPath;
             this.repository = args.RepositoryUri;
+            //tempUri = args.RepositoryUri.Replace('\\', '')
 
             svn = new SharpSvnApi(repository, args.User, args.Password);
 
-            this.revision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+            this.revision = args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
 
             svninfo = new SvnPathInfoReader(repository);
 
@@ -104,19 +106,23 @@ namespace SvnQuery
             Console.WriteLine("Create index ...");
             bool create = args.Command == Command.Create;
             indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
+            indexWriter.SetRAMBufferSizeMB(32);
             int startRevision = create ? 1 : MaxIndexRevision.Get(index) + 1;
+            int stopRevision = args.MaxRevision;
+            
+            //svn.ForEachChange(startRevision, stopRevision, ProcessChange);
+            
             WalkRevisions(startRevision, revision);
-            if (create || revision % 25 == 0 || revision - startRevision > 5)
+
+            if (create || stopRevision % args.Optimise == 0 || stopRevision - startRevision > args.Optimise)
                 indexWriter.Optimize();
-            indexWriter.Optimize();
             indexWriter.Close();
             indexWriter = null;
-            Console.WriteLine("Index created from revision " + startRevision + " to " + revision);
+            Console.WriteLine("Index created from revision " + startRevision + " to " + stopRevision);
         }
 
         void WalkRevisions(int startRevision, int stopRevision)
         {
-            indexWriter.SetRAMBufferSizeMB(32);
             processedDocCount = 0;
             for (revision = startRevision; revision <= stopRevision; ++revision)
             {
@@ -124,6 +130,25 @@ namespace SvnQuery
                 deletedDocs.Clear();
                 svnlook.Run("changed " + repository + " -r" + revision, ProcessChangeInfo);
             }
+        }
+
+        void ProcessChange(PathChange change)
+        {
+            //svn.GetPathData(change.Path, change.Revision);
+            switch (change.Change)
+            {
+                case Change.Add:
+                    PrintProgress('A', change.Path);
+                    //CreateDocument(change);
+                    break;
+                case Change.Modify:
+                    PrintProgress('M', change.Path);
+                    break;
+                case Change.Delete:
+                    PrintProgress('D', change.Path);
+                    break;
+            }
+
         }
 
         void ProcessChangeInfo(string change_plus_path)
@@ -151,7 +176,7 @@ namespace SvnQuery
             }
         }
 
-        static bool IsValidPath(string path)
+        static bool IsValidPath(string path) // Path needs Processing
         {
             return !string.IsNullOrEmpty(path) && !path.ToLowerInvariant().Contains("/tags/");
         }

@@ -17,6 +17,7 @@ namespace SvnQuery
         public string Filter;
         public int MaxRevision = 99999999;
         public int MaxThreads = 16;
+        public int Optimise = 25;
 
         public IndexerArgs(string[] args)
         {
@@ -42,6 +43,9 @@ namespace SvnQuery
                             break;
                         case 't':
                             MaxThreads = int.Parse(args[i + 1]);
+                            break;
+                        case 'o':
+                            Optimise = int.Parse(args[i + 1]);
                             break;
                     }
                 }

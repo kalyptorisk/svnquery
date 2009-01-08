@@ -269,6 +269,10 @@ namespace SvnQuery.Tests
                     writer.AddDocument(doc);
                 }
             }
+
+            // delete non existent document test
+            writer.DeleteDocuments(new Term("id", "bliflaiwj123dj33"));
+
             writer.Optimize();
             writer.Close();
 

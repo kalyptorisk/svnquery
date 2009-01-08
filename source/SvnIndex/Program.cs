@@ -69,6 +69,10 @@ SvnIndex action index_path repository_url [Options]
                     mutex.Close();
                 }
             }
+#if DEBUG
+            Console.WriteLine("Press any key");
+            Console.ReadKey();
+#endif
         }
 
         public static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

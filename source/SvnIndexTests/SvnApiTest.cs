@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using SvnQuery;
@@ -34,12 +35,13 @@ namespace SvnIndexTests
         static SvnApiTest()
         {
             repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+            //repository = "svn://localhost/";
         }
 
         [Test]        
         public void GetYoungestRevision()
         {                       
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(17));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(18));
         }
 
         [Test]
@@ -62,6 +64,17 @@ namespace SvnIndexTests
         }
 
         [Test]
+        public void ForEachChange_Revision9to1_RevisionsInOrder()
+        {
+            var list = new List<int>();
+            api.ForEachChange(9, 1, change => list.Add(change.Revision));
+            for (int i = 2; i < list.Count; ++i)
+            {
+                Assert.That(list[i - 1] >= list[i]);
+            }
+        }
+
+        [Test]
         public void ForEachChange_Revision3_AddedPath()
         {
             var list = GetFilteredPathList(Change.Add, 3);            
@@ -76,6 +89,16 @@ namespace SvnIndexTests
         }
 
         [Test]
+        public void ForEachChange_Revision7_PropertiesModified()
+        {
+            var list = GetPathChangeList(7);
+            foreach (var change in list)
+            {
+                Console.WriteLine(change.Path);
+            }
+        }
+
+        [Test]
         public void ForEachChange_Revision9_ModifiedPath()
         {
             var list = GetFilteredPathList(Change.Modify, 9);
@@ -83,15 +106,27 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void ForEachChange_ReplaceInRevision_DeleteThenAddPath()
+        public void ForEachChange_Revision10_ReplacedPath()
         {
-            var list = GetPathChangeList(10);
-            list.RemoveAll(item => item.Path == "/Folder/Neuer Ordner/Second");
+            var list = GetFilteredPathList(Change.Replace, 10);
+            Assert.That(list, Is.EquivalentTo(new[] { "/Folder/Neuer Ordner/Second/second.txt" }));
+        }
 
-            Assert.That(list, Has.Count(2));
-            Assert.That(list[0].Path == list[1].Path);
-            Assert.That(list[0].Change, Is.EqualTo(Change.Delete));
-            Assert.That(list[1].Change, Is.EqualTo(Change.Add));
+        [Test]
+        public void ForEachChange_Revision16_CopiedPath()
+        {
+            PathChange change = GetPathChangeList(16)[0];
+
+            Assert.That(change.Change, Is.EqualTo(Change.Add));
+            Assert.That(change.Path, Is.EqualTo("/CopyWithDeletedFolder"));
+            Assert.That(change.IsCopy);
+        }
+
+        [Test]
+        public void GetPathData_AtomicCopyWithDeleteInRev16_NoData()
+        {
+            string path = GetFilteredPathList(Change.Delete, 16).First();
+            Assert.That(api.GetPathData(path, 16), Is.Null);
         }
 
         List<PathChange> GetPathChangeList(int revision)
@@ -179,17 +214,6 @@ namespace SvnIndexTests
             });
             Assert.That(exception, Is.Not.Null);
         }
-
-        [Test]
-        public void GetPath_InvalidPath_Exception()
-        {
-            Exception exception = CatchException(delegate
-            {
-                api.GetPathData("/Folder/hullebulle.txt", 15);
-            });
-            Assert.That(exception, Is.Not.Null);
-        }
-
 
 
     }

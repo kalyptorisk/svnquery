@@ -18,6 +18,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -39,17 +41,24 @@ namespace SvnQuery
 
         readonly string index;
         readonly string repository;
-        readonly string tempUri;
         readonly ISvnApi svn;
+
+        readonly FinalizedDictionary finalized = new FinalizedDictionary();
+        readonly PendingReads pendingReads = new PendingReads();
+
+        Thread indexThread;
+        IndexWriter indexWriter;
+        readonly Queue<PathData> indexQueue = new Queue<PathData>();
+        readonly EventWaitHandle indexQueueHasData = new ManualResetEvent(false);
+        readonly Semaphore indexQueueLimit;
+        int indexedDocuments;
+
 
         readonly HashSet<string> createdDocs = new HashSet<string>();
         readonly HashSet<string> deletedDocs = new HashSet<string>();
         readonly SvnLookProcessor svnlook = new SvnLookProcessor();
         readonly SvnPathInfoReader svninfo;
-        int revision;
-
-        IndexWriter indexWriter;
-        int processedDocCount;
+        int obsolete_global_revision;
         bool treeWalking;
 
         // reused objects for faster indexing
@@ -76,13 +85,14 @@ namespace SvnQuery
         public Indexer(IndexerArgs args)
         {
             this.args = args;
-            this.index = args.IndexPath;
-            this.repository = args.RepositoryUri;
-            //tempUri = args.RepositoryUri.Replace('\\', '')
+            index = args.IndexPath;
+            repository = args.RepositoryUri;
+            indexQueueLimit = new Semaphore(args.MaxThreads + 1, args.MaxThreads + 1);
+            ThreadPool.SetMaxThreads(args.MaxThreads + Environment.ProcessorCount + 1, 1000);
 
             svn = new SharpSvnApi(repository, args.User, args.Password);
 
-            this.revision = args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+            obsolete_global_revision = args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
 
             svninfo = new SvnPathInfoReader(repository);
 
@@ -103,78 +113,125 @@ namespace SvnQuery
 
         public void Run()
         {
-            Console.WriteLine("Create index ...");
             bool create = args.Command == Command.Create;
-            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
-            indexWriter.SetRAMBufferSizeMB(32);
             int startRevision = create ? 1 : MaxIndexRevision.Get(index) + 1;
             int stopRevision = args.MaxRevision;
-            
-            //svn.ForEachChange(startRevision, stopRevision, ProcessChange);
-            
-            WalkRevisions(startRevision, revision);
+
+            Console.WriteLine("Indexing started for " + startRevision + " to " + stopRevision);
+
+            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
+            indexWriter.SetRAMBufferSizeMB(32);
+
+            // reverse order to minimize document updates 
+            indexThread = new Thread(IndexThread);
+            indexThread.Start();
+            pendingReads.Increment();
+            svn.ForEachChange(stopRevision, startRevision, QueueChange);
+            pendingReads.Decrement();
+            indexThread.Join();
+
+            //WalkRevisions(startRevision, revision);
 
             if (create || stopRevision % args.Optimise == 0 || stopRevision - startRevision > args.Optimise)
                 indexWriter.Optimize();
             indexWriter.Close();
             indexWriter = null;
-            Console.WriteLine("Index created from revision " + startRevision + " to " + stopRevision);
+            Console.WriteLine("Indexing finished for " + startRevision + " to " + stopRevision);
         }
 
-        void WalkRevisions(int startRevision, int stopRevision)
+        void QueueChange(PathChange change)
         {
-            processedDocCount = 0;
-            for (revision = startRevision; revision <= stopRevision; ++revision)
-            {
-                createdDocs.Clear();
-                deletedDocs.Clear();
-                svnlook.Run("changed " + repository + " -r" + revision, ProcessChangeInfo);
-            }
+            if (args.Filter != null && args.Filter.IsMatch(change.Path)) return;
+
+            pendingReads.Increment();
+            ThreadPool.QueueUserWorkItem(ProcessChange, change);
         }
 
-        void ProcessChange(PathChange change)
+        void ProcessChange(object data)
         {
-            //svn.GetPathData(change.Path, change.Revision);
+            PathChange change = (PathChange) data;
             switch (change.Change)
             {
-                case Change.Add:
-                    PrintProgress('A', change.Path);
-                    //CreateDocument(change);
+                case Change.Add: 
+                    CreateDocument(change);
                     break;
+                case Change.Replace:
                 case Change.Modify:
-                    PrintProgress('M', change.Path);
+                    FinalizeDocument(change);
+                    CreateDocument(change);                   
                     break;
                 case Change.Delete:
-                    PrintProgress('D', change.Path);
+                    FinalizeDocument(change);
                     break;
             }
-
+            pendingReads.Decrement();
         }
 
-        void ProcessChangeInfo(string change_plus_path)
+        void CreateDocument(PathChange change)
         {
-            //if (revision == 13) Debugger.Break();
+            if (finalized.IsFinalized(change.Path, change.Revision)) return;
 
-            if (change_plus_path == null || change_plus_path.Length <= 4) return;
-            string path = change_plus_path.Substring(4);
-            if (path[0] != '/') path = "/" + path;
-            char action = change_plus_path[0];
-            switch (action)
+            PathData data = svn.GetPathData(change.Path, change.Revision);
+            if (data == null) return;
+            data.FirstRevision = change.Revision;
+            data.LastRevision = headRevision;
+            if (data.IsDirectory && change.IsCopy)
             {
-                case 'A':
-                    CreateDocument(path);
-                    break;
-                case '_':         // property change
-                case 'U':
-                    UpdateDocument(path);
-                    break;
-                case 'D':
-                    DeleteDocument(path);
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown action " + action);
+                svn.ForEachChild(change.Path, change.Revision, QueueChange);
+            }
+            QueueIndexDocument(data);
+        }
+
+        void FinalizeDocument(PathChange change)
+        {
+            PathData data = svn.GetPathData(change.Path, change.Revision - 1);
+            if (data == null) return;
+
+            finalized.Finalize(change.Path, data.FirstRevision);
+            QueueIndexDocument(data);            
+        }
+
+        void QueueIndexDocument(PathData data)
+        {
+            indexQueueLimit.WaitOne();
+            lock (indexQueue)
+            {
+                indexQueue.Enqueue(data);
+                indexQueueHasData.Set();
             }
         }
+
+        void IndexThread()
+        {
+            WaitHandle[] wait = new WaitHandle[]{indexQueueHasData, pendingReads};
+            for (; ; )
+            {
+                int waitResult = WaitHandle.WaitAny(wait);
+                for (; ; )
+                {
+                    PathData data;
+                    lock (indexQueue)
+                    {
+                        Console.WriteLine("QC: " + indexQueue.Count);
+                        if (indexQueue.Count == 0)
+                        {
+                            indexQueueHasData.Reset();
+                            break;                            
+                        }
+                        data = indexQueue.Dequeue();
+                    }
+                    indexQueueLimit.Release();
+                    IndexDocument(data);
+                }
+                if (waitResult == 1) break;
+            }
+        }
+
+        void IndexDocument(PathData data)
+        {
+            Console.WriteLine("{0}\t{1}\t{2}", data.FirstRevision, data.LastRevision, data.Path);
+        }
+
 
         static bool IsValidPath(string path) // Path needs Processing
         {
@@ -183,11 +240,14 @@ namespace SvnQuery
 
         void PrintProgress(char action, string path)
         {
-            Console.Write(action);
-            Console.Write((++processedDocCount).ToString().PadLeft(8));
-            Console.Write(revision.ToString().PadLeft(8));
-            Console.Write(" ");
-            Console.WriteLine(path);
+            lock (this)
+            {
+                Console.Write(action);
+                Console.Write((++indexedDocuments).ToString().PadLeft(8));
+                Console.Write(obsolete_global_revision.ToString().PadLeft(8));
+                Console.Write(" ");
+                Console.WriteLine(path);
+            }
         }
 
         void CreateDocument(string path)
@@ -198,38 +258,38 @@ namespace SvnQuery
             if (path[path.Length - 1] == '/' && !treeWalking)
             {
                 treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + revision, CreateDocument);
+                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + obsolete_global_revision, CreateDocument);
                     // need "/" to prefix pathes            
                 treeWalking = false;
             }
             PrintProgress('A', path);
-            AddDocument(svninfo.ReadPathInfo(path, revision), headRevision);
+            AddDocument(svninfo.ReadPathInfo(path, obsolete_global_revision), headRevision);
         }
 
         void UpdateDocument(string path)
         {
             if (!IsValidPath(path)) return;
             PrintProgress('U', path);
-            SvnPathInfo info = svninfo.ReadPathInfo(path, revision - 1);
+            SvnPathInfo info = svninfo.ReadPathInfo(path, obsolete_global_revision - 1);
             if (info != null) // atomic replace or copy and modify
             {
                 indexWriter.DeleteDocuments(idTerm.CreateTerm(path));
-                AddDocument(info, revision - 1);
+                AddDocument(info, obsolete_global_revision - 1);
             }
-            AddDocument(svninfo.ReadPathInfo(path, revision), headRevision);
+            AddDocument(svninfo.ReadPathInfo(path, obsolete_global_revision), headRevision);
         }
 
         void DeleteDocument(string path)
         {
             if (!IsValidPath(path) || deletedDocs.Contains(path)) return;
 
-            SvnPathInfo pathInfo = svninfo.ReadPathInfo(path, revision - 1);
+            SvnPathInfo pathInfo = svninfo.ReadPathInfo(path, obsolete_global_revision - 1);
             if (pathInfo == null) return; // atomic replace
 
             if (path[path.Length - 1] == '/' && !treeWalking)
             {
                 treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + (revision - 1), DeleteDocument);
+                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + (obsolete_global_revision - 1), DeleteDocument);
                     // need "/" to prefix pathes            
                 treeWalking = false;
             }
@@ -237,7 +297,7 @@ namespace SvnQuery
             PrintProgress('D', path);
             indexWriter.DeleteDocuments(idTerm.CreateTerm(path));
             deletedDocs.Add(path);
-            AddDocument(pathInfo, revision - 1);
+            AddDocument(pathInfo, obsolete_global_revision - 1);
         }
 
         void AddDocument(SvnPathInfo info, int revLast)

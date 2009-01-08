@@ -30,7 +30,7 @@ namespace SvnQuery
         readonly Uri uri;
         readonly string user;
         readonly string password;
-        readonly List<SvnClient> clientPool = new List<SvnClient>();
+        readonly List<SvnClient> clientPool = new List<SvnClient>();        
 
         public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
         {}
@@ -76,74 +76,120 @@ namespace SvnQuery
             return youngest;
         }
 
+        public string GetLogMessage(int revision)
+        {
+            // Messages should be added from the onchange method (threadsafe)
+            // if a message is not ready it will be fetched on demand
+            throw new NotImplementedException();
+        }
+
         public void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback)
         {
             SvnClient client = AllocSvnClient();
-            client.Log(uri, new SvnLogArgs(new SvnRevisionRange(firstRevision, lastRevision)), delegate(object s, SvnLogEventArgs e)
+            try
             {
-                if (e == null || e.ChangedPaths == null) return;
-                foreach (var path in e.ChangedPaths)
-                {
-                    int revision = (int) e.Revision;
-                    switch (path.Action)
+                SvnLogArgs args = new SvnLogArgs(new SvnRevisionRange(firstRevision, lastRevision));
+                args.StrictNodeHistory = false;
+                args.RetrieveChangedPaths = true;
+                client.Log(uri, args, delegate(object s, SvnLogEventArgs e)
+                {                    
+                    if (e == null || e.ChangedPaths == null) return;
+                    foreach (var path in e.ChangedPaths)
                     {
-                       case SvnChangeAction.Add:
-                            callback(new PathChange(Change.Add, revision, path.Path, e.LogMessage));    
-                           break;
-                       case SvnChangeAction.Modify:
-                           callback(new PathChange(Change.Modify, revision, path.Path, e.LogMessage)); 
-                           break;
-                       case SvnChangeAction.Delete:
-                           callback(new PathChange(Change.Delete, revision, path.Path, e.LogMessage)); 
-                           break;
-                       case SvnChangeAction.Replace:
-                           callback(new PathChange(Change.Delete, revision, path.Path, e.LogMessage));
-                           callback(new PathChange(Change.Add, revision, path.Path, e.LogMessage));
-                           break;
-                   }
-                }
-            });         
-            FreeSvnClient(client);
+                        PathChange change = new PathChange
+                                                {
+                                                    Revision = (int)e.Revision,
+                                                    Path = path.Path,
+                                                    IsCopy = path.CopyFromPath != null,
+                                                };
+                        switch (path.Action)
+                        {
+                            case SvnChangeAction.Add:     change.Change = Change.Add;     break;
+                            case SvnChangeAction.Modify:  change.Change = Change.Modify;  break;
+                            case SvnChangeAction.Delete:  change.Change = Change.Delete;  break;
+                            case SvnChangeAction.Replace: change.Change = Change.Replace; break;
+                            default:
+                                throw new Exception("Invalid action on " + path.Path + "@" + e.Revision);
+                        }
+                        callback(change);
+                    }
+                });
+            }
+            finally
+            {
+                FreeSvnClient(client);
+            }
         }
+
+        public void ForEachChild(string path, int revision, Action<PathChange> callback)
+        {
+            SvnClient client = AllocSvnClient();
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            try
+            {
+                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
+                client.List(target, args, delegate(object s, SvnListEventArgs e)
+                {
+                    if (!string.IsNullOrEmpty(e.Path))
+                      callback(new PathChange {Change = Change.Add, Path = e.BasePath + "/" + e.Path , IsCopy = false, Revision = revision});
+                });
+            }
+            finally
+            {
+                FreeSvnClient(client);
+            }
+        }
+
 
         public PathData GetPathData(string path, int revision)
         {
             SvnClient client = AllocSvnClient();
-
-            Uri pathUri = new Uri(uri + path);
-            SvnTarget target = new SvnUriTarget(pathUri, revision);
-            
-            SvnInfoEventArgs info;
-            client.GetInfo(target, out info);
-            PathData data = new PathData();
-            data.Size = (int) info.RepositorySize;
-            data.Author = info.LastChangeAuthor;
-            data.Timestamp = info.LastChangeTime;
-            data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
-
-            Collection<SvnPropertyListEventArgs> pc;
-            client.GetPropertyList(target, out pc);
-            foreach (var proplist in pc)
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            PathData data = null;
+            try
             {
-                foreach (var property in proplist.Properties)
+                SvnInfoEventArgs info;
+                client.GetInfo(target, out info);
+
+                data = new PathData();
+                data.Path = path;
+                data.Size = (int)info.RepositorySize;
+                data.Author = info.LastChangeAuthor;
+                data.Timestamp = info.LastChangeTime;
+                data.FirstRevision = (int)info.LastChangeRevision;
+                data.LastRevision = revision;
+                data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
+
+                Collection<SvnPropertyListEventArgs> pc;
+                client.GetPropertyList(target, out pc);
+                foreach (var proplist in pc)
                 {
-                    data.Properties.Add(property.Key, property.StringValue);
+                    foreach (var property in proplist.Properties)
+                    {
+                        data.Properties.Add(property.Key, property.StringValue);
+                    }
+                }
+
+                string mime;
+                data.Properties.TryGetValue("svn:mime-type", out mime);
+                const int MaxFileSize = 128 * 1024 * 1024;
+                if (!data.IsDirectory && (string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) && data.Size < MaxFileSize)
+                {
+                    MemoryStream stream = new MemoryStream(data.Size);
+                    client.Write(target, stream);
+                    stream.Position = 0;
+                    data.Text = new StreamReader(stream).ReadToEnd(); // default utf-8 encoding, does not work with codepages
+                    stream.Dispose();
                 }
             }
-
-            string mime;
-            data.Properties.TryGetValue("svn:mime-type", out mime);
-            const int MaxFileSize = 128 * 1024 * 1024;
-            if (!data.IsDirectory && (string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) && data.Size < MaxFileSize)
+            catch (SvnException x)
             {
-                MemoryStream stream = new MemoryStream(data.Size);
-                client.Write(target, stream);
-                stream.Position = 0;
-                data.Text = new StreamReader(stream).ReadToEnd(); // default utf-8 encoding, does not work with codepages
-                stream.Dispose();
+                if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;                
             }
-
-            FreeSvnClient(client);
+            finally
+            {
+                FreeSvnClient(client);
+            }
             return data;
         }
 

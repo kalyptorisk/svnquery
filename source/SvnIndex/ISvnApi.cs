@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SvnQuery
 {
@@ -28,38 +29,47 @@ namespace SvnQuery
 
         void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback);
 
-        PathData GetPathData(string path, int revision);        
+        /// <summary>
+        /// Lists a folder recursively with PathChanges of type add
+        /// </summary>
+        void ForEachChild(string path, int revision, Action<PathChange> callback);
+
+        PathData GetPathData(string path, int revision);
+
+        string GetLogMessage(int revision);
     }
 
     public enum Change
     {
-        Add, Modify, Delete
+        Add, Modify, Delete, Replace
     }
 
     public class PathChange
     {
-        public readonly Change Change;
-        public readonly int Revision;
-        public readonly string Path;
-        public readonly string Message;
+        public Change Change;
+        public int Revision;
+        public string Path;
+        public bool IsCopy; //  if IsCopy and IsDirectory than children need to be added explicitely
 
-        public PathChange(Change change, int revision, string path, string message)
+#if DEBUG
+        public override string ToString()
         {
-            Change = change;
-            Path = path;
-            Message = message;
-            Revision = revision;
+            return Change + " " + Path + "@" + Revision;
         }
+#endif 
     }
 
     public class PathData
     {
+        public string Path;
+        public int FirstRevision;
         public string Author;
         public DateTime Timestamp;
         public bool IsDirectory;
         public Dictionary<string, string> Properties = new Dictionary<string, string>();        
         public string Text; // null if binary
         public int Size;
+        public int LastRevision;
     } 
     
 }

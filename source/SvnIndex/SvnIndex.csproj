@@ -64,9 +64,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExternalsFromRepository.cs" />
+    <Compile Include="FinalizedDictionary.cs" />
     <Compile Include="Indexer.cs" />
     <Compile Include="IndexerArgs.cs" />
     <Compile Include="ISvnApi.cs" />
+    <Compile Include="PendingReads.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ContentFromRepository.cs" />

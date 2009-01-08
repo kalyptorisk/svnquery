@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SvnQuery
 {
@@ -14,7 +15,7 @@ namespace SvnQuery
         public string RepositoryUri;
         public string User;
         public string Password;
-        public string Filter;
+        public Regex Filter;
         public int MaxRevision = 99999999;
         public int MaxThreads = 16;
         public int Optimise = 25;
@@ -33,7 +34,7 @@ namespace SvnQuery
                             MaxRevision = int.Parse(args[i + 1]);
                             break;
                         case 'f':
-                            Filter = args[i + 1];
+                            Filter = new Regex(args[i + 1], RegexOptions.Compiled);
                             break;
                         case 'u':
                             User = args[i + 1];

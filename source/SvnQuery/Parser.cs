@@ -76,7 +76,7 @@ namespace SvnQuery
 
         SpanQuery WildcardPathTerm(string text)
         {
-            Term term = new Term("path", text);
+            Term term = new Term(FieldName.Path, text);
 
             if (text.IndexOfAny(Wildcards) < 0)
                 return new SpanTermQuery(term);
@@ -95,7 +95,7 @@ namespace SvnQuery
                 termEnum.Next();
                 term = termEnum.Term();
             }
-            if (terms.Count == 0) return new SpanTermQuery(new Term("path", ":")); // query will never find anything
+            if (terms.Count == 0) return new SpanTermQuery(new Term(FieldName.Path, ":")); // query will never find anything
             return new SpanOrQuery(terms.ToArray());
         } 
         
@@ -130,8 +130,8 @@ namespace SvnQuery
             TokenStream ts = new ContentTokenStream(content, true);
             for (Token token = ts.Next(); token != null; token = ts.Next(token))
             {
-                //q.Add(new Term("content", token.TermText()));
-                Term[] terms = WildcardContentTerms(new Term("content", token.TermText()));
+                //q.Add(new Term(FieldName.Content, token.TermText()));
+                Term[] terms = WildcardContentTerms(new Term(FieldName.Content, token.TermText()));
                 if (terms.Length > 0)
                 {
                     q.Add(terms);
@@ -148,22 +148,22 @@ namespace SvnQuery
             for (Token token = ts.Next(); token != null; token = ts.Next(token))
             {
                 string text = token.TermText();
-                if (text != ":") parts.Add(text);
+                if (text != ExternalsTokenStream.Eol) parts.Add(text);
             }
 
             if (parts.Count == 0) return null;
 
-            if (parts.Count == 1) return new TermQuery(new Term("externals", parts[0]));
+            if (parts.Count == 1) return new TermQuery(new Term(FieldName.Externals, parts[0]));
 
             var bq = new BooleanQuery();
-            Term eop = new Term("externals", ":");
+            Term eop = new Term(FieldName.Externals, ExternalsTokenStream.Eol);
             for (int i = 0; i++ < parts.Count;)
             {
                 var q = new PhraseQuery();
                 q.Add(eop);
                 for (int j = 0; j < i; j++)
                 {
-                    q.Add(new Term("externals", parts[j]));
+                    q.Add(new Term(FieldName.Externals, parts[j]));
                 }
                 if (i < parts.Count) q.Add(eop);
                 bq.Add(q, BooleanClause.Occur.SHOULD);
@@ -173,7 +173,7 @@ namespace SvnQuery
 
         public Query ParseAuthorTerm(string term)
         {
-            return new TermQuery(new Term("author", term));
+            return new TermQuery(new Term(FieldName.Author, term));
         }
 
         public Query ParseContentOrPathTerm(string term)

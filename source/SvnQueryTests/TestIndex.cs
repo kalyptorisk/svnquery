@@ -222,13 +222,13 @@ namespace SvnQuery.Tests
             ContentTokenStream contentTokenStream = new ContentTokenStream();
             ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
             Field field_id = new Field("id", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-            Field field_rev_first = new Field("rev_first", "", Field.Store.NO, Field.Index.UN_TOKENIZED);
-            Field field_rev_last = new Field("rev_last", "", Field.Store.NO, Field.Index.UN_TOKENIZED);
+            Field field_rev_first = new Field(FieldName.RevisionFirst, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
+            Field field_rev_last = new Field(FieldName.RevisionLast, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
             Document doc = new Document();
             doc.Add(field_id);
-            doc.Add(new Field("path", pathTokenStream));
-            doc.Add(new Field("content", contentTokenStream));
-            doc.Add(new Field("externals", externalsTokenStream));
+            doc.Add(new Field(FieldName.Path, pathTokenStream));
+            doc.Add(new Field(FieldName.Content, contentTokenStream));
+            doc.Add(new Field(FieldName.Externals, externalsTokenStream));
             doc.Add(field_rev_first);
             doc.Add(field_rev_last);
             for (int i = 0; i < data.GetLength(0); ++i)

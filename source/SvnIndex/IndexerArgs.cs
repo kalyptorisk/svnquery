@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -27,27 +24,29 @@ namespace SvnQuery
             {
                 if (args[i][0] == '-')
                 {
-                    if (args[i].Length != 2) throw new Exception("Invalid Option " + args[i]);
+                    if (args[i].Length < 2) throw new Exception("Empty Option");
                     switch (char.ToLowerInvariant(args[i][1]))
                     {
                         case 'r':
-                            MaxRevision = int.Parse(args[i + 1]);
+                            MaxRevision = int.Parse(GetArg(args, i));
                             break;
                         case 'f':
-                            Filter = new Regex(args[i + 1], RegexOptions.Compiled);
+                            Filter = new Regex(GetArg(args, i), RegexOptions.Compiled);
                             break;
                         case 'u':
-                            User = args[i + 1];
+                            User = GetArg(args, i);
                             break;
                         case 'p':
-                            Password = args[i + 1];
+                            Password = GetArg(args, i);
                             break;
                         case 't':
-                            MaxThreads = int.Parse(args[i + 1]);
+                            MaxThreads = int.Parse(GetArg(args, i));
                             break;
                         case 'o':
-                            Optimize = int.Parse(args[i + 1]);
+                            Optimize = int.Parse(GetArg(args, i));
                             break;
+                        default:
+                            throw new Exception("Unknown option " + args[i]);
                     }
                 }
                 else switch(i)
@@ -66,5 +65,13 @@ namespace SvnQuery
             }
             if (!allMandatoryArgumentsFound) throw new Exception("Missing arguments");
         }
+
+        static string GetArg(string[] args, int i)
+        {
+            if (args[i].Length > 2) return args[i].Substring(2);
+            if (i >= args.Length) throw new Exception("Missing argument for " + args[i]);
+            return args[i + 1];
+        }
+
     }
 }

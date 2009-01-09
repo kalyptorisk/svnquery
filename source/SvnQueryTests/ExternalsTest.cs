@@ -34,23 +34,24 @@ namespace SvnQuery.Tests
         [Test]
         public void TokenStream()
         {
+            const string eol = ExternalsTokenStream.Eol;
             ExternalsTokenStream ts = new ExternalsTokenStream();
             ts.SetText("/Internals/shared/ shared" + Environment.NewLine + "/Internals/MCL/export mcl/dlls");
 
             Token t = new Token();
 
-            Assert.AreEqual(":", NextToken(ts, t)); // EOL
+            Assert.AreEqual(eol, NextToken(ts, t)); 
             
             Assert.AreEqual("internals", NextToken(ts, t));
             Assert.AreEqual("shared", NextToken(ts, t));
 
-            Assert.AreEqual(":", NextToken(ts, t)); // EOL
+            Assert.AreEqual(eol, NextToken(ts, t)); 
 
             Assert.AreEqual("internals", NextToken(ts, t));
             Assert.AreEqual("mcl", NextToken(ts, t));
             Assert.AreEqual("export", NextToken(ts, t)); 
             
-            Assert.AreEqual(":", NextToken(ts, t)); // EOL
+            Assert.AreEqual(eol, NextToken(ts, t)); 
         }
 
         [Test]

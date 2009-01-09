@@ -66,31 +66,31 @@ namespace App_Code
 
         public string RevFirst
         {
-            get { return NiceRev(doc.Get("rev_first")); }
+            get { return NiceRev(doc.Get(FieldName.RevisionFirst)); }
         }
 
         public string RevLast
         {
-            get { return NiceRev(doc.Get("rev_last")); }
+            get { return NiceRev(doc.Get(FieldName.RevisionLast)); }
         }
 
         public string Size
         {
             get
             {
-                string size = doc.Get("size");
+                string size = doc.Get(FieldName.Size);
                 return string.IsNullOrEmpty(size) ? "" : PackedSizeConverter.FromSortableStringToString(size);
             }
         }
 
         public string Author
         {
-            get { return doc.Get("author"); }
+            get { return doc.Get(FieldName.Author); }
         }
 
         public string LastModification
         {
-            get { return doc.Get("timestamp"); }
+            get { return doc.Get(FieldName.Timestamp); }
         }
 
         public string Summary
@@ -100,9 +100,9 @@ namespace App_Code
                 string summary = Author + ": &nbsp;" + LastModification;
                 summary += "&nbsp; - &nbsp" + RevFirst + ":" + RevLast;
 
-                string size = doc.Get("size");
+                string size = Size;
                 if (!string.IsNullOrEmpty(size))
-                    summary += "&nbsp; - &nbsp" + PackedSizeConverter.FromSortableStringToString(size);
+                    summary += "&nbsp; - &nbsp" + size;
 
                 return summary;
             }

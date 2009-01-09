@@ -19,7 +19,7 @@ namespace SvnIndexTests
             Assert.That(true);
         }
 
-        [Test]
+        [Test, Ignore]
         public void RepositoryNeedsAuthentication_WrongPassword_Failure()
         {
             try
@@ -34,7 +34,7 @@ namespace SvnIndexTests
             Assert.That(false); // Exception expected
         } 
         
-        [Test]
+        [Test, Ignore]
         public void RepositoryNeedsAuthentication_NoPassword_Failure()
         {
             try

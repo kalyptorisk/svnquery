@@ -53,19 +53,22 @@ namespace SvnQuery
         int indexedDocuments;
 
         // reused objects for faster indexing
-        readonly Document doc = new Document();
-        readonly Term idTerm = new Term("id", "");
-        readonly Field idField = new Field("id", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field revFirstField = new Field("rev_first", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field revLastField = new Field("rev_last", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field sizeField = new Field("size", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field timestampField = new Field("timestamp", "", Field.Store.YES, Field.Index.NO);
-        readonly Field authorField = new Field("author", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Term idTerm = new Term(FieldName.Id, "");
+        readonly Field idField = new Field(FieldName.Id, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field revFirstField = new Field(FieldName.RevisionFirst, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field revLastField = new Field(FieldName.RevisionLast, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field sizeField = new Field(FieldName.Size, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field timestampField = new Field(FieldName.Timestamp, "", Field.Store.YES, Field.Index.NO);
+        readonly Field authorField = new Field(FieldName.Author, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field typeField = new Field(FieldName.Type, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
+        readonly Field messageField;
+        readonly Field pathField;
         readonly Field contentField;
         readonly Field externalsField;
-        readonly PathTokenStream pathTokenStream;
+        readonly PathTokenStream pathTokenStream = new PathTokenStream();
         readonly ContentTokenStream contentTokenStream = new ContentTokenStream();
         readonly ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
+        readonly ContentTokenStream messageTokenStream = new ContentTokenStream();
 
         public enum Command
         {
@@ -79,23 +82,17 @@ namespace SvnQuery
             index = args.IndexPath;
             repository = args.RepositoryUri;
             indexQueueLimit = new Semaphore(args.MaxThreads + 1, args.MaxThreads + 1);
-            ThreadPool.SetMaxThreads(args.MaxThreads + Environment.ProcessorCount + 1, 1000);
+            ThreadPool.SetMaxThreads(args.MaxThreads / Environment.ProcessorCount + Environment.ProcessorCount, 1000);
+            ThreadPool.SetMinThreads(args.MaxThreads, 100);
 
             svn = new SharpSvnApi(repository, args.User, args.Password);
 
             args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
 
-            doc = new Document();
-            pathTokenStream = new PathTokenStream("");
-            contentField = new Field("content", contentTokenStream);
-            externalsField = new Field("externals", externalsTokenStream);
-            idTerm = new Term("id", "");
-            doc.Add(idField);
-            doc.Add(new Field("path", pathTokenStream));
-            doc.Add(revFirstField);
-            doc.Add(revLastField);
-            doc.Add(timestampField);
-            doc.Add(authorField);
+            contentField = new Field(FieldName.Content, contentTokenStream);
+            pathField = new Field(FieldName.Path, pathTokenStream);
+            externalsField = new Field(FieldName.Externals, externalsTokenStream);
+            messageField = new Field(FieldName.Message, messageTokenStream);
         }
 
         public void Run()
@@ -216,11 +213,12 @@ namespace SvnQuery
 
         void IndexDocument(PathData data)
         {
-            Console.WriteLine("{0,8} {1,8} {2}", ++indexedDocuments, data.RevisionFirst, data.Path);
+            int printRev = data.RevisionLast == 99999999 ? args.MaxRevision : data.RevisionLast;
+            Console.WriteLine("{0,8} {1,8} {2}", ++indexedDocuments, printRev, data.Path);
 
             Term id = idTerm.CreateTerm(data.Path + "@" + data.RevisionFirst);
-
             indexWriter.DeleteDocuments(id);
+            Document doc = MakeDocument();
 
             idField.SetValue(id.Text());
             pathTokenStream.Reset(data.Path);
@@ -229,22 +227,56 @@ namespace SvnQuery
             authorField.SetValue(data.Author);
             timestampField.SetValue(data.Timestamp.ToString("yyyy-MM-dd hh:mm"));
 
-            doc.RemoveFields(sizeField.Name()); 
             if (!data.IsDirectory)
             {
                 sizeField.SetValue(PackedSizeConverter.ToSortableString(data.Size));
                 doc.Add(sizeField);
             }
 
-            doc.RemoveFields(contentField.Name());
             if (contentTokenStream.SetText(data.Text))
                 doc.Add(contentField);
 
-            //doc.RemoveFields(externalsField.Name());
-            //if (externalsTokenStream.SetText(data.Properties["svn:externals"]))
-            //    doc.Add(externalsField);
+            IndexProperties(doc, data.Properties);
 
-            indexWriter.AddDocument(doc);
+            indexWriter.AddDocument(doc);            
+        }
+
+        void IndexProperties(Document doc, Dictionary<string, string> properties)
+        {
+            foreach (var prop in properties)
+            {
+                if (prop.Key == "svn:externals")
+                {
+                    doc.Add(externalsField);
+                    externalsTokenStream.SetText(prop.Value);
+                }
+                else if (prop.Key == "svn:mime-type")
+                {
+                    doc.Add(typeField);
+                    typeField.SetValue(prop.Value);
+                }
+                else if (prop.Key == "svn:mergeinfo")
+                {
+                    continue; // do nothing
+                }
+                else
+                {
+                    doc.Add(new Field(prop.Key, prop.Value, Field.Store.NO, Field.Index.TOKENIZED));   
+                }
+            }
+        }
+
+        Document MakeDocument()
+        {
+            Document doc = new Document();
+            doc.Add(idField);
+            doc.Add(pathField);
+            doc.Add(revFirstField);
+            doc.Add(revLastField);
+            doc.Add(timestampField);
+            doc.Add(authorField);
+            doc.Add(messageField);
+            return doc;
         }
     }
 }

@@ -20,9 +20,13 @@ using System.IO;
 using Lucene.Net.Analysis;
 namespace SvnQuery
 {
+    /// <summary>
+    /// Provides only the url components of a svn:externals property, divided by eol tokens
+    /// </summary>
     public class ExternalsTokenStream: TokenStream
     {
-        const int MaxTokenLength = 250;
+        public const int MaxTokenLength = 250;
+        public const string Eol = ":";
 
         TextReader reader;
         string line;
@@ -91,7 +95,7 @@ namespace SvnQuery
 
                 if (eol)
                 {
-                    buffer[length++] = ':';
+                    buffer[length++] = Eol[0];
                     eol = false;
                     break;
                 }

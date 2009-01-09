@@ -29,12 +29,12 @@ namespace SvnQuery.Tests
         [Test]
         public void ManualSpanQuery()
         {
-            SpanQuery shared = new SpanTermQuery(new Term("path", "shared/"));
-            SpanQuery fileio = new SpanTermQuery(new Term("path", "fileio"));
+            SpanQuery shared = new SpanTermQuery(new Term(FieldName.Path, "shared/"));
+            SpanQuery fileio = new SpanTermQuery(new Term(FieldName.Path, "fileio"));
             SpanQuery firstSpan = new SpanNearQuery(new[] {shared, fileio}, 10, true);
-            SpanQuery cpp = new SpanTermQuery(new Term("path", ".cpp"));
-            SpanQuery h = new SpanTermQuery(new Term("path", ".h"));
-            SpanQuery xml = new SpanTermQuery(new Term("path", ".xml"));
+            SpanQuery cpp = new SpanTermQuery(new Term(FieldName.Path, ".cpp"));
+            SpanQuery h = new SpanTermQuery(new Term(FieldName.Path, ".h"));
+            SpanQuery xml = new SpanTermQuery(new Term(FieldName.Path, ".xml"));
             SpanQuery ext = new SpanOrQuery(new[] {cpp, h, xml}); // simulates .*
             Query q = new SpanNearQuery(new[] {firstSpan, ext}, 0, true);
 

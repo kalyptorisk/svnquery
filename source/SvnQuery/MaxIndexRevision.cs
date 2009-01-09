@@ -41,21 +41,21 @@ namespace SvnQuery
         public static int Get(IndexReader reader)
         {
             string max_rev_first = "00000001";
-            TermEnum te = reader.Terms(new Term("rev_first", max_rev_first));
+            TermEnum te = reader.Terms(new Term(FieldName.RevisionFirst, max_rev_first));
             while (true)
             {
                 Term t = te.Term();
-                if (t == null || t.Field() != "rev_first") break;
+                if (t == null || t.Field() != FieldName.RevisionLast) break;
                 max_rev_first = t.Text();
                 te.Next();
             }
 
             string max_rev_last = max_rev_first;
-            te.SkipTo(new Term("rev_last", max_rev_last));
+            te.SkipTo(new Term(FieldName.RevisionLast, max_rev_last));
             while (true)
             {
                 Term t = te.Term();
-                if (t == null || t.Field() != "rev_last" || t.Field() != RevisionFilter.HeadString) break;
+                if (t == null || t.Field() != FieldName.RevisionLast || t.Field() != RevisionFilter.HeadString) break;
                 max_rev_last = t.Text();
                 te.Next();
             }

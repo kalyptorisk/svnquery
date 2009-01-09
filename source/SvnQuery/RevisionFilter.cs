@@ -60,12 +60,12 @@ namespace SvnQuery
 
             BitArray last_bits = new BitArray(reader.MaxDoc(), false);
 
-            TermEnum t = reader.Terms(new Term("rev_last", revFirst.ToString(RevFormat)));
+            TermEnum t = reader.Terms(new Term(FieldName.RevisionLast, revFirst.ToString(RevFormat)));
             TermDocs d = reader.TermDocs();
-            //if (t.SkipTo((new Term("rev_last", revision.ToString(RevFormat))))) // extremely slow
+            //if (t.SkipTo((new Term(FieldName.RevisionLast, revision.ToString(RevFormat))))) // extremely slow
             if (t.Term() != null)
             {
-                while (t.Term().Field() == "rev_last")
+                while (t.Term().Field() == FieldName.RevisionLast)
                 {
                     d.Seek(t);
                     do last_bits[d.Doc()] = true; while (d.Next());

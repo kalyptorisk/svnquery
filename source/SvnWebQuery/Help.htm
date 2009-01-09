@@ -6,10 +6,8 @@
    
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
-<p style="text-align: right; position: relative; top: 0px;  width: 72px; float: right; margin-right: 4px;">
-    <a href="Default.aspx">Back</a></p>
     <h1 style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic; ">
-        Subversion Search Help</h1>
+        SVN Query Help</h1>
 
 <p>
     This is a fulltext search engine into a subversion repository for every document 
@@ -35,7 +33,7 @@
 <p>
         Use the &#39;/&#39; character with care to mark directory. So &quot;shared/&quot; means the 
         directory &quot;shared&quot; and &quot;shared&quot; means all filenames (without extension) 
-        &quot;shared&quot;. The singe &#39;/&#39; means that a path must start at the root. &quot;/shared/&quot; 
+        &quot;shared&quot;. The single &#39;/&#39; means that a path must start at the root. &quot;/shared/&quot; 
         will find all directories named &quot;shared&quot; directly below the root.</p>
     <h3>
         Query Language</h3>
@@ -53,15 +51,23 @@
         You can state which field of a document to search. Curently the following 
         fields are recognized:</p>
 <ol>
-    <li>path: (p:)</li>
-    <li>content: (c:)</li>
-    <li>externals: (x: or e:)</li>
+    <li>p: (path:)</li>
+    <li>c: (content:) =&gt; the content of a file</li>
+    <li>x: or e: (externals: or &quot;svn:externals&quot;:) svn:external property of a directory</li>
+    <li>m: (message:) =&gt; log messages </li>
+    <li>t: (type: or &quot;svn:mime-type&quot;: ) =&gt; svn:mime-type property of a file</li>
+    <li>a: (author:)</li>
+    <li>&quot;svn:property&quot;: =&gt; searches a generic propertydurchsucht die benamste property</li>
 </ol>
 <p>
     If you don&#39;t specify a field the field of your parent group is used. If there is 
     no parent a heuristic is used to determine if the word could be a path. If the 
     heuristic fails first the path and then the content is searched.</p>
     <h4>
+        Shortcuts</h4>
+<p>
+        $binary finds binary files (no content indexed)</p>
+<h4>
         Grouping</h4>
     <p>
         You can create subexpressions by grouping them in parantheses (). For your 

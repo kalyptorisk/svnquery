@@ -118,7 +118,7 @@ namespace App_Code
             {
                 var headQuery = new BooleanQuery();
                 headQuery.Add(q, BooleanClause.Occur.MUST);
-                headQuery.Add(new TermQuery(new Term("rev_last", RevisionFilter.HeadString)), BooleanClause.Occur.MUST);
+                headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)), BooleanClause.Occur.MUST);
                 hits = searcher.Search(headQuery/*, new Sort("id")*/); // if we need to sort
             }
             else if (revFirst == RevisionFilter.AllString) // All Query

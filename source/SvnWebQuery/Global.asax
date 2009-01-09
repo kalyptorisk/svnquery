@@ -7,9 +7,6 @@
     void Application_Start(object sender, EventArgs e) 
     {
         string indexPath = WebConfigurationManager.AppSettings["IndexPath"];
-
-        string machine = Environment.MachineName.ToLowerInvariant();
-        if (indexPath == null && machine == "moppelchen") indexPath = @"C:\Users\Christian\Documents\_Entwicklung\SubversionSearch\index";
         Application["Index"] = new App_Code.Index(indexPath);
     }       
     

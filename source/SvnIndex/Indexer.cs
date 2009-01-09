@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -37,9 +38,6 @@ namespace SvnQuery
         const int headRevision = 99999999; // the longest revision svnlook is able to produce
 
         readonly IndexerArgs args;
-
-        readonly string index;
-        readonly string repository;
         readonly ISvnApi svn;
 
         readonly FinalizedDictionary finalized = new FinalizedDictionary();
@@ -78,30 +76,36 @@ namespace SvnQuery
 
         public Indexer(IndexerArgs args)
         {
+            PrintLogo();
+  
             this.args = args;
-            index = args.IndexPath;
-            repository = args.RepositoryUri;
             indexQueueLimit = new Semaphore(args.MaxThreads * 2, args.MaxThreads * 2);
-            ThreadPool.SetMaxThreads(args.MaxThreads / Environment.ProcessorCount + Environment.ProcessorCount, 1000);
-            ThreadPool.SetMinThreads(args.MaxThreads, 100);
-
-            svn = new SharpSvnApi(repository, args.User, args.Password);
-
-            args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+            ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
+            ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
 
             contentField = new Field(FieldName.Content, contentTokenStream);
             pathField = new Field(FieldName.Path, pathTokenStream);
             externalsField = new Field(FieldName.Externals, externalsTokenStream);
-            messageField = new Field(FieldName.Message, messageTokenStream);            
+            messageField = new Field(FieldName.Message, messageTokenStream);
+            
+            Console.WriteLine("Contacting repository " + args.RepositoryUri + " ...");
+            svn = new SharpSvnApi(args.RepositoryUri, args.User, args.Password);
+            args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+        }
+
+        static void PrintLogo()
+        {
+            AssemblyName name = Assembly.GetExecutingAssembly().GetName();
+            Console.WriteLine(name.Name + " " + name.Version);
         }
 
         public void Run()
         {
             bool create = args.Command == Command.Create;
-            int startRevision = create ? 1 : MaxIndexRevision.Get(index) + 1;
+            int startRevision = create ? 1 : MaxIndexRevision.Get(args.IndexPath) + 1;
             int stopRevision = args.MaxRevision;
 
-            Console.WriteLine("Indexing started for " + startRevision + " to " + stopRevision);
+            Console.WriteLine("Begin indexing from " + startRevision + " to " + stopRevision + " in " + args.IndexPath);
 
             indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
             indexWriter.SetRAMBufferSizeMB(32);
@@ -121,7 +125,7 @@ namespace SvnQuery
             }
             indexWriter.Close();
             indexWriter = null;
-            Console.WriteLine("Indexing finished for " + startRevision + " to " + stopRevision);
+            Console.WriteLine("Finished indexing. Index revision is now: " + stopRevision);
         }
 
         void QueueChange(PathChange change)

@@ -14,7 +14,7 @@ namespace SvnQuery
         public string Password;
         public Regex Filter; // pathes that match this regex are not indexed
         public int MaxRevision = 99999999;
-        public int MaxThreads = 16;
+        public int MaxThreads = 25;
         public int Optimize = 25; // number of revisions that lead to optimization
 
         public IndexerArgs(string[] args)

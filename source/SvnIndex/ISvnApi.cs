@@ -62,14 +62,14 @@ namespace SvnQuery
     public class PathData
     {
         public string Path;
-        public int FirstRevision;
+        public int RevisionFirst;
+        public int RevisionLast;
         public string Author;
         public DateTime Timestamp;
-        public bool IsDirectory;
-        public Dictionary<string, string> Properties = new Dictionary<string, string>();        
-        public string Text; // null if binary
+        public Dictionary<string, string> Properties = new Dictionary<string, string>();
         public int Size;
-        public int LastRevision;
+        public bool IsDirectory;
+        public string Text; // null if binary or directory
     } 
     
 }

@@ -35,7 +35,7 @@ namespace SvnQuery.Tests
         public void TokenStream()
         {
             ExternalsTokenStream ts = new ExternalsTokenStream();
-            ts.Reset("/Internals/shared/ shared" + Environment.NewLine + "/Internals/MCL/export mcl/dlls");
+            ts.SetText("/Internals/shared/ shared" + Environment.NewLine + "/Internals/MCL/export mcl/dlls");
 
             Token t = new Token();
 
@@ -57,7 +57,7 @@ namespace SvnQuery.Tests
         public void Empty()
         {
             ExternalsTokenStream ts = new ExternalsTokenStream();
-            ts.Reset("");
+            ts.SetText("");
             Assert.IsNull(ts.Next()); 
         }
 

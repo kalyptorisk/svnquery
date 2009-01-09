@@ -239,14 +239,14 @@ namespace SvnQuery.Tests
                 int rev_first = RevisionFilter.Head;
                 if (id.StartsWith("/revisions"))
                 {
-                    contentTokenStream.Reset("");
-                    externalsTokenStream.Reset("");
+                    contentTokenStream.SetText("");
+                    externalsTokenStream.SetText("");
                     rev_first = int.Parse(data[i, 2]);
                 }
                 else
                 {
-                    contentTokenStream.Reset(data[i, 2]);
-                    externalsTokenStream.Reset(data[i, 3]);
+                    contentTokenStream.SetText(data[i, 2]);
+                    externalsTokenStream.SetText(data[i, 3]);
                 }
                 field_rev_first.SetValue(RevisionFieldValue(rev_first));
                 field_rev_last.SetValue(HeadRevisionFieldValue());
@@ -259,8 +259,8 @@ namespace SvnQuery.Tests
                     // We have to rebuild/reparse it from the scratch
                     writer.DeleteDocuments(new Term("id", id));
                     pathTokenStream.Reset(id);
-                    contentTokenStream.Reset("");
-                    externalsTokenStream.Reset("");
+                    contentTokenStream.SetText("");
+                    externalsTokenStream.SetText("");
                     int rev_last = int.Parse(data[i, 3]);
                     field_rev_last.SetValue(RevisionFieldValue(rev_last));
                     id += "@" + rev_first;

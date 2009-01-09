@@ -37,7 +37,7 @@ namespace SvnQuery
             SetReader(new StringReader(externals));
         }
 
-        public bool Reset(string externals)
+        public bool SetText(string externals)
         {
             if (string.IsNullOrEmpty(externals)) return false;
             SetReader(new StringReader(externals));

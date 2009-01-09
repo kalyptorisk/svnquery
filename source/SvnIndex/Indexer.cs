@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -53,14 +52,6 @@ namespace SvnQuery
         readonly Semaphore indexQueueLimit;
         int indexedDocuments;
 
-
-        readonly HashSet<string> createdDocs = new HashSet<string>();
-        readonly HashSet<string> deletedDocs = new HashSet<string>();
-        readonly SvnLookProcessor svnlook = new SvnLookProcessor();
-        readonly SvnPathInfoReader svninfo;
-        int obsolete_global_revision;
-        bool treeWalking;
-
         // reused objects for faster indexing
         readonly Document doc = new Document();
         readonly Term idTerm = new Term("id", "");
@@ -73,8 +64,8 @@ namespace SvnQuery
         readonly Field contentField;
         readonly Field externalsField;
         readonly PathTokenStream pathTokenStream;
-        readonly ContentFromRepository contentTokenStream;
-        readonly ExternalsFromRepository externalsTokenStream;
+        readonly ContentTokenStream contentTokenStream = new ContentTokenStream();
+        readonly ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
 
         public enum Command
         {
@@ -92,14 +83,10 @@ namespace SvnQuery
 
             svn = new SharpSvnApi(repository, args.User, args.Password);
 
-            obsolete_global_revision = args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
-
-            svninfo = new SvnPathInfoReader(repository);
+            args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
 
             doc = new Document();
             pathTokenStream = new PathTokenStream("");
-            contentTokenStream = new ContentFromRepository(repository);
-            externalsTokenStream = new ExternalsFromRepository(repository);
             contentField = new Field("content", contentTokenStream);
             externalsField = new Field("externals", externalsTokenStream);
             idTerm = new Term("id", "");
@@ -130,10 +117,11 @@ namespace SvnQuery
             pendingReads.Decrement();
             indexThread.Join();
 
-            //WalkRevisions(startRevision, revision);
-
-            if (create || stopRevision % args.Optimise == 0 || stopRevision - startRevision > args.Optimise)
+            if (create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize)
+            {
+                Console.WriteLine("Optimizing index ...");
                 indexWriter.Optimize();
+            }
             indexWriter.Close();
             indexWriter = null;
             Console.WriteLine("Indexing finished for " + startRevision + " to " + stopRevision);
@@ -173,8 +161,8 @@ namespace SvnQuery
 
             PathData data = svn.GetPathData(change.Path, change.Revision);
             if (data == null) return;
-            data.FirstRevision = change.Revision;
-            data.LastRevision = headRevision;
+            data.RevisionFirst = change.Revision;
+            data.RevisionLast = headRevision;
             if (data.IsDirectory && change.IsCopy)
             {
                 svn.ForEachChild(change.Path, change.Revision, QueueChange);
@@ -187,7 +175,7 @@ namespace SvnQuery
             PathData data = svn.GetPathData(change.Path, change.Revision - 1);
             if (data == null) return;
 
-            finalized.Finalize(change.Path, data.FirstRevision);
+            finalized.Finalize(change.Path, data.RevisionFirst);
             QueueIndexDocument(data);            
         }
 
@@ -212,7 +200,6 @@ namespace SvnQuery
                     PathData data;
                     lock (indexQueue)
                     {
-                        Console.WriteLine("QC: " + indexQueue.Count);
                         if (indexQueue.Count == 0)
                         {
                             indexQueueHasData.Reset();
@@ -229,102 +216,33 @@ namespace SvnQuery
 
         void IndexDocument(PathData data)
         {
-            Console.WriteLine("{0}\t{1}\t{2}", data.FirstRevision, data.LastRevision, data.Path);
-        }
+            Console.WriteLine("{0,8} {1,8} {2}", ++indexedDocuments, data.RevisionFirst, data.Path);
 
+            Term id = idTerm.CreateTerm(data.Path + "@" + data.RevisionFirst);
 
-        static bool IsValidPath(string path) // Path needs Processing
-        {
-            return !string.IsNullOrEmpty(path) && !path.ToLowerInvariant().Contains("/tags/");
-        }
+            indexWriter.DeleteDocuments(id);
 
-        void PrintProgress(char action, string path)
-        {
-            lock (this)
+            idField.SetValue(id.Text());
+            pathTokenStream.Reset(data.Path);
+            revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
+            revLastField.SetValue(data.RevisionLast.ToString("d8"));
+            authorField.SetValue(data.Author);
+            timestampField.SetValue(data.Timestamp.ToString("yyyy-MM-dd hh:mm"));
+
+            doc.RemoveFields(sizeField.Name()); 
+            if (!data.IsDirectory)
             {
-                Console.Write(action);
-                Console.Write((++indexedDocuments).ToString().PadLeft(8));
-                Console.Write(obsolete_global_revision.ToString().PadLeft(8));
-                Console.Write(" ");
-                Console.WriteLine(path);
-            }
-        }
-
-        void CreateDocument(string path)
-        {
-            if (!IsValidPath(path) || createdDocs.Contains(path)) return;
-            createdDocs.Add(path);
-
-            if (path[path.Length - 1] == '/' && !treeWalking)
-            {
-                treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + obsolete_global_revision, CreateDocument);
-                    // need "/" to prefix pathes            
-                treeWalking = false;
-            }
-            PrintProgress('A', path);
-            AddDocument(svninfo.ReadPathInfo(path, obsolete_global_revision), headRevision);
-        }
-
-        void UpdateDocument(string path)
-        {
-            if (!IsValidPath(path)) return;
-            PrintProgress('U', path);
-            SvnPathInfo info = svninfo.ReadPathInfo(path, obsolete_global_revision - 1);
-            if (info != null) // atomic replace or copy and modify
-            {
-                indexWriter.DeleteDocuments(idTerm.CreateTerm(path));
-                AddDocument(info, obsolete_global_revision - 1);
-            }
-            AddDocument(svninfo.ReadPathInfo(path, obsolete_global_revision), headRevision);
-        }
-
-        void DeleteDocument(string path)
-        {
-            if (!IsValidPath(path) || deletedDocs.Contains(path)) return;
-
-            SvnPathInfo pathInfo = svninfo.ReadPathInfo(path, obsolete_global_revision - 1);
-            if (pathInfo == null) return; // atomic replace
-
-            if (path[path.Length - 1] == '/' && !treeWalking)
-            {
-                treeWalking = true;
-                svnlook.Run("tree " + repository + " \"" + path + "\" --full-paths -r" + (obsolete_global_revision - 1), DeleteDocument);
-                    // need "/" to prefix pathes            
-                treeWalking = false;
-            }
-
-            PrintProgress('D', path);
-            indexWriter.DeleteDocuments(idTerm.CreateTerm(path));
-            deletedDocs.Add(path);
-            AddDocument(pathInfo, obsolete_global_revision - 1);
-        }
-
-        void AddDocument(SvnPathInfo info, int revLast)
-        {
-            idField.SetValue(revLast == headRevision ? info.path : info.path + ":" + info.revision);
-            pathTokenStream.Reset(info.path);
-            revFirstField.SetValue(info.revision.ToString("d8"));
-            revLastField.SetValue(revLast.ToString("d8"));
-            authorField.SetValue(info.author);
-            timestampField.SetValue(info.timestamp.ToString("yyyy-MM-dd hh:mm"));
-
-            doc.RemoveFields(sizeField.Name());
-            if (info.size >= 0)
-            {
-                sizeField.SetValue(PackedSizeConverter.ToSortableString(info.size));
+                sizeField.SetValue(PackedSizeConverter.ToSortableString(data.Size));
                 doc.Add(sizeField);
             }
 
-            string revisionString = info.revision.ToString();
-
             doc.RemoveFields(contentField.Name());
-            if (contentTokenStream.Reset(info.path, revisionString))
+            if (contentTokenStream.SetText(data.Text))
                 doc.Add(contentField);
 
-            doc.RemoveFields(externalsField.Name());
-            if (externalsTokenStream.Reset(info.path, revisionString))
-                doc.Add(externalsField);
+            //doc.RemoveFields(externalsField.Name());
+            //if (externalsTokenStream.SetText(data.Properties["svn:externals"]))
+            //    doc.Add(externalsField);
 
             indexWriter.AddDocument(doc);
         }

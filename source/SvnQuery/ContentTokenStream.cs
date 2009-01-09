@@ -46,7 +46,7 @@ namespace SvnQuery
             SetReader(new StringReader(content));
         }
 
-        public bool Reset(string content)
+        public bool SetText(string content)
         {
             if (string.IsNullOrEmpty(content)) return false;
             SetReader(new StringReader(content));

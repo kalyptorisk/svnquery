@@ -156,8 +156,8 @@ namespace SvnQuery
                 data.Size = (int)info.RepositorySize;
                 data.Author = info.LastChangeAuthor;
                 data.Timestamp = info.LastChangeTime;
-                data.FirstRevision = (int)info.LastChangeRevision;
-                data.LastRevision = revision;
+                data.RevisionFirst = (int)info.LastChangeRevision;
+                data.RevisionLast = revision;
                 data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
 
                 Collection<SvnPropertyListEventArgs> pc;

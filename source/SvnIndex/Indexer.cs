@@ -81,7 +81,7 @@ namespace SvnQuery
             this.args = args;
             index = args.IndexPath;
             repository = args.RepositoryUri;
-            indexQueueLimit = new Semaphore(args.MaxThreads + 1, args.MaxThreads + 1);
+            indexQueueLimit = new Semaphore(args.MaxThreads * 2, args.MaxThreads * 2);
             ThreadPool.SetMaxThreads(args.MaxThreads / Environment.ProcessorCount + Environment.ProcessorCount, 1000);
             ThreadPool.SetMinThreads(args.MaxThreads, 100);
 
@@ -92,7 +92,7 @@ namespace SvnQuery
             contentField = new Field(FieldName.Content, contentTokenStream);
             pathField = new Field(FieldName.Path, pathTokenStream);
             externalsField = new Field(FieldName.Externals, externalsTokenStream);
-            messageField = new Field(FieldName.Message, messageTokenStream);
+            messageField = new Field(FieldName.Message, messageTokenStream);            
         }
 
         public void Run()
@@ -226,6 +226,7 @@ namespace SvnQuery
             revLastField.SetValue(data.RevisionLast.ToString("d8"));
             authorField.SetValue(data.Author);
             timestampField.SetValue(data.Timestamp.ToString("yyyy-MM-dd hh:mm"));
+            messageTokenStream.SetText(svn.GetLogMessage(data.RevisionFirst)); 
 
             if (!data.IsDirectory)
             {
@@ -261,7 +262,7 @@ namespace SvnQuery
                 }
                 else
                 {
-                    doc.Add(new Field(prop.Key, prop.Value, Field.Store.NO, Field.Index.TOKENIZED));   
+                    doc.Add(new Field(prop.Key, new ContentTokenStream(prop.Value, false)));   
                 }
             }
         }

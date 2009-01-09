@@ -30,6 +30,7 @@ namespace SvnQuery
         readonly Uri uri;
         readonly string user;
         readonly string password;
+        readonly Dictionary<int, string> messages = new Dictionary<int, string>();
         readonly List<SvnClient> clientPool = new List<SvnClient>();        
 
         public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
@@ -78,9 +79,24 @@ namespace SvnQuery
 
         public string GetLogMessage(int revision)
         {
-            // Messages should be added from the onchange method (threadsafe)
-            // if a message is not ready it will be fetched on demand
-            throw new NotImplementedException();
+            string message;
+            lock (messages) messages.TryGetValue(revision, out message);
+            if (message == null)
+            {
+                SvnClient client = AllocSvnClient();
+                try
+                {
+                    SvnUriTarget target = new SvnUriTarget(uri);
+                    if (!client.GetRevisionProperty(target, "svn:log", out message)) 
+                        message = "";
+                }
+                finally
+                {
+                    FreeSvnClient(client);
+                }
+                lock (messages) messages[revision] = message;
+            }
+            return message;
         }
 
         public void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback)
@@ -92,13 +108,15 @@ namespace SvnQuery
                 args.StrictNodeHistory = false;
                 args.RetrieveChangedPaths = true;
                 client.Log(uri, args, delegate(object s, SvnLogEventArgs e)
-                {                    
-                    if (e == null || e.ChangedPaths == null) return;
+                {
+                    int revision = (int) e.Revision;
+                    lock (messages) messages[revision] = e.LogMessage ?? "";
+                    if (e.ChangedPaths == null) return;
                     foreach (var path in e.ChangedPaths)
                     {
                         PathChange change = new PathChange
                                                 {
-                                                    Revision = (int)e.Revision,
+                                                    Revision = revision,
                                                     Path = path.Path,
                                                     IsCopy = path.CopyFromPath != null,
                                                 };
@@ -154,7 +172,7 @@ namespace SvnQuery
                 data = new PathData();
                 data.Path = path;
                 data.Size = (int)info.RepositorySize;
-                data.Author = info.LastChangeAuthor;
+                data.Author = info.LastChangeAuthor.ToLowerInvariant();
                 data.Timestamp = info.LastChangeTime;
                 data.RevisionFirst = (int)info.LastChangeRevision;
                 data.RevisionLast = revision;
@@ -166,7 +184,7 @@ namespace SvnQuery
                 {
                     foreach (var property in proplist.Properties)
                     {
-                        data.Properties.Add(property.Key, property.StringValue);
+                        data.Properties.Add(property.Key, property.StringValue.ToLowerInvariant());
                     }
                 }
 

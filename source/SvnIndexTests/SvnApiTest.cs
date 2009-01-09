@@ -49,7 +49,7 @@ namespace SvnIndexTests
         {
             var list = new List<string>();
             api.ForEachChange(1, 1, change => list.Add(api.GetPathData(change.Path, change.Revision).Author));
-            Assert.That(list, Has.All.EqualTo("Christian"));
+            Assert.That(list, Has.All.EqualTo("christian"));
         }
 
         [Test]
@@ -151,8 +151,8 @@ namespace SvnIndexTests
         {
             PathData data = api.GetPathData("/Folder/Second", 17);
             Assert.That(data.Properties, Has.Count(3));
-            Assert.That(data.Properties["cr:test"], Is.EqualTo("Nur ein Test"));
-            Assert.That(data.Properties["cr:test2"], Is.EqualTo("Another test"));
+            Assert.That(data.Properties["cr:test"], Is.EqualTo("nur ein test"));
+            Assert.That(data.Properties["cr:test2"], Is.EqualTo("another test"));
             Assert.That(data.Properties["cr:test3"], Is.EqualTo("more tests"));            
         }
 

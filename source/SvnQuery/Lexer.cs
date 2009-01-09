@@ -79,18 +79,22 @@ namespace SvnQuery
                         if (c == '"')
                         {
                             escaping = false;
-                            if (text.Length > 0) break;
                             continue;                            
                         }                            
                     }
                     else
                     {
+                        if (c == '"')
+                        {
+                            escaping = true;
+                            continue;
+                        }
                         Debug.Assert(text.Length > 0);
                         if (c == ':')
                         {
                             return new FieldToken { Text = text.ToString() };                            
                         }
-                        if (char.IsWhiteSpace(c) || "()+#-\"".IndexOf(c) >= 0)
+                        if (char.IsWhiteSpace(c) || "()+#-".IndexOf(c) >= 0)
                         {
                             --offset;
                             break;

@@ -122,7 +122,7 @@ namespace SvnQuery
             return terms.ToArray();
         }
 
-        public Query ParseContentTerm(string content)
+        public Query ParseContentTerm(string field, string content)
         {
             var q = new MultiPhraseQuery();
             bool hasTerm = false;
@@ -130,8 +130,7 @@ namespace SvnQuery
             TokenStream ts = new ContentTokenStream(content, true);
             for (Token token = ts.Next(); token != null; token = ts.Next(token))
             {
-                //q.Add(new Term(FieldName.Content, token.TermText()));
-                Term[] terms = WildcardContentTerms(new Term(FieldName.Content, token.TermText()));
+                Term[] terms = WildcardContentTerms(new Term(field, token.TermText()));
                 if (terms.Length > 0)
                 {
                     q.Add(terms);
@@ -139,6 +138,26 @@ namespace SvnQuery
                 }
             }            
             return (hasTerm) ? q : null;
+        }
+
+        public Query ParseContentOrPathTerm(string term)
+        {
+            var path = ParsePathTerm(term);
+
+            // Heuristic to detect path terms, scan for 
+            if (Regex.IsMatch(term, @"(^/|\.)|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
+                return path;
+
+            var content = ParseContentTerm("content", term);
+            if (path != null && content != null)
+            {
+                var q = new BooleanQuery();
+                q.Add(path, BooleanClause.Occur.SHOULD);
+                q.Add(content, BooleanClause.Occur.SHOULD);
+                q.SetMinimumNumberShouldMatch(1);
+                return q;
+            }
+            return path ?? content;
         }
 
         static Query ParseExternalsTerm(string externals)
@@ -157,7 +176,7 @@ namespace SvnQuery
 
             var bq = new BooleanQuery();
             Term eop = new Term(FieldName.Externals, ExternalsTokenStream.Eol);
-            for (int i = 0; i++ < parts.Count;)
+            for (int i = 0; i++ < parts.Count; )
             {
                 var q = new PhraseQuery();
                 q.Add(eop);
@@ -171,49 +190,45 @@ namespace SvnQuery
             return bq;
         }
 
-        public Query ParseAuthorTerm(string term)
+        public static Query ParseAuthorTerm(string author)
         {
-            return new TermQuery(new Term(FieldName.Author, term));
+            return new TermQuery(new Term(FieldName.Author, author));
         }
 
-        public Query ParseContentOrPathTerm(string term)
+        public static Query ParseTypeTerm(string type)
         {
-            var path = ParsePathTerm(term);
-
-            // Heuristic to detect path terms, scan for 
-            if (Regex.IsMatch(term, @"(^/|\.)|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
-                return path;
-
-            var content = ParseContentTerm(term);
-            if (path != null && content != null)
-            {
-                var q = new BooleanQuery();
-                q.Add(path, BooleanClause.Occur.SHOULD);
-                q.Add(content, BooleanClause.Occur.SHOULD);
-                q.SetMinimumNumberShouldMatch(1);
-                return q;
-            }
-            return path ?? content;
+            return new WildcardQuery(new Term(FieldName.Type, type));
         }
 
         public Query ParseTerm(string term, string field)
         {
             if (field == null) return ParseContentOrPathTerm(term);
 
-            switch (field[0])
+            switch (field)
             {
-                case 'a':
+                case "a":
+                case "author":
                     return ParseAuthorTerm(term);
-                case 'c':
-                    return ParseContentTerm(term);
-                case 'p':
+                case "c":
+                case "content":
+                    return ParseContentTerm(FieldName.Content, term);
+                case "p":
+                case "path":
                     return ParsePathTerm(term);
-                case 'e':
-                case 'x':
+                case "e":
+                case "x":
+                case "externals":
                     return ParseExternalsTerm(term);
+                case "m":
+                case "message":
+                    return ParseContentTerm(FieldName.Message, term);
+                case "t":
+                case "type":
+                case "mime-type":
+                    return ParseTypeTerm(term);
+                default:
+                    return ParseContentTerm(field.Replace('_', ':'), term);
             }
-
-            throw new Exception("Unknown field \"" + field + ":\"");
         }
 
         /// <summary>

@@ -18,6 +18,7 @@
 
 using Lucene.Net.Search;
 using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 
 namespace SvnQuery.Tests
 {
@@ -66,12 +67,21 @@ namespace SvnQuery.Tests
         public void EmbeddedEscaping()
         {
             var l = new Lexer("hulle\"bli bla blub\"bulle");
+            Assert.AreEqual("hullebli bla blubbulle", NextTermToken(l));
 
+            l = new Lexer("hulle \"bli bla blub\" bulle"); // note the spaces
             Assert.AreEqual("hulle", NextTermToken(l));
             Assert.AreEqual("bli bla blub", NextTermToken(l));
             Assert.AreEqual("bulle", NextTermToken(l));
         }
 
+        [Test]
+        public void PropertyField()
+        {
+            var l = new Lexer("\"svn:ignore\":bla");
+            Assert.That(NextFieldToken(l), Is.EqualTo("svn:ignore"));
+            Assert.That(NextTermToken(l), Is.EqualTo("bla"));
+        }
 
         [Test]
         public void EmbeddedOperator()

@@ -3,7 +3,6 @@
 using NUnit.Framework;
 
 using SvnQuery;
-using System;
 
 namespace SvnIndexTests
 {
@@ -15,7 +14,7 @@ namespace SvnIndexTests
         public void RepositoryNeedsAuthentication_Correct_Success()
         {
             SharpSvnApi api = new SharpSvnApi("http://sharpsvn.open.collab.net/svn/sharpsvn/trunk", "crodemeyer", "*********");
-            long r = api.GetYoungestRevision();
+            api.GetYoungestRevision();
             Assert.That(true);
         }
 
@@ -25,7 +24,7 @@ namespace SvnIndexTests
             try
             {
                 SharpSvnApi api = new SharpSvnApi("http://sharpsvn.open.collab.net/svn/sharpsvn/trunk", "crodemeyer", "wrong");
-                long r = api.GetYoungestRevision();
+                api.GetYoungestRevision();
             }
             catch 
             {

@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,12 +18,13 @@
 
 using System.IO;
 using Lucene.Net.Analysis;
+
 namespace SvnQuery
 {
     /// <summary>
     /// Provides only the url components of a svn:externals property, divided by eol tokens
     /// </summary>
-    public class ExternalsTokenStream: TokenStream
+    public class ExternalsTokenStream : TokenStream
     {
         public const int MaxTokenLength = 250;
         public const string Eol = ":";
@@ -37,7 +38,7 @@ namespace SvnQuery
         {}
 
         public ExternalsTokenStream(string externals)
-        {       
+        {
             SetReader(new StringReader(externals));
         }
 
@@ -50,7 +51,7 @@ namespace SvnQuery
 
         public bool IsEmpty
         {
-            get {return reader == null;}
+            get { return reader == null; }
         }
 
         protected void SetReader(TextReader r)
@@ -83,7 +84,7 @@ namespace SvnQuery
                         return null;
                     }
                     line = line.Trim();
-                    offset = 0;                                     
+                    offset = 0;
                 }
 
                 if (offset >= line.Length)
@@ -104,15 +105,15 @@ namespace SvnQuery
                 if (c == '\\') c = '/';
                 if (c == '/')
                 {
-                    if (length > 0) break; 
+                    if (length > 0) break;
                     continue;
                 }
                 if (char.IsWhiteSpace(c))
-                {                    
+                {
                     offset = line.Length; // skip to end of line
                     if (length > 0) break;
                     continue;
-                }               
+                }
 
                 buffer[length++] = c;
                 if (length >= MaxTokenLength) break;
@@ -120,7 +121,5 @@ namespace SvnQuery
             token.SetTermLength(length);
             return token;
         }
-
-       
     }
 }

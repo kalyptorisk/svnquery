@@ -18,11 +18,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SvnQuery
 {
-   
     public interface ISvnApi
     {
         int GetYoungestRevision();
@@ -41,7 +39,10 @@ namespace SvnQuery
 
     public enum Change
     {
-        Add, Modify, Delete, Replace
+        Add,
+        Modify,
+        Delete,
+        Replace
     }
 
     public class PathChange
@@ -56,7 +57,7 @@ namespace SvnQuery
         {
             return Change + " " + Path + "@" + Revision;
         }
-#endif 
+#endif
     }
 
     public class PathData
@@ -70,6 +71,5 @@ namespace SvnQuery
         public int Size;
         public bool IsDirectory;
         public string Text; // null if binary or directory
-    } 
-    
+    }
 }

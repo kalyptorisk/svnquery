@@ -17,11 +17,10 @@
 #endregion
 
 using System;
-using SharpSvn;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using SharpSvn;
 
 namespace SvnQuery
 {
@@ -31,7 +30,7 @@ namespace SvnQuery
         readonly string user;
         readonly string password;
         readonly Dictionary<int, string> messages = new Dictionary<int, string>();
-        readonly List<SvnClient> clientPool = new List<SvnClient>();        
+        readonly List<SvnClient> clientPool = new List<SvnClient>();
 
         public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
         {}
@@ -58,7 +57,11 @@ namespace SvnQuery
 
             if (client == null) client = new SvnClient();
             client.Authentication.UserNameHandlers += (s, e) => e.UserName = user;
-            client.Authentication.UserNamePasswordHandlers += (s, e) => {e.UserName = user; e.Password = password;};
+            client.Authentication.UserNamePasswordHandlers += (s, e) =>
+            {
+                e.UserName = user;
+                e.Password = password;
+            };
             return client;
         }
 
@@ -87,7 +90,7 @@ namespace SvnQuery
                 try
                 {
                     SvnUriTarget target = new SvnUriTarget(uri);
-                    if (!client.GetRevisionProperty(target, "svn:log", out message)) 
+                    if (!client.GetRevisionProperty(target, "svn:log", out message))
                         message = "";
                 }
                 finally
@@ -115,17 +118,25 @@ namespace SvnQuery
                     foreach (var path in e.ChangedPaths)
                     {
                         PathChange change = new PathChange
-                                                {
-                                                    Revision = revision,
-                                                    Path = path.Path,
-                                                    IsCopy = path.CopyFromPath != null,
-                                                };
+                                            {
+                                                Revision = revision,
+                                                Path = path.Path,
+                                                IsCopy = path.CopyFromPath != null,
+                                            };
                         switch (path.Action)
                         {
-                            case SvnChangeAction.Add:     change.Change = Change.Add;     break;
-                            case SvnChangeAction.Modify:  change.Change = Change.Modify;  break;
-                            case SvnChangeAction.Delete:  change.Change = Change.Delete;  break;
-                            case SvnChangeAction.Replace: change.Change = Change.Replace; break;
+                            case SvnChangeAction.Add:
+                                change.Change = Change.Add;
+                                break;
+                            case SvnChangeAction.Modify:
+                                change.Change = Change.Modify;
+                                break;
+                            case SvnChangeAction.Delete:
+                                change.Change = Change.Delete;
+                                break;
+                            case SvnChangeAction.Replace:
+                                change.Change = Change.Replace;
+                                break;
                             default:
                                 throw new Exception("Invalid action on " + path.Path + "@" + e.Revision);
                         }
@@ -149,7 +160,13 @@ namespace SvnQuery
                 client.List(target, args, delegate(object s, SvnListEventArgs e)
                 {
                     if (!string.IsNullOrEmpty(e.Path))
-                      callback(new PathChange {Change = Change.Add, Path = e.BasePath + "/" + e.Path , IsCopy = false, Revision = revision});
+                        callback(new PathChange
+                                 {
+                                     Change = Change.Add,
+                                     Path = e.BasePath + "/" + e.Path,
+                                     IsCopy = false,
+                                     Revision = revision
+                                 });
                 });
             }
             finally
@@ -171,10 +188,10 @@ namespace SvnQuery
 
                 data = new PathData();
                 data.Path = path;
-                data.Size = (int)info.RepositorySize;
+                data.Size = (int) info.RepositorySize;
                 data.Author = info.LastChangeAuthor.ToLowerInvariant();
                 data.Timestamp = info.LastChangeTime;
-                data.RevisionFirst = (int)info.LastChangeRevision;
+                data.RevisionFirst = (int) info.LastChangeRevision;
                 data.RevisionLast = revision;
                 data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
 
@@ -190,19 +207,21 @@ namespace SvnQuery
 
                 string mime;
                 data.Properties.TryGetValue("svn:mime-type", out mime);
-                const int MaxFileSize = 128 * 1024 * 1024;
-                if (!data.IsDirectory && (string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) && data.Size < MaxFileSize)
+                const int MaxFileSize = 128*1024*1024;
+                if (!data.IsDirectory && (string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) &&
+                    data.Size < MaxFileSize)
                 {
                     MemoryStream stream = new MemoryStream(data.Size);
                     client.Write(target, stream);
                     stream.Position = 0;
-                    data.Text = new StreamReader(stream).ReadToEnd(); // default utf-8 encoding, does not work with codepages
+                    data.Text = new StreamReader(stream).ReadToEnd();
+                        // default utf-8 encoding, does not work with codepages
                     stream.Dispose();
                 }
             }
             catch (SvnException x)
             {
-                if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;                
+                if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;
             }
             finally
             {
@@ -210,6 +229,5 @@ namespace SvnQuery
             }
             return data;
         }
-
     }
 }

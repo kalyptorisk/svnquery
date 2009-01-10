@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@
 #endregion
 
 using System.Web.Configuration;
+using Lucene.Net.Documents;
 using SvnQuery;
 
 namespace App_Code
@@ -27,13 +28,13 @@ namespace App_Code
 
         static Hit()
         {
-           repositoryUrl = WebConfigurationManager.AppSettings["RepositoryUrl"];
+            repositoryUrl = WebConfigurationManager.AppSettings["RepositoryUrl"];
         }
 
-        readonly Lucene.Net.Documents.Document doc;
+        readonly Document doc;
         readonly string path;
 
-        public Hit(Lucene.Net.Documents.Document doc)
+        public Hit(Document doc)
         {
             this.doc = doc;
             path = doc.Get("id").Split(':')[0];
@@ -107,9 +108,5 @@ namespace App_Code
                 return summary;
             }
         }
-
-
-
     }
-
 }

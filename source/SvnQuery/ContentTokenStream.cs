@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ namespace SvnQuery
     {
         const int MinTokenLength = 1;
         const int MaxTokenLength = 80;
-     
+
         TextReader reader;
         string line;
         int offset;
@@ -63,7 +63,7 @@ namespace SvnQuery
             reader = r;
             line = "";
             offset = 0;
-        }        
+        }
 
         public override Token Next(Token token)
         {
@@ -89,7 +89,7 @@ namespace SvnQuery
                     }
                     offset = 0;
                 }
-                char c = char.ToLowerInvariant(line[offset++]);                
+                char c = char.ToLowerInvariant(line[offset++]);
                 if (char.IsLetterOrDigit(c) || c == '_' || (includeWildcards && (c == '*' || c == '?')))
                 {
                     if (length < MaxTokenLength) buffer[length++] = c;
@@ -100,7 +100,5 @@ namespace SvnQuery
             token.SetTermLength(length);
             return token;
         }
-      
     }
-
 }

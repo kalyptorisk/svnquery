@@ -1,13 +1,13 @@
 ﻿#region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,14 +24,14 @@ namespace SvnQuery
     public static class PackedSizeConverter
     {
         const int kb = 1024;
-        const int mb = 1024 * 1024;
-        const int gb = 1024 * 1024 * 1024;
+        const int mb = 1024*1024;
+        const int gb = 1024*1024*1024;
 
         public static string ToSortableString(int size)
         {
             if (size < kb) return "b" + size.ToString("X3");
-            if (size < mb) return "k" + (size / kb).ToString("X3");
-            if (size < gb) return "m" + (size / mb).ToString("X3");
+            if (size < mb) return "k" + (size/kb).ToString("X3");
+            if (size < gb) return "m" + (size/mb).ToString("X3");
 
             return "z001";
         }
@@ -39,10 +39,10 @@ namespace SvnQuery
         public static string ToString(int size)
         {
             if (size < kb) return size + "b";
-            if (size < mb) return (size / kb) + "kb";
-            if (size < gb) return (size / mb) + "mb"; 
+            if (size < mb) return (size/kb) + "kb";
+            if (size < gb) return (size/mb) + "mb";
 
-            return (size / gb) + "gb";                        
+            return (size/gb) + "gb";
         }
 
         public static int FromSortableString(string size)
@@ -50,10 +50,14 @@ namespace SvnQuery
             int v = int.Parse(size.Substring(1), NumberStyles.HexNumber);
             switch (size[0])
             {
-                case 'b': return v;
-                case 'k': return v*kb;
-                case 'm': return v*mb;
-                case 'z': return v*gb;
+                case 'b':
+                    return v;
+                case 'k':
+                    return v*kb;
+                case 'm':
+                    return v*mb;
+                case 'z':
+                    return v*gb;
             }
             throw new ArgumentException("size is not a packed size");
         }
@@ -62,6 +66,5 @@ namespace SvnQuery
         {
             return ToString(FromSortableString(size));
         }
-
     }
 }

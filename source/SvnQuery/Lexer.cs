@@ -1,13 +1,13 @@
 ﻿#region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,18 +35,26 @@ namespace SvnQuery
             text = new StringBuilder();
         }
 
-        public class Token { }
-        public class LeftToken : Token { }
-        public class RightToken : Token { }
+        public class Token
+        {}
+
+        public class LeftToken : Token
+        {}
+
+        public class RightToken : Token
+        {}
+
         public class OperatorToken : Token
         {
             public BooleanClause.Occur Clause;
         }
+
         public class TermToken : Token
         {
             public string Text;
         }
-        public class FieldToken: Token
+
+        public class FieldToken : Token
         {
             public string Text;
         }
@@ -62,9 +70,9 @@ namespace SvnQuery
                 if (text.Length == 0 && !escaping)
                 {
                     if (char.IsWhiteSpace(c)) continue;
-                    if (c == '+') return new OperatorToken { Clause = BooleanClause.Occur.MUST };
-                    if (c == '#') return new OperatorToken { Clause = BooleanClause.Occur.SHOULD};
-                    if (c == '-') return new OperatorToken { Clause = BooleanClause.Occur.MUST_NOT};
+                    if (c == '+') return new OperatorToken {Clause = BooleanClause.Occur.MUST};
+                    if (c == '#') return new OperatorToken {Clause = BooleanClause.Occur.SHOULD};
+                    if (c == '-') return new OperatorToken {Clause = BooleanClause.Occur.MUST_NOT};
                     if (c == '(') return new LeftToken();
                     if (c == ')') return new RightToken();
                     if (c == '"')
@@ -79,8 +87,8 @@ namespace SvnQuery
                         if (c == '"')
                         {
                             escaping = false;
-                            continue;                            
-                        }                            
+                            continue;
+                        }
                     }
                     else
                     {
@@ -92,7 +100,7 @@ namespace SvnQuery
                         Debug.Assert(text.Length > 0);
                         if (c == ':')
                         {
-                            return new FieldToken { Text = text.ToString() };                            
+                            return new FieldToken {Text = text.ToString()};
                         }
                         if (char.IsWhiteSpace(c) || "()+#-".IndexOf(c) >= 0)
                         {
@@ -103,8 +111,7 @@ namespace SvnQuery
                     text.Append(c);
                 }
             }
-            return text.Length == 0 ? null : new TermToken { Text = text.ToString() };
+            return text.Length == 0 ? null : new TermToken {Text = text.ToString()};
         }
-
     }
 }

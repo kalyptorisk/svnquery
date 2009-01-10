@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,11 +17,11 @@
 #endregion
 
 using System;
-using Lucene.Net.Index;
-using Lucene.Net.Search;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
 using SvnQuery;
 
 namespace App_Code
@@ -59,7 +59,7 @@ namespace App_Code
             {
                 IndexSearcher searcher = new IndexSearcher(index);
                 int revision = MaxIndexRevision.Get(searcher.Reader);
-                searcher.Search(new TermQuery(new Term("path", "warmup")));                
+                searcher.Search(new TermQuery(new Term("path", "warmup")));
                 if (indexSearcher == null)
                 {
                     indexSearcher = searcher;
@@ -81,7 +81,7 @@ namespace App_Code
         }
 
         public QueryResult Query(string query, string revFirst, string revLast)
-        {            
+        {
             CachedQueryResult result;
             string key = query + revFirst + revLast;
             lock (cache) cache.TryGetValue(key, out result);
@@ -112,14 +112,15 @@ namespace App_Code
             // Optimizations:
             // don't use the revision filter for head queries or all queries
 
-            Hits hits;            
+            Hits hits;
             Query q = p.Parse(query);
             if (revFirst == RevisionFilter.HeadString) // Head Query
             {
                 var headQuery = new BooleanQuery();
                 headQuery.Add(q, BooleanClause.Occur.MUST);
-                headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)), BooleanClause.Occur.MUST);
-                hits = searcher.Search(headQuery/*, new Sort("id")*/); // if we need to sort
+                headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)),
+                              BooleanClause.Occur.MUST);
+                hits = searcher.Search(headQuery /*, new Sort("id")*/); // if we need to sort
             }
             else if (revFirst == RevisionFilter.AllString) // All Query
             {
@@ -127,7 +128,7 @@ namespace App_Code
             }
             else // Revision Query
             {
-               hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
+                hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
             }
 
             return new QueryResult(sw, revision, searcher.MaxDoc(), hits);
@@ -169,6 +170,5 @@ namespace App_Code
                 }
             }
         }
-
     }
 }

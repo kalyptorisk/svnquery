@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,14 +23,14 @@ using Lucene.Net.Search;
 
 namespace SvnQuery
 {
-    public class RevisionFilter: Filter
+    public class RevisionFilter : Filter
     {
         public const string RevFormat = "d8";
         public const int Head = 99999999;
         public static readonly string HeadString;
         public const int All = 0;
         public static readonly string AllString;
-        
+
         readonly int revLast;
         readonly int revFirst;
 
@@ -40,9 +40,9 @@ namespace SvnQuery
             AllString = string.Intern(All.ToString(RevFormat));
         }
 
-        public RevisionFilter():this(Head, Head)
+        public RevisionFilter() : this(Head, Head)
         {}
-        
+
         public RevisionFilter(int first, int last)
         {
             revFirst = first;
@@ -51,9 +51,8 @@ namespace SvnQuery
 
         public override BitArray Bits(IndexReader reader)
         {
-            Debug.WriteLine(reader.GetVersion());  // could be used to cache
+            Debug.WriteLine(reader.GetVersion()); // could be used to cache
             // if (cached reader == reader && revFirst == 
-
 
             if (revFirst == All || revLast == All) // optimization
                 return new BitArray(reader.MaxDoc(), true);
@@ -70,13 +69,13 @@ namespace SvnQuery
                     d.Seek(t);
                     do last_bits[d.Doc()] = true; while (d.Next());
                     if (!t.Next()) break;
-                } 
+                }
             }
 
             // optimization, skip if we just using the head revision
-            if (revLast == Head) 
+            if (revLast == Head)
                 return last_bits;
-            
+
             BitArray first_bits = new BitArray(reader.MaxDoc(), true);
             t = reader.Terms(new Term("rev_first", (revLast + 1).ToString(RevFormat)));
             //if (t.SkipTo((new Term("rev_first", (revision + 1).ToString(RevFormat))))) // extremely slow
@@ -88,7 +87,7 @@ namespace SvnQuery
                     do first_bits[d.Doc()] = false; while (d.Next());
                     if (!t.Next()) break;
                 }
-            }          
+            }
             return last_bits.And(first_bits);
         }
 
@@ -97,7 +96,7 @@ namespace SvnQuery
             Debug.Write(name + ": ");
             for (int i = 0; i < bits.Length; ++i)
             {
-                Debug.Write(bits[i] ? "1" : "0"); 
+                Debug.Write(bits[i] ? "1" : "0");
             }
             Debug.WriteLine("");
         }

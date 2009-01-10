@@ -1,13 +1,13 @@
 ﻿#region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using App_Code;
@@ -66,7 +65,9 @@ public partial class _Default : Page
             QueryResult r = QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value);
             string htmlQuery = Server.HtmlEncode(query.Value);
             hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
-            statisticsLabel.Text = string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>", r.SearchCount, r.SearchTime, r.IndexRevision);
+            statisticsLabel.Text =
+                string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",
+                              r.SearchCount, r.SearchTime, r.IndexRevision);
 
             dataPager.Visible = (dataPager.MaximumRows < r.HitCount);
             // Reset to page 0
@@ -90,12 +91,12 @@ public partial class _Default : Page
         if (text == "$hidden$")
         {
             return new Pair
-            {
-                First = (optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
-                Second = RevisionFilter.Head
-            };
+                   {
+                       First = (optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
+                       Second = RevisionFilter.Head
+                   };
         }
-        
+
         Match m = Regex.Match(text, @"\d{1,8}");
         int first = -1;
         int last = -1;
@@ -133,8 +134,7 @@ public partial class _Default : Page
             }
             textRevision.Text = first.ToString();
             if (last > 0) textRevision.Text += " : " + last;
-        }       
+        }
         return new Pair(first, last > 0 ? last : first);
     }
-
 }

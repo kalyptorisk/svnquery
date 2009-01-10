@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
-// Copyright 2008 Christian Rodemeyer
-//
+// Copyright 2008-2009 Christian Rodemeyer
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ namespace SvnQuery
 {
     public class Parser
     {
-        static readonly char[] Wildcards = new[] { '*', '?' };
+        static readonly char[] Wildcards = new[] {'*', '?'};
 
         readonly IndexReader reader;
 
@@ -62,7 +62,7 @@ namespace SvnQuery
                 }
                 else
                 {
-                    span.Add(WildcardPathTerm(text));   
+                    span.Add(WildcardPathTerm(text));
                 }
             }
             return span.Count == 0 ? q : CombineSpans(q, span, gap);
@@ -71,7 +71,7 @@ namespace SvnQuery
         SpanQuery CombineSpans(SpanQuery q, List<SpanQuery> span, int gap)
         {
             SpanQuery current = (span.Count == 1) ? span[0] : new SpanNearQuery(span.ToArray(), 0, true);
-            return (q == null) ? current : new SpanNearQuery(new[] { q, current }, gap, true);
+            return (q == null) ? current : new SpanNearQuery(new[] {q, current}, gap, true);
         }
 
         SpanQuery WildcardPathTerm(string text)
@@ -88,36 +88,37 @@ namespace SvnQuery
             while (term != null)
             {
                 if (terms.Count > 2000)
-                    throw new Exception("too many matches for wildcard query, please be more specific");    
+                    throw new Exception("too many matches for wildcard query, please be more specific");
 
                 if (!(fileOnly && term.Text().EndsWith("/")))
                     terms.Add(new SpanTermQuery(term));
                 termEnum.Next();
                 term = termEnum.Term();
             }
-            if (terms.Count == 0) return new SpanTermQuery(new Term(FieldName.Path, ":")); // query will never find anything
+            if (terms.Count == 0)
+                return new SpanTermQuery(new Term(FieldName.Path, ":")); // query will never find anything
             return new SpanOrQuery(terms.ToArray());
-        } 
-        
+        }
+
         Term[] WildcardContentTerms(Term wildcard)
         {
             string text = wildcard.Text();
-            if (text.IndexOfAny(Wildcards) < 0) return new []{wildcard};
+            if (text.IndexOfAny(Wildcards) < 0) return new[] {wildcard};
 
             if (Regex.IsMatch(text, @"^[\*\?]*$"))
-                throw new Exception("too many matches for wildcard query, please be more specific");            
+                throw new Exception("too many matches for wildcard query, please be more specific");
 
             var terms = new List<Term>();
             var termEnum = new WildcardTermEnum(reader, wildcard);
             Term term = termEnum.Term();
             while (term != null)
-            {               
+            {
                 terms.Add(term);
                 termEnum.Next();
                 term = termEnum.Term();
 
                 if (terms.Count > 2000)
-                    throw new Exception("too many matches for wildcard query, please be more specific");     
+                    throw new Exception("too many matches for wildcard query, please be more specific");
             }
             return terms.ToArray();
         }
@@ -136,7 +137,7 @@ namespace SvnQuery
                     q.Add(terms);
                     hasTerm = true;
                 }
-            }            
+            }
             return (hasTerm) ? q : null;
         }
 
@@ -176,7 +177,7 @@ namespace SvnQuery
 
             var bq = new BooleanQuery();
             Term eop = new Term(FieldName.Externals, ExternalsTokenStream.Eol);
-            for (int i = 0; i++ < parts.Count; )
+            for (int i = 0; i++ < parts.Count;)
             {
                 var q = new PhraseQuery();
                 q.Add(eop);
@@ -253,11 +254,11 @@ namespace SvnQuery
             {
                 if (t is Lexer.OperatorToken)
                 {
-                    clause = ((Lexer.OperatorToken)t).Clause;
+                    clause = ((Lexer.OperatorToken) t).Clause;
                 }
                 else if (t is Lexer.FieldToken)
                 {
-                    field = ((Lexer.FieldToken)t).Text;
+                    field = ((Lexer.FieldToken) t).Text;
                 }
                 else if (t is Lexer.RightToken)
                 {
@@ -284,11 +285,5 @@ namespace SvnQuery
             }
             return query;
         }
-
-
-
     }
-
-
-
 }

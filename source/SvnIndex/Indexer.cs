@@ -77,17 +77,17 @@ namespace SvnQuery
         public Indexer(IndexerArgs args)
         {
             PrintLogo();
-  
+
             this.args = args;
-            indexQueueLimit = new Semaphore(args.MaxThreads * 2, args.MaxThreads * 2);
+            indexQueueLimit = new Semaphore(args.MaxThreads*2, args.MaxThreads*2);
             ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
-            ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
+            ThreadPool.SetMinThreads(args.MaxThreads/2, Environment.ProcessorCount);
 
             contentField = new Field(FieldName.Content, contentTokenStream);
             pathField = new Field(FieldName.Path, pathTokenStream);
             externalsField = new Field(FieldName.Externals, externalsTokenStream);
             messageField = new Field(FieldName.Message, messageTokenStream);
-            
+
             Console.WriteLine("Contacting repository " + args.RepositoryUri + " ...");
             svn = new SharpSvnApi(args.RepositoryUri, args.User, args.Password);
             args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
@@ -95,6 +95,7 @@ namespace SvnQuery
 
         static void PrintLogo()
         {
+            Console.WriteLine();
             AssemblyName name = Assembly.GetExecutingAssembly().GetName();
             Console.WriteLine(name.Name + " " + name.Version);
         }
@@ -107,7 +108,8 @@ namespace SvnQuery
 
             Console.WriteLine("Begin indexing from " + startRevision + " to " + stopRevision + " in " + args.IndexPath);
 
-            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
+            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(),
+                                          create);
             indexWriter.SetRAMBufferSizeMB(32);
 
             // reverse order to minimize document updates 
@@ -118,7 +120,7 @@ namespace SvnQuery
             pendingReads.Decrement();
             indexThread.Join();
 
-            if (create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize)
+            if (create || stopRevision%args.Optimize == 0 || stopRevision - startRevision > args.Optimize)
             {
                 Console.WriteLine("Optimizing index ...");
                 indexWriter.Optimize();
@@ -141,13 +143,13 @@ namespace SvnQuery
             PathChange change = (PathChange) data;
             switch (change.Change)
             {
-                case Change.Add: 
+                case Change.Add:
                     CreateDocument(change);
                     break;
                 case Change.Replace:
                 case Change.Modify:
                     FinalizeDocument(change);
-                    CreateDocument(change);                   
+                    CreateDocument(change);
                     break;
                 case Change.Delete:
                     FinalizeDocument(change);
@@ -177,7 +179,7 @@ namespace SvnQuery
             if (data == null) return;
 
             finalized.Finalize(change.Path, data.RevisionFirst);
-            QueueIndexDocument(data);            
+            QueueIndexDocument(data);
         }
 
         void QueueIndexDocument(PathData data)
@@ -192,11 +194,11 @@ namespace SvnQuery
 
         void IndexThread()
         {
-            WaitHandle[] wait = new WaitHandle[]{indexQueueHasData, pendingReads};
-            for (; ; )
+            WaitHandle[] wait = new WaitHandle[] {indexQueueHasData, pendingReads};
+            for (;;)
             {
                 int waitResult = WaitHandle.WaitAny(wait);
-                for (; ; )
+                for (;;)
                 {
                     PathData data;
                     lock (indexQueue)
@@ -204,7 +206,7 @@ namespace SvnQuery
                         if (indexQueue.Count == 0)
                         {
                             indexQueueHasData.Reset();
-                            break;                            
+                            break;
                         }
                         data = indexQueue.Dequeue();
                     }
@@ -230,7 +232,7 @@ namespace SvnQuery
             revLastField.SetValue(data.RevisionLast.ToString("d8"));
             authorField.SetValue(data.Author);
             timestampField.SetValue(data.Timestamp.ToString("yyyy-MM-dd hh:mm"));
-            messageTokenStream.SetText(svn.GetLogMessage(data.RevisionFirst)); 
+            messageTokenStream.SetText(svn.GetLogMessage(data.RevisionFirst));
 
             if (!data.IsDirectory)
             {
@@ -243,7 +245,7 @@ namespace SvnQuery
 
             IndexProperties(doc, data.Properties);
 
-            indexWriter.AddDocument(doc);            
+            indexWriter.AddDocument(doc);
         }
 
         void IndexProperties(Document doc, Dictionary<string, string> properties)
@@ -266,7 +268,7 @@ namespace SvnQuery
                 }
                 else
                 {
-                    doc.Add(new Field(prop.Key, new ContentTokenStream(prop.Value, false)));   
+                    doc.Add(new Field(prop.Key, new ContentTokenStream(prop.Value, false)));
                 }
             }
         }

@@ -25,7 +25,8 @@ namespace SvnQuery
 {
     static class Program
     {
-        const string usage_msg = @"          
+        const string usage_msg =
+            @"          
 SvnIndex action index_path repository_url [Options] 
   action := create | update
   Options:
@@ -35,7 +36,7 @@ SvnIndex action index_path repository_url [Options]
   -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
   -t max number of threads used to query the repository 
      use low numbers for local and high numbers for remote repositories
-"; 
+";
 
         static void Main(string[] args)
         {
@@ -85,8 +86,7 @@ SvnIndex action index_path repository_url [Options]
                     Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
                     Environment.CommandLine + Environment.NewLine + x);
             }
-            Console.WriteLine(usage_msg);            
+            Console.WriteLine(usage_msg);
         }
-       
     }
 }

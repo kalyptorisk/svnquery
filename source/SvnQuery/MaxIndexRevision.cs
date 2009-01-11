@@ -45,7 +45,7 @@ namespace SvnQuery
             while (true)
             {
                 Term t = te.Term();
-                if (t == null || t.Field() != FieldName.RevisionLast) break;
+                if (t == null || t.Field() != FieldName.RevisionFirst) break;
                 max_rev_first = t.Text();
                 te.Next();
             }

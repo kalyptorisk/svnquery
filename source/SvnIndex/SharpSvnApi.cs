@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using SharpSvn;
+using System.Threading;
 
 namespace SvnQuery
 {
@@ -80,6 +81,27 @@ namespace SvnQuery
             return youngest;
         }
 
+        /// <summary>
+        /// If a remote operation experiences a timeout/network problem try to repeat the operation
+        /// </summary>
+        /// <param name="a"></param>
+        void Retry(Action action)
+        {
+            for (int retry = 3; --retry != 0; )
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (SvnException)
+                {
+                    if (--retry == 0) throw;
+                    Thread.Sleep(500);
+                }
+            }
+        }
+
         public string GetLogMessage(int revision)
         {
             string message;
@@ -90,8 +112,8 @@ namespace SvnQuery
                 try
                 {
                     SvnUriTarget target = new SvnUriTarget(uri);
-                    if (!client.GetRevisionProperty(target, "svn:log", out message))
-                        message = "";
+                    Retry(delegate { client.GetRevisionProperty(target, "svn:log", out message); });
+                    message = "";
                 }
                 finally
                 {
@@ -157,16 +179,19 @@ namespace SvnQuery
             try
             {
                 SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
-                client.List(target, args, delegate(object s, SvnListEventArgs e)
+                Retry(delegate
                 {
-                    if (!string.IsNullOrEmpty(e.Path))
-                        callback(new PathChange
-                                 {
-                                     Change = Change.Add,
-                                     Path = e.BasePath + "/" + e.Path,
-                                     IsCopy = false,
-                                     Revision = revision
-                                 });
+                    client.List(target, args, delegate(object s, SvnListEventArgs e)
+                    {
+                        if (!string.IsNullOrEmpty(e.Path))
+                            callback(new PathChange
+                                     {
+                                         Change = Change.Add,
+                                         Path = e.BasePath + "/" + e.Path,
+                                         IsCopy = false,
+                                         Revision = revision
+                                     });
+                    });
                 });
             }
             finally
@@ -183,8 +208,8 @@ namespace SvnQuery
             PathData data = null;
             try
             {
-                SvnInfoEventArgs info;
-                client.GetInfo(target, out info);
+                SvnInfoEventArgs info = null;
+                Retry(delegate {client.GetInfo(target, out info);});
 
                 data = new PathData();
                 data.Path = path;

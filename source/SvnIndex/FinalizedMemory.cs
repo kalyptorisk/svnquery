@@ -23,7 +23,7 @@ namespace SvnQuery
     /// <summary>
     /// Threadsafe lookup and updates of highest finalization revision
     /// </summary>
-    public class FinalizedDictionary
+    public class FinalizedMemory
     {
         readonly Dictionary<string, int> finalized = new Dictionary<string, int>();
 

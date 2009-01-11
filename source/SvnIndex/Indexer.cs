@@ -40,7 +40,7 @@ namespace SvnQuery
         readonly IndexerArgs args;
         readonly ISvnApi svn;
 
-        readonly FinalizedDictionary finalized = new FinalizedDictionary();
+        readonly FinalizedMemory finalized = new FinalizedMemory();
         readonly PendingReads pendingReads = new PendingReads();
 
         Thread indexThread;
@@ -106,10 +106,14 @@ namespace SvnQuery
             int startRevision = create ? 1 : MaxIndexRevision.Get(args.IndexPath) + 1;
             int stopRevision = args.MaxRevision;
 
+            if (startRevision >= stopRevision)
+            {
+                Console.WriteLine("Index revision is greater than requested revision");
+                return;
+            }
             Console.WriteLine("Begin indexing from " + startRevision + " to " + stopRevision + " in " + args.IndexPath);
 
-            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(),
-                                          create);
+            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
             indexWriter.SetRAMBufferSizeMB(32);
 
             // reverse order to minimize document updates 
@@ -140,22 +144,30 @@ namespace SvnQuery
 
         void ProcessChange(object data)
         {
-            PathChange change = (PathChange) data;
-            switch (change.Change)
+            try
             {
-                case Change.Add:
-                    CreateDocument(change);
-                    break;
-                case Change.Replace:
-                case Change.Modify:
-                    FinalizeDocument(change);
-                    CreateDocument(change);
-                    break;
-                case Change.Delete:
-                    FinalizeDocument(change);
-                    break;
+                PathChange change = (PathChange) data;
+                switch (change.Change)
+                {
+                    case Change.Add:
+                        CreateDocument(change);
+                        break;
+                    case Change.Replace:
+                    case Change.Modify:
+                        FinalizeDocument(change);
+                        CreateDocument(change);
+                        break;
+                    case Change.Delete:
+                        FinalizeDocument(change);
+                        break;
+                }
+                pendingReads.Decrement();
             }
-            pendingReads.Decrement();
+            catch 
+            {
+                Console.WriteLine("Exception in ThreadPool Thread");
+                Environment.Exit(-100);
+            }
         }
 
         void CreateDocument(PathChange change)

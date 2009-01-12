@@ -52,12 +52,10 @@ namespace SvnQuery
         public string Path;
         public bool IsCopy; //  if IsCopy and IsDirectory than children need to be added explicitely
 
-#if DEBUG
         public override string ToString()
         {
             return Change + " " + Path + "@" + Revision;
         }
-#endif
     }
 
     public class PathData

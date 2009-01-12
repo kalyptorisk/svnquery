@@ -94,8 +94,9 @@ namespace SvnQuery
                     action();
                     break;
                 }
-                catch (SvnException)
+                catch (SvnException x)
                 {
+                    Console.WriteLine(x);
                     if (--retry == 0) throw;
                     Thread.Sleep(500);
                 }
@@ -112,7 +113,8 @@ namespace SvnQuery
                 try
                 {
                     SvnUriTarget target = new SvnUriTarget(uri);
-                    Retry(delegate { client.GetRevisionProperty(target, "svn:log", out message); });
+                    //Retry(delegate { client.GetRevisionProperty(target, "svn:log", out message); });
+                    client.GetRevisionProperty(target, "svn:log", out message); 
                     message = "";
                 }
                 finally
@@ -179,8 +181,6 @@ namespace SvnQuery
             try
             {
                 SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
-                Retry(delegate
-                {
                     client.List(target, args, delegate(object s, SvnListEventArgs e)
                     {
                         if (!string.IsNullOrEmpty(e.Path))
@@ -192,7 +192,6 @@ namespace SvnQuery
                                          Revision = revision
                                      });
                     });
-                });
             }
             finally
             {
@@ -209,7 +208,8 @@ namespace SvnQuery
             try
             {
                 SvnInfoEventArgs info = null;
-                Retry(delegate {client.GetInfo(target, out info);});
+                //Retry(delegate {client.GetInfo(target, out info);});
+                client.GetInfo(target, out info);
 
                 data = new PathData();
                 data.Path = path;
@@ -248,6 +248,10 @@ namespace SvnQuery
             {
                 if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;
             }
+                catch (Exception x)
+                {
+                    Console.WriteLine(x);
+                }
             finally
             {
                 FreeSvnClient(client);

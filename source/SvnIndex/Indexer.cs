@@ -111,6 +111,7 @@ namespace SvnQuery
                 Console.WriteLine("Index revision is greater than requested revision");
                 return;
             }
+            startRevision = 2500;
             Console.WriteLine("Begin indexing from " + startRevision + " to " + stopRevision + " in " + args.IndexPath);
 
             indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
@@ -147,6 +148,7 @@ namespace SvnQuery
             try
             {
                 PathChange change = (PathChange) data;
+                Console.WriteLine(change);
                 switch (change.Change)
                 {
                     case Change.Add:
@@ -163,9 +165,9 @@ namespace SvnQuery
                 }
                 pendingReads.Decrement();
             }
-            catch 
+            catch  (Exception x)
             {
-                Console.WriteLine("Exception in ThreadPool Thread");
+                Console.WriteLine("Exception in ThreadPool Thread: " + x);
                 Environment.Exit(-100);
             }
         }

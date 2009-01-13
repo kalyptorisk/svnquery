@@ -79,7 +79,7 @@ namespace SvnQuery
             PrintLogo();
 
             this.args = args;
-            indexQueueLimit = new Semaphore(args.MaxThreads * 2, args.MaxThreads * 2);
+            indexQueueLimit = new Semaphore(args.MaxThreads * 4, args.MaxThreads * 4);
             ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
             ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
 
@@ -113,22 +113,21 @@ namespace SvnQuery
             else
             {
                 Console.WriteLine("Begin indexing ...");
+                var dummy = new StandardAnalyzer();
                 for (int i = startRevision; i <= stopRevision; i += args.CommitInterval)
                 {
-                    indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), false, new StandardAnalyzer(), create);
+                    indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), false, dummy, create);
+                    create = false;
                     indexWriter.SetRAMBufferSizeMB(32);
                     IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
                     startRevision += args.CommitInterval;
-                    if (startRevision > stopRevision) break;
+                    if (startRevision > stopRevision && optimize)
+                    { 
+                        Console.WriteLine("Optimizing index ...");
+                        indexWriter.Optimize();
+                    }
                     indexWriter.Close(); // Commit changes
                 }
-
-                if (optimize)
-                {
-                    Console.WriteLine("Optimizing index ...");
-                    indexWriter.Optimize();
-                }
-                indexWriter.Close();
                 indexWriter = null;
             }
             Console.WriteLine("Finished!");
@@ -136,20 +135,20 @@ namespace SvnQuery
 
         void IndexRevisionRange(int start, int stop)
         {
-            Document doc = new Document();
+            var doc = new Document();
             doc.Add(idField);
             doc.Add(authorField);
             doc.Add(timestampField);
             doc.Add(new Field(FieldName.RevisionMessage, messageTokenStream));
 
             // reverse order to minimize document updates 
-            foreach (RevisionData rev in  svn.GetRevisionData(stop, start))
+            foreach (var data in svn.GetRevisionData(stop, start))
             {
-                rev.Changes.ForEach(QueueChange);
-                idField.SetValue(DocumentId.Revision + rev.Revision);
-                authorField.SetValue(rev.Author);
-                SetTimestampField(rev.Timestamp);
-                messageTokenStream.SetText(rev.Message);
+                data.Changes.ForEach(QueueChange);
+                idField.SetValue(DocumentId.Revision + data.Revision);
+                authorField.SetValue(data.Author);
+                SetTimestampField(data.Timestamp);
+                messageTokenStream.SetText(data.Message);
                 indexWriter.AddDocument(doc);
             }
 
@@ -163,7 +162,7 @@ namespace SvnQuery
         void UpdateIndexRevision(int revision)
         {
             indexWriter.DeleteDocuments(new Term(FieldName.Id, DocumentId.IndexRevision));
-            Document doc = new Document();
+            var doc = new Document();
             idField.SetValue(DocumentId.IndexRevision);
             doc.Add(idField);
             doc.Add(new Field(DocumentId.IndexRevision, revision.ToString(), Field.Store.YES, Field.Index.NO));
@@ -184,7 +183,7 @@ namespace SvnQuery
         {
             try
             {
-                PathChange change = (PathChange) data;
+                var change = (PathChange) data;
                 Console.WriteLine(change);
                 switch (change.Change)
                 {
@@ -270,7 +269,8 @@ namespace SvnQuery
 
         void IndexDocument(PathData data)
         {
-            Console.WriteLine("{0,8} {1}@{2}", ++indexedDocuments, data.Path, data.Revision);
+            char flag = data.FinalRevision == headRevision ? 'H' : 'F';
+            Console.WriteLine("{0,8} {4} {1} => {2}:{3}", ++indexedDocuments, data.Path, data.Revision, data.FinalRevision, flag);
 
             Term id = idTerm.CreateTerm(data.Path + "@" + data.Revision);
             indexWriter.DeleteDocuments(id);

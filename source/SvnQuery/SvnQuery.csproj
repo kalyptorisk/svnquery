@@ -46,6 +46,7 @@
     <Compile Include="ContentTokenStream.cs" />
     <Compile Include="ExternalsTokenStream.cs" />
     <Compile Include="FieldName.cs" />
+    <Compile Include="DocumentId.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="PackedSizeConverter.cs" />
     <Compile Include="PathTokenStream.cs" />

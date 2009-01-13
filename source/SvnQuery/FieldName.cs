@@ -34,5 +34,9 @@ namespace SvnQuery
         public const string Content = "content";
         public const string Externals = "externals";
         public const string Type = "type";
+
+        // Log message only fields
+        public const string RevisionMessage = "rev_message"; 
+
     }
 }

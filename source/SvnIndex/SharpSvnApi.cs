@@ -84,7 +84,6 @@ namespace SvnQuery
         /// <summary>
         /// If a remote operation experiences a timeout/network problem try to repeat the operation
         /// </summary>
-        /// <param name="a"></param>
         void Retry(Action action)
         {
             for (int retry = 3; --retry != 0; )
@@ -126,27 +125,31 @@ namespace SvnQuery
             return message;
         }
 
-        public void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback)
+        public List<RevisionData> GetRevisionData(int firstRevision, int lastRevision)
         {
+            List<RevisionData> revisions = new List<RevisionData>();
             SvnClient client = AllocSvnClient();
             try
             {
                 SvnLogArgs args = new SvnLogArgs(new SvnRevisionRange(firstRevision, lastRevision));
                 args.StrictNodeHistory = false;
                 args.RetrieveChangedPaths = true;
-                client.Log(uri, args, delegate(object s, SvnLogEventArgs e)
+                args.ThrowOnError = true;
+                args.ThrowOnCancel = true;
+                Collection<SvnLogEventArgs> logEvents;
+                client.GetLog(uri, args, out logEvents);
+                foreach (SvnLogEventArgs e in logEvents)
                 {
-                    int revision = (int) e.Revision;
-                    lock (messages) messages[revision] = e.LogMessage ?? "";
-                    if (e.ChangedPaths == null) return;
+                    RevisionData data = new RevisionData();
+                    data.Revision = (int) e.Revision;
+                    data.Author = e.Author.ToLowerInvariant();
+                    data.Message = e.LogMessage;
+                    data.Timestamp = e.Time;
+                    lock (messages) messages[data.Revision] = e.LogMessage ?? "";
+                    if (e.ChangedPaths == null) continue;
                     foreach (var path in e.ChangedPaths)
                     {
-                        PathChange change = new PathChange
-                                            {
-                                                Revision = revision,
-                                                Path = path.Path,
-                                                IsCopy = path.CopyFromPath != null,
-                                            };
+                        PathChange change = new PathChange {Revision = data.Revision, Path = path.Path, IsCopy = path.CopyFromPath != null};
                         switch (path.Action)
                         {
                             case SvnChangeAction.Add:
@@ -164,8 +167,29 @@ namespace SvnQuery
                             default:
                                 throw new Exception("Invalid action on " + path.Path + "@" + e.Revision);
                         }
-                        callback(change);
+                        data.Changes.Add(change);
                     }
+                    revisions.Add(data);
+                }
+            }
+            finally
+            {
+                FreeSvnClient(client);
+            }
+            return revisions;
+        }
+
+        public void AddDirectoryChildren(string path, int revision, Action<PathChange> action)
+        {
+            SvnClient client = AllocSvnClient();
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            try
+            {
+                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
+                client.List(target, args, delegate(object s, SvnListEventArgs e)
+                {
+                    if (string.IsNullOrEmpty(e.Path)) return;
+                    action(new PathChange {Change = Change.Add, Revision = revision, Path = e.BasePath + "/" + e.Path});
                 });
             }
             finally
@@ -173,32 +197,6 @@ namespace SvnQuery
                 FreeSvnClient(client);
             }
         }
-
-        public void ForEachChild(string path, int revision, Action<PathChange> callback)
-        {
-            SvnClient client = AllocSvnClient();
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
-            try
-            {
-                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
-                    client.List(target, args, delegate(object s, SvnListEventArgs e)
-                    {
-                        if (!string.IsNullOrEmpty(e.Path))
-                            callback(new PathChange
-                                     {
-                                         Change = Change.Add,
-                                         Path = e.BasePath + "/" + e.Path,
-                                         IsCopy = false,
-                                         Revision = revision
-                                     });
-                    });
-            }
-            finally
-            {
-                FreeSvnClient(client);
-            }
-        }
-
 
         public PathData GetPathData(string path, int revision)
         {
@@ -216,8 +214,8 @@ namespace SvnQuery
                 data.Size = (int) info.RepositorySize;
                 data.Author = info.LastChangeAuthor.ToLowerInvariant();
                 data.Timestamp = info.LastChangeTime;
-                data.RevisionFirst = (int) info.LastChangeRevision;
-                data.RevisionLast = revision;
+                data.Revision = (int) info.LastChangeRevision;
+                data.FinalRevision = revision;
                 data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
 
                 Collection<SvnPropertyListEventArgs> pc;

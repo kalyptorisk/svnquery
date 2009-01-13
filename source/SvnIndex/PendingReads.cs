@@ -29,7 +29,8 @@ namespace SvnQuery
 
         public void Increment()
         {
-            Interlocked.Increment(ref pending);
+            if (Interlocked.Increment(ref pending) > 0)
+                Reset();
         }
 
         public void Decrement()

@@ -33,6 +33,8 @@ namespace SvnQuery
         public int MaxRevision = 99999999;
         public int MaxThreads = 25;
         public int Optimize = 25; // number of revisions that lead to optimization
+        public int CommitInterval = 1000; // the interval between the index gets committed
+        public bool Verbose;
 
         public IndexerArgs(string[] args)
         {
@@ -64,6 +66,12 @@ namespace SvnQuery
                         case 'o':
                             Optimize = int.Parse(arg);
                             break;
+                        case 'c':
+                            CommitInterval = int.Parse(arg);
+                            break;
+                        //case 'v':
+                        //    Verbose = true;
+                        //    break;
                         default:
                             throw new Exception("Unknown option -" + option);
                     }

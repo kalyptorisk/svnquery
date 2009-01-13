@@ -79,18 +79,16 @@ namespace SvnQuery
             PrintLogo();
 
             this.args = args;
-            indexQueueLimit = new Semaphore(args.MaxThreads*2, args.MaxThreads*2);
+            indexQueueLimit = new Semaphore(args.MaxThreads * 2, args.MaxThreads * 2);
             ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
-            ThreadPool.SetMinThreads(args.MaxThreads/2, Environment.ProcessorCount);
+            ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
 
             contentField = new Field(FieldName.Content, contentTokenStream);
             pathField = new Field(FieldName.Path, pathTokenStream);
             externalsField = new Field(FieldName.Externals, externalsTokenStream);
             messageField = new Field(FieldName.Message, messageTokenStream);
 
-            Console.WriteLine("Contacting repository " + args.RepositoryUri + " ...");
             svn = new SharpSvnApi(args.RepositoryUri, args.User, args.Password);
-            args.MaxRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
         }
 
         static void PrintLogo()
@@ -102,36 +100,76 @@ namespace SvnQuery
 
         public void Run()
         {
+            Console.WriteLine("Validating parameters ...");
             bool create = args.Command == Command.Create;
             int startRevision = create ? 1 : MaxIndexRevision.Get(args.IndexPath) + 1;
-            int stopRevision = args.MaxRevision;
+            int stopRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+            bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
 
-            if (startRevision >= stopRevision)
+            if (startRevision > stopRevision)
             {
-                Console.WriteLine("Index revision is greater than requested revision");
-                return;
+                Console.WriteLine("Nothing to do. Index revision is " + stopRevision);
             }
-            Console.WriteLine("Begin indexing from " + startRevision + " to " + stopRevision + " in " + args.IndexPath);
+            else
+            {
+                Console.WriteLine("Begin indexing ...");
+                for (int i = startRevision; i <= stopRevision; i += args.CommitInterval)
+                {
+                    indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), false, new StandardAnalyzer(), create);
+                    indexWriter.SetRAMBufferSizeMB(32);
+                    IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
+                    startRevision += args.CommitInterval;
+                    if (startRevision > stopRevision) break;
+                    indexWriter.Close(); // Commit changes
+                }
 
-            indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), create, new StandardAnalyzer(), create);
-            indexWriter.SetRAMBufferSizeMB(32);
+                if (optimize)
+                {
+                    Console.WriteLine("Optimizing index ...");
+                    indexWriter.Optimize();
+                }
+                indexWriter.Close();
+                indexWriter = null;
+            }
+            Console.WriteLine("Finished!");
+        }
+
+        void IndexRevisionRange(int start, int stop)
+        {
+            Document doc = new Document();
+            doc.Add(idField);
+            doc.Add(authorField);
+            doc.Add(timestampField);
+            doc.Add(new Field(FieldName.RevisionMessage, messageTokenStream));
 
             // reverse order to minimize document updates 
+            foreach (RevisionData rev in  svn.GetRevisionData(stop, start))
+            {
+                rev.Changes.ForEach(QueueChange);
+                idField.SetValue(DocumentId.Revision + rev.Revision);
+                authorField.SetValue(rev.Author);
+                SetTimestampField(rev.Timestamp);
+                messageTokenStream.SetText(rev.Message);
+                indexWriter.AddDocument(doc);
+            }
+
             indexThread = new Thread(IndexThread);
             indexThread.Start();
-            pendingReads.Increment();
-            svn.ForEachChange(stopRevision, startRevision, QueueChange);
-            pendingReads.Decrement();
-            indexThread.Join();
+            indexThread.Join(); // will wait for pendingReads
 
-            if (create || stopRevision%args.Optimize == 0 || stopRevision - startRevision > args.Optimize)
-            {
-                Console.WriteLine("Optimizing index ...");
-                indexWriter.Optimize();
-            }
-            indexWriter.Close();
-            indexWriter = null;
-            Console.WriteLine("Finished indexing. Index revision is now: " + stopRevision);
+            UpdateIndexRevision(stop);
+        }
+
+        void UpdateIndexRevision(int revision)
+        {
+            indexWriter.DeleteDocuments(new Term(FieldName.Id, DocumentId.IndexRevision));
+            Document doc = new Document();
+            idField.SetValue(DocumentId.IndexRevision);
+            doc.Add(idField);
+            doc.Add(new Field(DocumentId.IndexRevision, revision.ToString(), Field.Store.YES, Field.Index.NO));
+            indexWriter.AddDocument(doc);
+
+            Console.WriteLine("Index revision is now " + revision);
         }
 
         void QueueChange(PathChange change)
@@ -164,7 +202,7 @@ namespace SvnQuery
                 }
                 pendingReads.Decrement();
             }
-            catch  (Exception x)
+            catch (Exception x)
             {
                 Console.WriteLine("Exception in ThreadPool Thread: " + x);
                 Environment.Exit(-100);
@@ -177,11 +215,11 @@ namespace SvnQuery
 
             PathData data = svn.GetPathData(change.Path, change.Revision);
             if (data == null) return;
-            data.RevisionFirst = change.Revision;
-            data.RevisionLast = headRevision;
+            data.Revision = change.Revision;
+            data.FinalRevision = headRevision;
             if (data.IsDirectory && change.IsCopy)
             {
-                svn.ForEachChild(change.Path, change.Revision, QueueChange);
+                svn.AddDirectoryChildren(change.Path, change.Revision, QueueChange);
             }
             QueueIndexDocument(data);
         }
@@ -191,7 +229,7 @@ namespace SvnQuery
             PathData data = svn.GetPathData(change.Path, change.Revision - 1);
             if (data == null) return;
 
-            finalized.Finalize(change.Path, data.RevisionFirst);
+            finalized.Finalize(change.Path, data.Revision);
             QueueIndexDocument(data);
         }
 
@@ -232,20 +270,19 @@ namespace SvnQuery
 
         void IndexDocument(PathData data)
         {
-            int printRev = data.RevisionLast == 99999999 ? args.MaxRevision : data.RevisionLast;
-            Console.WriteLine("{0,8} {1,8} {2}", ++indexedDocuments, printRev, data.Path);
+            Console.WriteLine("{0,8} {1}@{2}", ++indexedDocuments, data.Path, data.Revision);
 
-            Term id = idTerm.CreateTerm(data.Path + "@" + data.RevisionFirst);
+            Term id = idTerm.CreateTerm(data.Path + "@" + data.Revision);
             indexWriter.DeleteDocuments(id);
             Document doc = MakeDocument();
 
             idField.SetValue(id.Text());
             pathTokenStream.Reset(data.Path);
-            revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
-            revLastField.SetValue(data.RevisionLast.ToString("d8"));
+            revFirstField.SetValue(data.Revision.ToString("d8"));
+            revLastField.SetValue(data.FinalRevision.ToString("d8"));
             authorField.SetValue(data.Author);
-            timestampField.SetValue(data.Timestamp.ToString("yyyy-MM-dd hh:mm"));
-            messageTokenStream.SetText(svn.GetLogMessage(data.RevisionFirst));
+            SetTimestampField(data.Timestamp);
+            messageTokenStream.SetText(svn.GetLogMessage(data.Revision));
 
             if (!data.IsDirectory)
             {
@@ -259,6 +296,11 @@ namespace SvnQuery
             IndexProperties(doc, data.Properties);
 
             indexWriter.AddDocument(doc);
+        }
+
+        void SetTimestampField(DateTime dt)
+        {
+            timestampField.SetValue(dt.ToString("yyyy-MM-dd hh:mm"));
         }
 
         void IndexProperties(Document doc, Dictionary<string, string> properties)

@@ -46,51 +46,51 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void ForEachChange_Revision1_AuthorIsChristian()
+        public void GetRevisionData_Revision1_AuthorIsChristian()
         {
-            var list = new List<string>();
-            api.ForEachChange(1, 1, change => list.Add(api.GetPathData(change.Path, change.Revision).Author));
-            Assert.That(list, Has.All.EqualTo("christian"));
+            var rev = api.GetRevisionData(1, 1); 
+            
+            Assert.That(rev, Has.Count(1));
+            Assert.That(rev[0].Author, Is.EqualTo("christian"));
+            Assert.IsTrue(rev[0].Changes.TrueForAll(c => api.GetPathData(c.Path, c.Revision).Author == rev[0].Author));
         }
 
         [Test]
-        public void ForEachChange_Revision1to9_RevisionsInOrder()
+        public void GetRevisionData_Revision1to9_RevisionsInOrder()
         {
-            var list = new List<int>();
-            api.ForEachChange(1, 9, change => list.Add(change.Revision));
-            for (int i = 2; i < list.Count; ++i)
+            var rev = api.GetRevisionData(1, 9);
+            for (int i = 2; i < rev.Count; ++i)
             {
-                Assert.That(list[i - 1] <= list[i]);
+                Assert.That(rev[i - 1].Revision < rev[i].Revision);
             }
         }
 
         [Test]
-        public void ForEachChange_Revision9to1_RevisionsInOrder()
+        public void GetRevisionData_Revision9to1_RevisionsInOrder()
         {
-            var list = new List<int>();
-            api.ForEachChange(9, 1, change => list.Add(change.Revision));
-            for (int i = 2; i < list.Count; ++i)
+            var rev = api.GetRevisionData(9, 1);
+            for (int i = 2; i < rev.Count; ++i)
             {
-                Assert.That(list[i - 1] >= list[i]);
+                Assert.That(rev[i - 1].Revision > rev[i].Revision);
             }
         }
 
         [Test]
-        public void ForEachChange_Revision3_AddedPath()
+        public void GetRevisionData_Revision3_AddedPath()
         {
             var list = GetFilteredPathList(Change.Add, 3);
             Assert.That(list, Is.EquivalentTo(new[] {"/Folder/Second", "/Folder/Second/second.txt", "/Folder/text.txt"}));
         }
 
         [Test]
-        public void ForEachChange_Revision4_DeletedPath()
+        public void GetRevisionData_Revision4_DeletedPath()
         {
             var list = GetFilteredPathList(Change.Delete, 4);
             Assert.That(list, Is.EquivalentTo(new[] {"/Folder/SubFolder/Second/second.txt"}));
         }
 
         [Test]
-        public void ForEachChange_Revision7_PropertiesModified()
+        public void GetRevisionData_Revision7_PropertiesModified()
         {
             var list = GetPathChangeList(7);
             foreach (var change in list)
@@ -100,21 +100,21 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void ForEachChange_Revision9_ModifiedPath()
+        public void GetRevisionData_Revision9_ModifiedPath()
         {
             var list = GetFilteredPathList(Change.Modify, 9);
             Assert.That(list, Is.EquivalentTo(new[] {"/Folder/Neuer Ordner/CopiedAndRenamed/second.txt"}));
         }
 
         [Test]
-        public void ForEachChange_Revision10_ReplacedPath()
+        public void GetRevisionData_Revision10_ReplacedPath()
         {
             var list = GetFilteredPathList(Change.Replace, 10);
             Assert.That(list, Is.EquivalentTo(new[] {"/Folder/Neuer Ordner/Second/second.txt"}));
         }
 
         [Test]
-        public void ForEachChange_Revision16_CopiedPath()
+        public void GetRevisionData_Revision16_CopiedPath()
         {
             PathChange change = GetPathChangeList(16)[0];
 
@@ -132,9 +132,7 @@ namespace SvnIndexTests
 
         List<PathChange> GetPathChangeList(int revision)
         {
-            var list = new List<PathChange>();
-            api.ForEachChange(revision, revision, list.Add);
-            return list;
+            return api.GetRevisionData(revision, revision)[0].Changes;
         }
 
         List<string> GetFilteredPathList(Change allowed, int revision)
@@ -207,9 +205,9 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void ForEachChange_InvalidRevision_Exception()
+        public void GetRevisionData_InvalidRevision_Exception()
         {
-            Exception exception = CatchException(delegate { api.ForEachChange(5000, 10000, delegate { }); });
+            Exception exception = CatchException(delegate { api.GetRevisionData(5000, 10000); });
             Assert.That(exception, Is.Not.Null);
         }
     }

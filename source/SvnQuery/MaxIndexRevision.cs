@@ -40,27 +40,9 @@ namespace SvnQuery
 
         public static int Get(IndexReader reader)
         {
-            string max_rev_first = "00000001";
-            TermEnum te = reader.Terms(new Term(FieldName.RevisionFirst, max_rev_first));
-            while (true)
-            {
-                Term t = te.Term();
-                if (t == null || t.Field() != FieldName.RevisionFirst) break;
-                max_rev_first = t.Text();
-                te.Next();
-            }
-
-            string max_rev_last = max_rev_first;
-            te.SkipTo(new Term(FieldName.RevisionLast, max_rev_last));
-            while (true)
-            {
-                Term t = te.Term();
-                if (t == null || t.Field() != FieldName.RevisionLast || t.Field() != RevisionFilter.HeadString) break;
-                max_rev_last = t.Text();
-                te.Next();
-            }
-
-            return Math.Max(int.Parse(max_rev_first), int.Parse(max_rev_last));
+            TermDocs td = reader.TermDocs(new Term(FieldName.Id, DocumentId.IndexRevision));
+            if (!td.Next()) return 0;
+            return int.Parse(reader.Document(td.Doc()).Get(DocumentId.IndexRevision));
         }
     }
 }

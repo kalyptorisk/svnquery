@@ -23,17 +23,29 @@ namespace SvnQuery
 {
     public interface ISvnApi
     {
+        /// <summary>
+        /// Gets the highest revision number of the repository
+        /// </summary>
         int GetYoungestRevision();
 
-        void ForEachChange(int firstRevision, int lastRevision, Action<PathChange> callback);
+        /// <summary>
+        /// Gets some revision data and all changes in a revision
+        /// </summary>
+        List<RevisionData> GetRevisionData(int firstRevision, int lastRevision);
 
         /// <summary>
         /// Lists a folder recursively with PathChanges of type add
         /// </summary>
-        void ForEachChild(string path, int revision, Action<PathChange> callback);
+        void AddDirectoryChildren(string path, int revision, Action<PathChange> action);
 
+        /// <summary>
+        /// Gets data for a path in a given revision
+        /// </summary>
         PathData GetPathData(string path, int revision);
 
+        /// <summary>
+        /// Gets the revision comment for a given revision 
+        /// </summary>
         string GetLogMessage(int revision);
     }
 
@@ -43,6 +55,15 @@ namespace SvnQuery
         Modify,
         Delete,
         Replace
+    }
+
+    public class RevisionData
+    {
+        public int Revision;
+        public string Author;
+        public DateTime Timestamp;
+        public string Message;
+        public List<PathChange> Changes = new List<PathChange>();
     }
 
     public class PathChange
@@ -61,8 +82,8 @@ namespace SvnQuery
     public class PathData
     {
         public string Path;
-        public int RevisionFirst;
-        public int RevisionLast;
+        public int Revision;
+        public int FinalRevision;
         public string Author;
         public DateTime Timestamp;
         public Dictionary<string, string> Properties = new Dictionary<string, string>();

@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MiscTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SvnApiAuthenticationTests.cs" />
     <Compile Include="SvnApiTest.cs" />

@@ -5,9 +5,6 @@
 @import "http://www.tigris.org/branding/css/tigris.css"; 
 @import "http://www.tigris.org/branding/css/inst.css"; 
 /*  ]]> */
- .style1 {
-	text-decoration: line-through;
-}
  </style>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Language" content="en-gb">  
@@ -20,7 +17,7 @@
 		is indexed, but also its complete metadata like path, author, comments 
 		and properties. A simple, Google-like web frontend is provided, but it 
 		is hoped that the query library and indexing mechanism can be reused in 
-		other frontends, e.g. a web service or a Visual Studio <span lang="de">p</span>lugin.</p>
+		other frontends, e.g. a web service or a Visual Studio <span lang="de">P</span>lug-In.</p>
     <p>
         SvnQuery is implemented in C# 3.0 and ASP.NET is used for the web 
 		frontend. The full text search is done by Lucene.Net which delivers an 
@@ -34,14 +31,10 @@
     <h3>
         Roadmap</h3>
     <ol>
-        <li class="style1">Setup the project infrastructure on tigris.org</li>
-        <li class="style1">Upload the existing prototype</li>
-        <li class="style1">Write Installation instructions</li>
-		<li>Add the roadmap to the issue system</li>
-        <li>Isolate the subversion interface - start using SharpSVN</li>
-        <li>Add display of syntax highlighted files with GeSHI</li>
-        <li>
-        Enable the indexing of arbitrary svn-properties</li>
+    <li>Version 0.3: A simple demo to download and play with (simple local web 
+	server, asp.net frontend, index of the subversion )</li>
+    <li>Version 0.4: Viewing the content of (non-binary) files results html page</li>
+    <li>Version 1.0: Syntax highlighted file content with GeSHI</li>
     </ol>
     <h3>
         Related resources</h3>
@@ -50,10 +43,10 @@
 		version control system</li>
         <li><a href="http://incubator.apache.org/projects/lucene.net.html">
 		Lucene.Net</a> - the full text search engine behind SVN Query </li>
-        <li><a href="http://qbnz.com/highlighter/">GeSHi</a> - Generic Syntax 
-		Highlighter</li>
         <li><a href="http://sharpsvn.open.collab.net/">SharpSVN</a> - C# api for 
 		Subversion</li>
+        <li><a href="http://qbnz.com/highlighter/">GeSHi</a> - Generic Syntax 
+		Highlighter</li>
     </ul>
 
 </body>

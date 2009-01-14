@@ -32,6 +32,7 @@ namespace SvnQuery
         readonly string password;
         readonly Dictionary<int, string> messages = new Dictionary<int, string>();
         readonly List<SvnClient> clientPool = new List<SvnClient>();
+        
 
         public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
         {}
@@ -71,14 +72,30 @@ namespace SvnQuery
             lock (clientPool) clientPool.Add(client);
         }
 
+        SvnInfoEventArgs Info
+        {
+            get
+            {
+                if (_info == null)
+                {
+                    SvnClient client = AllocSvnClient();
+                    SvnTarget target = new SvnUriTarget(uri);
+                    client.GetInfo(target, out _info);
+                    FreeSvnClient(client);
+                }
+                return _info;
+            }
+        }
+        SvnInfoEventArgs _info;
+
         public int GetYoungestRevision()
         {
-            SvnClient client = AllocSvnClient();
-            SvnTarget target = new SvnUriTarget(uri);
-            int youngest = 0;
-            client.Info(target, (s, e) => youngest = (int) e.Revision);
-            FreeSvnClient(client);
-            return youngest;
+            return (int)Info.LastChangeRevision;
+        }
+
+        public Guid GetRepositoryId()
+        {
+            return Info.RepositoryId;                  
         }
 
         /// <summary>

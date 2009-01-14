@@ -29,6 +29,11 @@ namespace SvnQuery
         int GetYoungestRevision();
 
         /// <summary>
+        /// returns the uuid of the repository
+        /// </summary>        
+        Guid GetRepositoryId();
+
+        /// <summary>
         /// Gets some revision data and all changes in a revision
         /// </summary>
         List<RevisionData> GetRevisionData(int firstRevision, int lastRevision);

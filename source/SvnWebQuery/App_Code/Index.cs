@@ -58,7 +58,9 @@ namespace App_Code
             if (indexSearcher == null || !indexSearcher.Reader.IsCurrent())
             {
                 IndexSearcher searcher = new IndexSearcher(index);
-                int revision = MaxIndexRevision.Get(searcher.Reader);
+                int revision = IndexProperty.GetRevision(searcher.Reader);
+                //int revision = new IndexData(searcher.Reader).Revision;
+
                 searcher.Search(new TermQuery(new Term("path", "warmup")));
                 if (indexSearcher == null)
                 {

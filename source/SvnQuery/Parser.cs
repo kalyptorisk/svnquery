@@ -198,7 +198,7 @@ namespace SvnQuery
 
         public static Query ParseTypeTerm(string type)
         {
-            return new WildcardQuery(new Term(FieldName.Type, type));
+            return new WildcardQuery(new Term(FieldName.MimeType, type));
         }
 
         public Query ParseTerm(string term, string field)

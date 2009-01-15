@@ -162,7 +162,7 @@ namespace SvnQuery
                 idField.SetValue("$Revision " + data.Revision);
                 revFirstField.SetValue(data.Revision.ToString("d8"));
                 revLastField.SetValue(data.Revision.ToString("d8"));
-                authorField.SetValue(data.Author);
+                authorField.SetValue(data.Author.ToLowerInvariant());
                 SetTimestampField(data.Timestamp);
                 messageTokenStream.SetText(data.Message);
                 indexWriter.AddDocument(doc);
@@ -286,7 +286,7 @@ namespace SvnQuery
             pathTokenStream.Reset(data.Path);
             revFirstField.SetValue(data.Revision.ToString("d8"));
             revLastField.SetValue(data.FinalRevision.ToString("d8"));
-            authorField.SetValue(data.Author);
+            authorField.SetValue(data.Author.ToLowerInvariant());
             SetTimestampField(data.Timestamp);
             messageTokenStream.SetText(svn.GetLogMessage(data.Revision));
 

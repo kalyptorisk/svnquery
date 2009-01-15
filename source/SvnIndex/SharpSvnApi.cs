@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using SharpSvn;
-using System.Threading;
 
 namespace SvnQuery
 {
@@ -98,27 +97,6 @@ namespace SvnQuery
             return Info.RepositoryId;                  
         }
 
-        /// <summary>
-        /// If a remote operation experiences a timeout/network problem try to repeat the operation
-        /// </summary>
-        void Retry(Action action)
-        {
-            for (int retry = 3; --retry != 0; )
-            {
-                try
-                {
-                    action();
-                    break;
-                }
-                catch (SvnException x)
-                {
-                    Console.WriteLine(x);
-                    if (--retry == 0) throw;
-                    Thread.Sleep(500);
-                }
-            }
-        }
-
         public string GetLogMessage(int revision)
         {
             string message;
@@ -129,7 +107,6 @@ namespace SvnQuery
                 try
                 {
                     SvnUriTarget target = new SvnUriTarget(uri);
-                    //Retry(delegate { client.GetRevisionProperty(target, "svn:log", out message); });
                     client.GetRevisionProperty(target, "svn:log", out message); 
                     message = "";
                 }
@@ -159,34 +136,13 @@ namespace SvnQuery
                 {
                     RevisionData data = new RevisionData();
                     data.Revision = (int) e.Revision;
-                    data.Author = e.Author.ToLowerInvariant();
-                    data.Message = e.LogMessage;
+                    data.Author = e.Author ?? "";
+                    data.Message = e.LogMessage ?? "";
                     data.Timestamp = e.Time;
-                    lock (messages) messages[data.Revision] = e.LogMessage ?? "";
-                    if (e.ChangedPaths == null) continue;
-                    foreach (var path in e.ChangedPaths)
-                    {
-                        PathChange change = new PathChange {Revision = data.Revision, Path = path.Path, IsCopy = path.CopyFromPath != null};
-                        switch (path.Action)
-                        {
-                            case SvnChangeAction.Add:
-                                change.Change = Change.Add;
-                                break;
-                            case SvnChangeAction.Modify:
-                                change.Change = Change.Modify;
-                                break;
-                            case SvnChangeAction.Delete:
-                                change.Change = Change.Delete;
-                                break;
-                            case SvnChangeAction.Replace:
-                                change.Change = Change.Replace;
-                                break;
-                            default:
-                                throw new Exception("Invalid action on " + path.Path + "@" + e.Revision);
-                        }
-                        data.Changes.Add(change);
-                    }
+                    AddChanges(data, e.ChangedPaths);                    
                     revisions.Add(data);
+                                
+                    lock (messages) messages[data.Revision] = data.Message;
                 }
             }
             finally
@@ -194,6 +150,34 @@ namespace SvnQuery
                 FreeSvnClient(client);
             }
             return revisions;
+        }
+
+        static void AddChanges(RevisionData data, IEnumerable<SvnChangeItem> changes)
+        {
+            if (changes == null) return;
+            foreach (var item in changes)
+            {
+                data.Changes.Add(new PathChange
+                                 {
+                                     Change = ConvertActionToChange(item.Action),
+                                     Revision = data.Revision,
+                                     Path = item.Path,
+                                     IsCopy = item.CopyFromPath != null
+                                 });
+            }
+        }
+
+        static Change ConvertActionToChange(SvnChangeAction action)
+        {
+            switch (action)
+            {
+                case SvnChangeAction.Add: return Change.Add;
+                case SvnChangeAction.Modify: return Change.Modify;
+                case SvnChangeAction.Delete: return Change.Delete;
+                case SvnChangeAction.Replace: return Change.Replace;
+                default:
+                    throw new Exception("Invalid SvnChangeAction: " + (int) action);
+            }
         }
 
         public void AddDirectoryChildren(string path, int revision, Action<PathChange> action)
@@ -222,14 +206,13 @@ namespace SvnQuery
             PathData data = null;
             try
             {
-                SvnInfoEventArgs info = null;
-                //Retry(delegate {client.GetInfo(target, out info);});
+                SvnInfoEventArgs info;
                 client.GetInfo(target, out info);
 
                 data = new PathData();
                 data.Path = path;
                 data.Size = (int) info.RepositorySize;
-                data.Author = info.LastChangeAuthor.ToLowerInvariant();
+                data.Author = info.LastChangeAuthor ?? "";
                 data.Timestamp = info.LastChangeTime;
                 data.Revision = (int) info.LastChangeRevision;
                 data.FinalRevision = revision;

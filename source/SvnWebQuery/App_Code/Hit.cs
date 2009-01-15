@@ -37,7 +37,7 @@ namespace App_Code
         public Hit(Document doc)
         {
             this.doc = doc;
-            path = doc.Get("id").Split(':')[0];
+            path = doc.Get("id").Split('@')[0];
         }
 
         public string Path

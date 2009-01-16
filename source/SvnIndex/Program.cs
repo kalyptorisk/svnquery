@@ -35,7 +35,8 @@ SvnIndex action index_path repository_url [Options]
   -p Password
   -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
   -t max number of threads used to query the repository in parallel
-  -c number of revisions after which the index is committed
+  -c commit interval
+  -o optimize interval
 ";
 
         static void Main(string[] args)

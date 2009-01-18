@@ -3,7 +3,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>SVN Query</title>
+    <title>Search</title>
 
     <script type="text/javascript">
         function toggleRevisionRange() {
@@ -26,13 +26,16 @@
 
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
-    <form id="form1" runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">
+    <form id="form1" runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">  
+    <table width="100%">
+    <tr>
+    <td>
     <table style="margin-left: -3px; padding: 0px">
         <tr style="margin-bottom: 0px; padding-bottom: 0px">
             <td style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic;">
-                SVN Query
-            </td>
-            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px">
+                <asp:Label ID="RepositoryLabel" runat="server">Repository</asp:Label>&nbsp;Search</td>
+            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px" 
+                nowrap="nowrap">
                 <input type="text" style="visibility: hidden; width: 10px;" />
                 <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision</a>
                 <asp:TextBox ID="textRevision" runat="server" Text="$hidden$" Font-Size="8pt" ToolTip="Enter a revision or a revision range" Width="83px" />
@@ -48,16 +51,25 @@
         </tr>
         <tr style="margin-top: -4px;">
             <td colspan="2">
-                <asp:TextBox ID="inputQuery" runat="server" Width="480px" />
+                <asp:TextBox ID="inputQuery" runat="server" Width="500px" />
             </td>
             <td>
                 <asp:Button ID="btnSearch" runat="server" OnClick="OnSearch" Text="Search" />
             </td>
-            <td style="font-size: 9pt; padding-left: 12px; text-align: right; vertical-align: middle;">
+            <td style="font-size: 9pt; padding-left: 12px; ">
                 <a href="Help.htm">Help</a>
             </td>
         </tr>
-    </table>
+    </table></td>
+    <td valign="top" >
+    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px;  font-style: italic; font-weight: bold;">
+           <a href="http://svnquery.tigris.org" style="color:#909090"> 
+             <span style="font-size: xx-small;" >powered by</span><br/>
+              <span style="font-size: large; " >Svn Query</span></a>
+</p>
+    </td>
+    </tr>
+    </table>  
     <asp:Label ID="messsageLabel" runat="server" />
     <asp:Panel ID="resultsPanel" runat="server" Visible="False">
         <table width="100%" style="background-color: #FFCC99; border-top-width: 1px; margin-bottom: 8px; border-top-color: #CC6600; border-top-style: solid;">

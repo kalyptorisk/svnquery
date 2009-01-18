@@ -16,7 +16,6 @@
 
 #endregion
 
-using System.Web.Configuration;
 using Lucene.Net.Documents;
 using SvnQuery;
 
@@ -24,20 +23,16 @@ namespace App_Code
 {
     public class Hit
     {
-        static readonly string repositoryUrl;
-
-        static Hit()
-        {
-            repositoryUrl = WebConfigurationManager.AppSettings["RepositoryUrl"];
-        }
-
         readonly Document doc;
         readonly string path;
+        readonly string url;
 
-        public Hit(Document doc)
+        public Hit(Document doc, string repositoryUri)
         {
             this.doc = doc;
-            path = doc.Get("id").Split('@')[0];
+            string id = doc.Get("id");
+            path = id.Split('@')[0];
+            url = repositoryUri + id;             
         }
 
         public string Path
@@ -47,7 +42,7 @@ namespace App_Code
 
         public string Url
         {
-            get { return repositoryUrl + path; }
+            get { return url; }
         }
 
         public string Folder

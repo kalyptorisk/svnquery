@@ -32,8 +32,10 @@ namespace App_Code
         readonly Timer timer;
         readonly Dictionary<string, CachedQueryResult> cache = new Dictionary<string, CachedQueryResult>();
 
-        volatile IndexSearcher indexSearcher;
-        volatile int indexRevision;
+        IndexSearcher indexSearcher;
+        int repositoryRevision;
+        string repositoryUri;
+        string _name;
 
         public Index(string index)
         {
@@ -58,14 +60,18 @@ namespace App_Code
             if (indexSearcher == null || !indexSearcher.Reader.IsCurrent())
             {
                 IndexSearcher searcher = new IndexSearcher(index);
-                int revision = IndexProperty.GetRevision(searcher.Reader);
-                //int revision = new IndexData(searcher.Reader).Revision;
+                IndexReader reader = searcher.Reader;
+                int revision = IndexProperty.GetRevision(reader);
+                string uri = IndexProperty.GetRepositoryUri(reader);
+                string name = IndexProperty.GetRepositoryName(reader);
 
                 searcher.Search(new TermQuery(new Term("path", "warmup")));
                 if (indexSearcher == null)
                 {
                     indexSearcher = searcher;
-                    indexRevision = revision;
+                    repositoryRevision = revision;
+                    repositoryUri = uri;
+                    _name = name;
                 }
                 else
                 {
@@ -73,13 +79,20 @@ namespace App_Code
                     lock (indexSearcher)
                     {
                         indexSearcher = searcher;
-                        indexRevision = revision;
+                        repositoryRevision = revision;
+                        repositoryUri = uri;
+                        _name = name;
                     }
                     oldSearcher.Close();
                 }
                 return true;
             }
             return false;
+        }
+
+        public string Name
+        {
+            get { return _name; }
         }
 
         public QueryResult Query(string query, string revFirst, string revLast)
@@ -106,7 +119,7 @@ namespace App_Code
             lock (indexSearcher)
             {
                 searcher = indexSearcher;
-                revision = indexRevision;
+                revision = repositoryRevision;
             }
 
             Parser p = new Parser(searcher.Reader);
@@ -133,7 +146,7 @@ namespace App_Code
                 hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
             }
 
-            return new QueryResult(sw, revision, searcher.MaxDoc(), hits);
+            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, repositoryUri);
         }
 
         class CachedQueryResult

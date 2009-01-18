@@ -24,15 +24,6 @@ using SvnQuery;
 
 public partial class _Default : Page
 {
-    protected override void OnInit(EventArgs e)
-    {
-        base.OnInit(e);
-    }
-
-    protected override void OnLoad(EventArgs e)
-    {
-        base.OnLoad(e);
-    }
 
     protected override void OnPreRender(EventArgs e)
     {
@@ -48,6 +39,8 @@ public partial class _Default : Page
             textRevision.Style[HtmlTextWriterStyle.Display] = "";
             optGroup.Style[HtmlTextWriterStyle.Display] = "none";
         }
+        RepositoryLabel.Text = QueryApplicationIndex.Name;
+        Title = QueryApplicationIndex.Name + " Search";
     }
 
     protected void OnSearch(object sender, EventArgs e)

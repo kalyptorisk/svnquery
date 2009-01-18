@@ -50,5 +50,10 @@ namespace App_Code
         {
             return Query(query, revFirst, revLast).HitCount;
         }
+
+        public static string Name
+        {
+            get { return Index.Name; }
+        }
     }
 }

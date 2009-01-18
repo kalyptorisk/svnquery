@@ -30,13 +30,15 @@ namespace App_Code
         readonly int _searchTime;
         readonly int _indexRevision;
         readonly int _searchCcount;
+        readonly string uri; 
 
-        public QueryResult(Stopwatch sw, int indexRevision, int searchCount, Hits hits)
+        public QueryResult(Stopwatch sw, int indexRevision, int searchCount, Hits hits, string repositoryUri)
         {
             _searchTime = (int) sw.ElapsedMilliseconds + 1;
             _indexRevision = indexRevision;
             _searchCcount = searchCount;
             _luceneHits = hits;
+            uri = repositoryUri;
         }
 
         public int SearchCount
@@ -51,7 +53,7 @@ namespace App_Code
 
         public Hit this[int i]
         {
-            get { return new Hit(_luceneHits.Doc(i)); }
+            get { return new Hit(_luceneHits.Doc(i), uri); }
         }
 
         public int SearchTime

@@ -127,7 +127,7 @@ namespace SvnQuery
             var dummy = new StandardAnalyzer();                
             IndexWriter indexWriter = new IndexWriter(directory, false, dummy, create);
             if (create) IndexProperty.SetRepositoryId(indexWriter, svn.GetRepositoryId());
-            IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName ?? args.RepositoryUri);
+            if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
             IndexProperty.SetRepositoryUri(indexWriter, args.RepositoryUri);
             while (startRevision <= stopRevision) 
             {

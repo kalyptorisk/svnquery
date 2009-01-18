@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
+using System.Linq;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using SvnQuery;
@@ -63,7 +64,7 @@ namespace App_Code
                 IndexReader reader = searcher.Reader;
                 int revision = IndexProperty.GetRevision(reader);
                 string uri = IndexProperty.GetRepositoryUri(reader);
-                string name = IndexProperty.GetRepositoryName(reader);
+                string name = IndexProperty.GetRepositoryName(reader) ?? uri.Split('/').Last();
 
                 searcher.Search(new TermQuery(new Term("path", "warmup")));
                 if (indexSearcher == null)

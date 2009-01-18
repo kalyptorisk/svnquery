@@ -37,6 +37,7 @@ SvnIndex action index_path repository_url [Options]
   -t max number of threads used to query the repository in parallel
   -c commit interval
   -o optimize interval
+  -n name of the index (for display in clients e.g. SvnWebQuery)
 ";
 
         static void Main(string[] args)

@@ -28,6 +28,8 @@ namespace SvnQuery
         const string ValueField = "$Value";
         const string RevisionProperty = "Revision";
         const string RepositoryIdProperty = "RepositoryId";
+        const string RepositoryNameProperty = "RepositoryName";
+        const string RepositoryUriProperty = "RepositoryUri";
 
         /// <summary>
         /// returns a term that uniquely identifies a document containing an index property
@@ -46,11 +48,10 @@ namespace SvnQuery
 
         static void UpdateProperty(IndexWriter writer, string property, string value)
         {
-            writer.DeleteDocuments(GetPropertyId(property));
             var doc = new Document();
             doc.Add(new Field(IdField, property, Field.Store.NO, Field.Index.UN_TOKENIZED));
             doc.Add(new Field(ValueField, value, Field.Store.YES, Field.Index.NO));
-            writer.AddDocument(doc);
+            writer.UpdateDocument(GetPropertyId(property), doc);
         }
 
         public static int GetRevision(IndexReader reader)
@@ -58,19 +59,41 @@ namespace SvnQuery
             return int.Parse(GetProperty(reader, RevisionProperty));
         }
 
+        public static void SetRevision(IndexWriter writer, int revision)
+        {
+            UpdateProperty(writer, RevisionProperty, revision.ToString());
+        }
+
         public static Guid GetRepositoryId(IndexReader reader)
         {
             return new Guid(GetProperty(reader, RepositoryIdProperty));
         }
 
-        public static void UpdateRevision(IndexWriter writer, int revision)
-        {
-            UpdateProperty(writer, RevisionProperty, revision.ToString());
-        }
-
-        public static void UpdateRepositoryId(IndexWriter writer, Guid repositoryId)
+        public static void SetRepositoryId(IndexWriter writer, Guid repositoryId)
         {
             UpdateProperty(writer, RepositoryIdProperty, repositoryId.ToString());            
         }
+
+        public static string GetRepositoryName(IndexReader reader)
+        {
+            return GetProperty(reader, RepositoryNameProperty);
+        }
+
+        public static void SetRepositoryName(IndexWriter writer, string name)
+        {
+            UpdateProperty(writer, RepositoryNameProperty, name);
+        }
+
+        public static string GetRepositoryUri(IndexReader reader)
+        {
+            return GetProperty(reader, RepositoryUriProperty);
+        }
+
+        public static void SetRepositoryUri(IndexWriter writer, string uri)
+        {
+            UpdateProperty(writer, RepositoryUriProperty, uri);
+        }
+
+
     }
 }

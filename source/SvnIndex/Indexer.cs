@@ -108,6 +108,7 @@ namespace SvnQuery
         public void Run()
         {
             Console.WriteLine("Validating parameters ...");
+            var directory = FSDirectory.GetDirectory(args.IndexPath);
             DateTime start = DateTime.UtcNow;
             bool create = args.Command == Command.Create;
             int startRevision = 1; 
@@ -115,12 +116,12 @@ namespace SvnQuery
             bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
             if (!create)
             {
-                IndexSearcher searcher = new IndexSearcher(args.IndexPath);
+                IndexSearcher searcher = new IndexSearcher(directory);
                 startRevision = IndexProperty.GetRevision(searcher.Reader) + 1;
                 Guid repositoryId = IndexProperty.GetRepositoryId(searcher.Reader); 
                 searcher.Close();
                 if (svn.GetRepositoryId() != repositoryId)
-                    throw new Exception("Index does not belong to repository. Index repository uuid = " + repositoryId);
+                    throw new Exception("Existing index was created from a different repository. (UUID does not match)");
             }
 
             if (startRevision > stopRevision)
@@ -130,22 +131,25 @@ namespace SvnQuery
             else
             {
                 Console.WriteLine("Begin indexing ...");
-                var dummy = new StandardAnalyzer();
-                for (int i = startRevision; i <= stopRevision; i += args.CommitInterval)
+                var dummy = new StandardAnalyzer();                
+                indexWriter = new IndexWriter(directory, false, dummy, create);
+                if (create) IndexProperty.SetRepositoryId(indexWriter, svn.GetRepositoryId());
+                IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName ?? args.RepositoryUri);
+                IndexProperty.SetRepositoryUri(indexWriter, args.RepositoryUri);
+                for (;;) 
                 {
-                    indexWriter = new IndexWriter(FSDirectory.GetDirectory(args.IndexPath), false, dummy, create);
-                    if (create) IndexProperty.UpdateRepositoryId(indexWriter, svn.GetRepositoryId());
-                    create = false;
-                    indexWriter.SetRAMBufferSizeMB(32);
                     IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
-                    startRevision += args.CommitInterval;
-                    if (startRevision > stopRevision && optimize)
-                    { 
-                        Console.WriteLine("Optimizing index ...");
-                        indexWriter.Optimize();
-                    }
+                    startRevision += args.CommitInterval;                     
+                    if (startRevision > stopRevision) break;
                     indexWriter.Close(); // Commit changes
+                    indexWriter = new IndexWriter(directory, false, dummy, false);
                 }
+                if (optimize)
+                {
+                    Console.WriteLine("Optimizing index ...");
+                    indexWriter.Optimize();
+                }
+                indexWriter.Close();
                 indexWriter = null;
             }
             Console.WriteLine("Finished in " + (DateTime.UtcNow - start));
@@ -170,10 +174,10 @@ namespace SvnQuery
 
             ProcessIndexQueue(); 
 
-            IndexProperty.UpdateRevision(indexWriter, stop);
+            IndexProperty.SetRevision(indexWriter, stop);
             Console.WriteLine("Index revision is now " + stop);
         }
-
+        
         void QueueChange(PathChange change)
         {
             if (args.Filter != null && args.Filter.IsMatch(change.Path)) return;

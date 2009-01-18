@@ -34,9 +34,18 @@ namespace SvnIndexTests
 
         static SvnApiTest()
         {
-            repository = "file:///" +
-                         Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
-            //repository = "svn://localhost/";
+            repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+        }
+
+        /// <summary>
+        /// Tests a bug in the subversion or sharpsvn code that seems to be present only on file based (windows) repositories
+        /// </summary>
+        [Test, Ignore]
+        public void GetPathData_InvalidPathInSubversion1398_NoException()
+        {
+            ISvnApi svn = new SharpSvnApi("file:///d:/SvnMirror");
+            string path = "/trunk/packages/freebsd/subversion/files/patch-subversion::libsvn_ra_dav::session.c";
+            svn.GetPathData(path, 1398); // throws exception on local repository, but works on http: repositories
         }
 
         [Test]
@@ -51,7 +60,7 @@ namespace SvnIndexTests
             var rev = api.GetRevisionData(1, 1); 
             
             Assert.That(rev, Has.Count(1));
-            Assert.That(rev[0].Author, Is.EqualTo("christian"));
+            Assert.That(rev[0].Author, Is.EqualTo("Christian"));
             Assert.IsTrue(rev[0].Changes.TrueForAll(c => api.GetPathData(c.Path, c.Revision).Author == rev[0].Author));
         }
 

@@ -27,18 +27,20 @@ namespace SvnQuery
         public Indexer.Command Command;
         public string IndexPath;
         public string RepositoryUri;
+        public string RepositoryName;
         public string User;
         public string Password;
         public Regex Filter; // pathes that match this regex are not indexed
         public int MaxRevision = 99999999;
-        public int MaxThreads = 16;
+        public int MaxThreads; // default is initialized depending on protocol (file:///, svn:// http://) 
+                                // as a general rule, the higher the latency the higher the number of threads should be
         public int Optimize = 25; // number of revisions that lead to optimization
         public int CommitInterval = 1000; // the interval between the index gets committed
-        public bool Verbose;
+        public bool IsLocalRepository;  // HACK: Invalid characters like ':' in pathes for file repositories
 
         public IndexerArgs(string[] args)
         {
-            bool allMandatoryArgumentsFound = false;
+            int iMandatory = 0;
             for (int i = 0; i < args.Length; ++i)
             {
                 if (args[i][0] == '-')
@@ -69,6 +71,9 @@ namespace SvnQuery
                         case 'c':
                             CommitInterval = int.Parse(arg);
                             break;
+                        case 'n':
+                            RepositoryName = arg;
+                            break;
                         //case 'v':
                         //    Verbose = true;
                         //    break;
@@ -77,21 +82,42 @@ namespace SvnQuery
                     }
                 }
                 else
-                    switch (i)
+                {
+                    string arg = args[i];
+                    switch (iMandatory++)
                     {
                         case 0:
-                            Command = (Indexer.Command) Enum.Parse(typeof (Indexer.Command), args[i], true);
+                            try
+                            {
+                                Command = (Indexer.Command) Enum.Parse(typeof (Indexer.Command), arg, true);
+                            }
+                            catch (ArgumentException x)
+                            {
+                                throw new Exception("Unknown command '" + arg + "'", x);
+                            }
                             break;
                         case 1:
-                            IndexPath = Path.GetFullPath(args[i]);
+                            IndexPath = Path.GetFullPath(arg);
                             break;
                         case 2:
-                            RepositoryUri = args[i];
-                            allMandatoryArgumentsFound = true;
+                            RepositoryUri = arg;                            
                             break;
                     }
+                }
             }
-            if (!allMandatoryArgumentsFound) throw new Exception("Missing arguments");
+            if (iMandatory != 3) throw new Exception("Missing arguments");
+            
+            IsLocalRepository = RepositoryUri.StartsWith("file") || Regex.IsMatch(RepositoryUri, @"^[a-zA-Z]\:");
+            if (MaxThreads == 0) MaxThreads = GetMaxThreadsFromUri(RepositoryUri);
+        }
+
+        static int GetMaxThreadsFromUri(string uri)
+        {
+            uri = uri.ToLowerInvariant();
+            if (uri.StartsWith("svn")) return 8;
+            if (uri.StartsWith("http")) return 16;
+            if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 2; // local file repository            
+            return 4; // unknown protocol
         }
     }
 }

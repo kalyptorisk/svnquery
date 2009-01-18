@@ -244,17 +244,19 @@ namespace SvnQuery
             }
             catch (SvnException x)
             {
-                if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;
-            }
-                catch (Exception x)
+                if (path.IndexOfAny(invalidChars) >= 0)
                 {
-                    Console.WriteLine(x);
+                    Console.WriteLine("WARNING: path could not be indexed: " + path + " in revision " + revision);
                 }
+                else if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;
+            }              
             finally
             {
                 FreeSvnClient(client);
             }
             return data;
         }
+
+        static readonly char[] invalidChars = new[] { ':', '$', '\\' };
     }
 }

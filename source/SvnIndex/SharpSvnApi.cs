@@ -180,17 +180,17 @@ namespace SvnQuery
             }
         }
 
-        public void AddDirectoryChildren(string path, int revision, Action<PathChange> action)
+        public void ForEachChild(string path, int revision, Change change, Action<PathChange> action)
         {
             SvnClient client = AllocSvnClient();
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), change == Change.Delete ? revision -1 : revision);
             try
             {
-                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity, Revision = revision};
+                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Children};
                 client.List(target, args, delegate(object s, SvnListEventArgs e)
                 {
                     if (string.IsNullOrEmpty(e.Path)) return;
-                    action(new PathChange {Change = Change.Add, Revision = revision, Path = e.BasePath + "/" + e.Path});
+                    action(new PathChange {Change = change, Revision = revision, Path = e.BasePath + "/" + e.Path});
                 });
             }
             finally
@@ -214,7 +214,7 @@ namespace SvnQuery
                 data.Size = (int) info.RepositorySize;
                 data.Author = info.LastChangeAuthor ?? "";
                 data.Timestamp = info.LastChangeTime;
-                data.Revision = (int) info.LastChangeRevision;
+                data.Revision = (int) info.LastChangeRevision;  // wrong if data is directory
                 data.FinalRevision = revision;
                 data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
 

@@ -1,0 +1,68 @@
+id: 0-6.0-19.r19/0
+type: dir
+pred: 0-6.0.r10/854
+count: 3
+text: 10 754 87 87 0eabf535794842df3ffe31534f3098bb
+cpath: /Folder/Subfolder
+copyfrom: 18 /Folder/Neuer Ordner
+minfo-cnt: 3
+
+PLAIN
+K 2
+C#
+V 16
+dir 0-12.0.r12/0
+K 6
+Second
+V 17
+dir 0-3.0.r18/305
+K 9
+Subfolder
+V 18
+dir 0-6.0-19.r19/0
+K 6
+import
+V 19
+dir 0-15.0.r17/7809
+END
+ENDREP
+id: 0-1.0.r19/337
+type: dir
+pred: 0-1.0.r18/664
+count: 15
+text: 19 183 141 141 d8cf4392f7411f5233b04967607f3d3a
+cpath: /Folder
+copyroot: 0 /
+minfo-cnt: 3
+
+PLAIN
+K 21
+CopyWithDeletedFolder
+V 19
+dir 0-6.0-16.r16/95
+K 6
+Folder
+V 17
+dir 0-1.0.r19/337
+K 16
+Ümläute öäü
+V 18
+dir 0-13.0.r14/501
+END
+ENDREP
+id: 0.0.r19/641
+type: dir
+pred: 0.0.r18/969
+count: 19
+text: 19 492 136 136 06f4a99d300332f2d6b7694d94f12931
+props: 13 171 40 0 7389e645121053447b3f2c073c489217
+cpath: /
+copyroot: 0 /
+minfo-cnt: 6
+
+0-6._0.t18-i add false false /Folder/Subfolder
+18 /Folder/Neuer Ordner
+0-6.0.r10/854 delete false false /Folder/Neuer Ordner
+
+
+641 838

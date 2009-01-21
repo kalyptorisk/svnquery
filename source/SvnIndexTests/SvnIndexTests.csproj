@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{36768AD5-5B70-41ED-BC86-5FB84A9F2D51}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Lucene.Net, Version=2.3.1.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\3rdParty\Lucene.Net\Lucene.Net.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdParty\nunit\nunit.framework.dll</HintPath>
@@ -49,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IndexerTests.cs" />
     <Compile Include="MiscTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SvnApiAuthenticationTests.cs" />
@@ -58,6 +63,10 @@
     <ProjectReference Include="..\SvnIndex\SvnIndex.csproj">
       <Project>{7015FFBE-DFF9-4E6B-BC4C-8129EB1CDD2E}</Project>
       <Name>SvnIndex</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SvnQuery\SvnQuery.csproj">
+      <Project>{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}</Project>
+      <Name>SvnQuery</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

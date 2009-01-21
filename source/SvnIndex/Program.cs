@@ -62,7 +62,14 @@ SvnIndex action index_path repository_url [Options]
                 }
 
                 Indexer indexer = new Indexer(indexerArgs);
-                indexer.Run();
+                if (indexerArgs.Command == Indexer.Command.Check)
+                {
+                    indexer.Check();
+                }
+                else
+                {
+                    indexer.Run();
+                }
             }
             finally
             {

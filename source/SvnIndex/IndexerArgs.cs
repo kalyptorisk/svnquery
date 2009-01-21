@@ -24,7 +24,7 @@ namespace SvnQuery
 {
     public class IndexerArgs
     {
-        public Indexer.Command Command;
+        public Indexer.Command Command;        
         public string IndexPath;
         public string RepositoryUri;
         public string RepositoryName;

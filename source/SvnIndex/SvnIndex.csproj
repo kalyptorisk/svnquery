@@ -63,7 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FinalizedMemory.cs" />
+    <Compile Include="HighestRevision.cs" />
     <Compile Include="Indexer.cs" />
     <Compile Include="IndexerArgs.cs" />
     <Compile Include="ISvnApi.cs" />

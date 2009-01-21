@@ -39,9 +39,9 @@ namespace SvnQuery
         const int headRevision = 99999999; // the longest revision svnlook is able to produce
 
         readonly IndexerArgs args;
+        readonly Directory indexDirectory;
         readonly ISvnApi svn;
 
-        readonly FinalizedMemory finalized = new FinalizedMemory();
         readonly PendingReads pendingReads = new PendingReads();
 
         readonly Queue<PathData> indexQueue = new Queue<PathData>();
@@ -70,14 +70,17 @@ namespace SvnQuery
         public enum Command
         {
             Create,
-            Update
+            Update, 
+            Check
         } ;
 
         public Indexer(IndexerArgs args)
         {
             PrintLogo();
+            PrintArgs();
 
             this.args = args;
+            indexDirectory = FSDirectory.GetDirectory(args.IndexPath);
             indexQueueLimit = new Semaphore(args.MaxThreads * 4, args.MaxThreads * 4);
             ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
             ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
@@ -88,8 +91,14 @@ namespace SvnQuery
             messageField = new Field(FieldName.Message, messageTokenStream);
 
             svn = new SharpSvnApi(args.RepositoryUri, args.User, args.Password);
+        }
 
-            PrintArgs();
+        /// <summary>
+        /// This constructor is intended for tests in RAMDirectory only
+        /// </summary>
+        public Indexer(IndexerArgs args, Directory dir): this(args)
+        {
+            indexDirectory = dir;
         }
 
         static void PrintLogo()
@@ -104,10 +113,14 @@ namespace SvnQuery
             Console.WriteLine();
         }
 
+        public void Check()
+        {
+            
+        }
+
         public void Run()
         {
             Console.WriteLine("Validating parameters ...");
-            var directory = FSDirectory.GetDirectory(args.IndexPath);
             DateTime start = DateTime.UtcNow;
             bool create = args.Command == Command.Create;
             int startRevision = 1; 
@@ -115,7 +128,7 @@ namespace SvnQuery
             bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
             if (!create)
             {
-                IndexSearcher searcher = new IndexSearcher(directory);
+                IndexSearcher searcher = new IndexSearcher(indexDirectory);
                 startRevision = IndexProperty.GetRevision(searcher.Reader) + 1;
                 Guid repositoryId = IndexProperty.GetRepositoryId(searcher.Reader); 
                 searcher.Close();
@@ -124,18 +137,21 @@ namespace SvnQuery
             }
 
             Console.WriteLine("Begin indexing ...");
-            var dummy = new StandardAnalyzer();                
-            IndexWriter indexWriter = new IndexWriter(directory, false, dummy, create);
+            var dummy = new StandardAnalyzer();
+                                                            
+            //ndexReader indexReader = new MultiSegmentReader.;
+            IndexWriter indexWriter = new IndexWriter(indexDirectory, false, dummy, create);
             if (create) IndexProperty.SetRepositoryId(indexWriter, svn.GetRepositoryId());
             if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
             IndexProperty.SetRepositoryUri(indexWriter, args.RepositoryUri);
+
             while (startRevision <= stopRevision) 
             {
                 IndexRevisionRange(indexWriter, startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
                 startRevision += args.CommitInterval;                     
                 if (startRevision > stopRevision) break;
                 indexWriter.Close(); // Commit changes
-                indexWriter = new IndexWriter(directory, false, dummy, false);
+                indexWriter = new IndexWriter(indexDirectory, false, dummy, false);
             }
             if (optimize)
             {
@@ -209,26 +225,31 @@ namespace SvnQuery
 
         void CreateDocument(PathChange change)
         {
-            if (finalized.IsFinalized(change.Path, change.Revision)) return;
-
             PathData data = svn.GetPathData(change.Path, change.Revision);
             if (data == null) return;
             data.Revision = change.Revision;
             data.FinalRevision = headRevision;
-            if (data.IsDirectory && change.IsCopy)
-            {
-                svn.AddDirectoryChildren(change.Path, change.Revision, QueueChange);
-            }
             QueueIndexDocument(data);
+            
+            //if (data.IsDirectory)
+            //{
+            //    svn.ForEachChild(change.Path, change.Revision, Change.Add, QueueChange);
+            //}
         }
 
         void FinalizeDocument(PathChange change)
         {
-            PathData data = svn.GetPathData(change.Path, change.Revision - 1);
+            int finalRevision = change.Revision - 1;
+
+            PathData data = svn.GetPathData(change.Path, finalRevision);
             if (data == null) return;
 
-            finalized.Finalize(change.Path, data.Revision);
             QueueIndexDocument(data);
+
+            //if (data.IsDirectory)
+            //{
+            //    svn.ForEachChild(change.Path, change.Revision, Change.Delete, QueueChange);
+            //}
         }
 
         void QueueIndexDocument(PathData data)

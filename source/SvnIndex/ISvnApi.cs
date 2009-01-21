@@ -39,9 +39,9 @@ namespace SvnQuery
         List<RevisionData> GetRevisionData(int firstRevision, int lastRevision);
 
         /// <summary>
-        /// Lists a folder recursively with PathChanges of type add
+        /// Lists a folder with PathChanges of type change
         /// </summary>
-        void AddDirectoryChildren(string path, int revision, Action<PathChange> action);
+        void ForEachChild(string path, int revision, Change change, Action<PathChange> action);
 
         /// <summary>
         /// Gets data for a path in a given revision

@@ -32,7 +32,6 @@ namespace SvnQuery
         readonly Dictionary<int, string> messages = new Dictionary<int, string>();
         readonly List<SvnClient> clientPool = new List<SvnClient>();
         
-
         public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
         {}
 
@@ -199,11 +198,94 @@ namespace SvnQuery
             }
         }
 
+        public PathInfo GetPathInfo(string path, int revision)
+        {
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            SvnClient client = AllocSvnClient();
+            try
+            {
+                SvnInfoEventArgs info;
+                client.GetInfo(target, out info);
+
+                PathInfo result = new PathInfo();
+                result.Size = (int) info.RepositorySize;
+                result.Author = info.LastChangeAuthor ?? "";
+                result.Timestamp = info.LastChangeTime;
+                result.Revision = (int) info.LastChangeRevision; // wrong if data is directory                
+                result.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
+                return result;
+            }
+            catch (SvnException x)
+            {
+                if (x.SvnErrorCode == SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL)
+                {
+                    return null;
+                }
+                if (path.IndexOfAny(invalidChars) >= 0) // this condition exists only because of a bug in the svn client for local repositoreis
+                {
+                    Console.WriteLine("WARNING: path with invalid charactes could not be indexed: " + path + "@" + revision);
+                    return null;
+                }
+                throw;
+            }              
+            finally
+            {
+                FreeSvnClient(client);
+            }
+        }
+        static readonly char[] invalidChars = new[] { ':', '$', '\\' };
+
+        public IDictionary<string, string> GetPathProperties(string path, int revision)
+        {
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            SvnClient client = AllocSvnClient();
+            try
+            {
+                Collection<SvnPropertyListEventArgs> pc;
+                client.GetPropertyList(target, out pc);
+                Dictionary<string, string> properties = new Dictionary<string, string>();
+                foreach (var proplist in pc)
+                {
+                    foreach (var property in proplist.Properties)
+                    {
+                        properties.Add(property.Key, property.StringValue.ToLowerInvariant());
+                    }
+                }
+                return properties;
+            }
+            finally
+            {
+                FreeSvnClient(client);
+            }
+        }
+
+        public string GetPathContent(string path, int revision, int size)
+        {
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            SvnClient client = AllocSvnClient();
+            try
+            {
+                using (MemoryStream stream = new MemoryStream(size))
+                {
+                    client.Write(target, stream);
+                    stream.Position = 0;
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd(); // default utf-8 encoding, does not work with codepages                    
+                    }
+                }
+            }
+            finally
+            {
+                FreeSvnClient(client);
+            }
+        }
+
         public PathData GetPathData(string path, int revision)
         {
-            SvnClient client = AllocSvnClient();
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
             PathData data = null;
+            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
+            SvnClient client = AllocSvnClient();
             try
             {
                 SvnInfoEventArgs info;
@@ -257,6 +339,6 @@ namespace SvnQuery
             return data;
         }
 
-        static readonly char[] invalidChars = new[] { ':', '$', '\\' };
+       
     }
 }

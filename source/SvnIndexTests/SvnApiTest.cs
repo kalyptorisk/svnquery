@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -34,6 +35,7 @@ namespace SvnIndexTests
 
         static SvnApiTest()
         {
+            // works only if shadow copying in unit tests is disabled, because otherwise the relative path is wrong
             repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
         }
 
@@ -44,14 +46,17 @@ namespace SvnIndexTests
         public void GetPathData_InvalidPathInSubversion1398_NoException()
         {
             ISvnApi svn = new SharpSvnApi("file:///d:/SvnMirror");
-            string path = "/trunk/packages/freebsd/subversion/files/patch-subversion::libsvn_ra_dav::session.c";
-            svn.GetPathData(path, 1398); // throws exception on local repository, but works on http: repositories
+            const string path = "/trunk/packages/freebsd/subversion/files/patch-subversion::libsvn_ra_dav::session.c";
+            const int revision = 1398;
+
+            // throws exception on local repository, but works on http: repositories
+            svn.GetPathInfo(path, revision); 
         }
 
         [Test]
         public void GetYoungestRevision()
         {
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(18));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(19));
         }
 
         [Test]
@@ -133,15 +138,10 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void GetPathData_AtomicCopyWithDeleteInRev16_NoData()
+        public void GetPathInfo_AtomicCopyWithDeleteInRev16_NoData()
         {
             string path = GetFilteredPathList(Change.Delete, 16).First();
             Assert.That(api.GetPathData(path, 16), Is.Null);
-        }
-
-        List<PathChange> GetPathChangeList(int revision)
-        {
-            return api.GetRevisionData(revision, revision)[0].Changes;
         }
 
         List<string> GetFilteredPathList(Change allowed, int revision)
@@ -154,37 +154,33 @@ namespace SvnIndexTests
             return list;
         }
 
-        [Test]
-        public void GetPathData_Revision17_Properties()
+        List<PathChange> GetPathChangeList(int revision)
         {
-            PathData data = api.GetPathData("/Folder/Second", 17);
-            Assert.That(data.Properties, Has.Count(3));
-            Assert.That(data.Properties["cr:test"], Is.EqualTo("nur ein test"));
-            Assert.That(data.Properties["cr:test2"], Is.EqualTo("another test"));
-            Assert.That(data.Properties["cr:test3"], Is.EqualTo("more tests"));
+            return api.GetRevisionData(revision, revision)[0].Changes;
         }
 
         [Test]
-        public void GetPathData_Revision17_Content()
+        public void GetPathProperties_Revision17_Properties()
         {
-            PathData data = api.GetPathData("/Folder/Second/first.txt", 17);
-            Assert.That(data.Text, Is.EqualTo("hullebulle"));
+            var properties = api.GetPathProperties("/Folder/Second", 17);
+            Assert.That(properties, Has.Count(3));
+            Assert.That(properties["cr:test"], Is.EqualTo("nur ein test"));
+            Assert.That(properties["cr:test2"], Is.EqualTo("another test"));
+            Assert.That(properties["cr:test3"], Is.EqualTo("more tests"));
         }
 
         [Test]
-        public void GetPathData_Revision17_BinaryHasNoText()
+        public void GetPathContent_Revision17_Content()
         {
-            PathData data = api.GetPathData("/Folder/Second/SvnQuery.dll", 17);
-
-            Assert.That(data.Properties["svn:mime-type"], Is.Not.StartsWith("text/"));
-            Assert.That(data.Text, Is.Null);
+            var content = api.GetPathContent("/Folder/Second/first.txt", 17, 10);
+            Assert.That(content, Is.EqualTo("hullebulle"));
         }
-
+      
         [Test]
-        public void GetPathData_Revision17_Size()
+        public void GetPathInfo_Revision17_Size()
         {
-            Assert.That(api.GetPathData("/Folder/Second/first.txt", 17).Size, Is.EqualTo(10));
-            Assert.That(api.GetPathData("/Folder/Second/SvnQuery.dll", 17).Size, Is.EqualTo(13312));
+            Assert.That(api.GetPathInfo("/Folder/Second/first.txt", 17).Size, Is.EqualTo(10));
+            Assert.That(api.GetPathInfo("/Folder/Second/SvnQuery.dll", 17).Size, Is.EqualTo(13312));
         }
 
         public Exception CatchException(Action action)
@@ -218,6 +214,7 @@ namespace SvnIndexTests
         {
             Exception exception = CatchException(delegate { api.GetRevisionData(5000, 10000); });
             Assert.That(exception, Is.Not.Null);
-        }
+        }      
+
     }
 }

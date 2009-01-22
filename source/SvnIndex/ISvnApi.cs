@@ -49,6 +49,21 @@ namespace SvnQuery
         PathData GetPathData(string path, int revision);
 
         /// <summary>
+        /// Gets a PathInfo for a path in a given revision
+        /// </summary>
+        PathInfo GetPathInfo(string path, int revision);
+
+        /// <summary>
+        /// Returns the svn-properties of a path in a given revision
+        /// </summary>
+        IDictionary<string, string> GetPathProperties(string path, int revision);
+
+        /// <summary>
+        /// Fetches content for a path in a given revision (should be called only for text content)
+        /// </summary>
+        string GetPathContent(string path, int revision, int size);
+
+        /// <summary>
         /// Gets the revision comment for a given revision 
         /// </summary>
         string GetLogMessage(int revision);
@@ -77,11 +92,21 @@ namespace SvnQuery
         public int Revision;
         public string Path;
         public bool IsCopy; //  if IsCopy and IsDirectory than children need to be added explicitely
+        //public bool FetchChildren
 
         public override string ToString()
         {
             return Change + " " + Path + "@" + Revision;
         }
+    }
+
+    public class PathInfo
+    {
+        public int Revision;        // Revision as stored in the repository, last commit revision
+        public string Author;
+        public DateTime Timestamp;
+        public int Size;
+        public bool IsDirectory;
     }
 
     public class PathData

@@ -17,19 +17,22 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery;
 using NUnit.Framework.Constraints;
+using NUnit.Framework.SyntaxHelpers;
 
 namespace SvnIndexTests
 {
+
     [TestFixture]
     public class IndexerTests
     {
@@ -38,13 +41,12 @@ namespace SvnIndexTests
 
         public IndexerTests()
         {
-            //var dir = new RAMDirectory();
+            var dir = new RAMDirectory();
             //var dir = FSDirectory.GetDirectory(Path.Combine(Path.GetTempPath(), "DummyIndex")); 
-            var dir = FSDirectory.GetDirectory(@"d:\testindex"); 
-            Indexer indexer = new Indexer(new IndexerArgs(new []{"create", "DummyIndex", repository, "-n", "Test"}), dir);
-            indexer.Run();            
+            //var dir = FSDirectory.GetDirectory(@"d:\testindex"); 
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "DummyIndex", repository, "-n", "Test" }), dir);
+            indexer.Run();
             searcher = new IndexSearcher(dir);
-            Debug.WriteLine(searcher.MaxDoc());
         }
 
         Document FindDoc(string id)
@@ -54,51 +56,148 @@ namespace SvnIndexTests
             return h.Doc(0);
         }
 
-        class EqualRevisionConstraint: EqualConstraint
+        class RevisionRange: IComparable<RevisionRange>
         {
-            public EqualRevisionConstraint(int revision)
-                : base(revision)
-            {}
+            public readonly int First;
+            public readonly int Last;
 
-            public override bool Matches(object doc)
+            public RevisionRange(int first, int last)
             {
-                var d = doc as Document;
-                return d != null && base.Matches(int.Parse(d.Get(FieldName.RevisionLast)));
+                First = first;
+                Last = last;
+            }
+
+            public override bool Equals(object obj)
+            {
+                RevisionRange other = obj as RevisionRange;
+                return other!= null && First == other.First && Last == other.Last;
+            }
+
+            public override int GetHashCode()
+            {
+                return First ^ Last;
+            }
+
+            public int CompareTo(RevisionRange other)
+            {
+                return ((IComparable<int>) First).CompareTo(other.First); 
+            }
+
+            public override string ToString()
+            {
+                return First + ":" + Last;
             }
         }
 
-        static Constraint HasLastRevision(int revision)
+        List<RevisionRange> RevisionOrder(string path)
         {
-            return new EqualRevisionConstraint(revision);
+            List<RevisionRange> results = new List<RevisionRange>();
+            IndexReader r = searcher.Reader;
+            path = path + "@";
+            var t = r.Terms(new Term(FieldName.Id, path));
+            while (t.Next())
+            {
+                if (!t.Term().Text().StartsWith(path)) break;
+
+                int revisionId = int.Parse(t.Term().Text().Substring(path.Length));
+                var d = r.TermDocs(t.Term());
+                while (d.Next())
+                {
+                    Document doc = r.Document(d.Doc());
+                    int first = int.Parse(doc.Get(FieldName.RevisionFirst));
+                    int last = int.Parse(doc.Get(FieldName.RevisionLast));
+
+                    Assert.That(first, Is.EqualTo(revisionId));
+                    results.Add(new RevisionRange (first, last));
+                }
+            }
+            results.Sort();
+            return results;
         }
 
-        void AssertRevisions(string path, params int[] revisions)
+        static List<RevisionRange> RevisionOrder(params int[] revisions)
         {
+            List<RevisionRange> results = new List<RevisionRange>();
             for (int i = 1; i < revisions.Length; ++i)
-            {                
-                var doc = FindDoc(path + "@" + revisions[i - 1]);
-                Assert.That(doc, HasLastRevision(revisions[i]));
+            {
+                if (revisions[i] == 0) 
+                {
+                    if (++i + 1 == revisions.Length) throw new ArgumentException("expected at least two revisions after a zero revision");
+                    continue; 
+                }
+                results.Add(new RevisionRange(revisions[i - 1], revisions[i] == -1 ? 99999999 : revisions[i] - 1));
             }
+            return results;
         }
 
-        [Test, Ignore]
-        public void Index_DeletedFolderNeuerOrdner_NoHeadRevisionPresent()
+        [Test]
+        public void RevisionOrder_ContinousWithHead()
         {
-            var doc = FindDoc("/Folder/Neuer Ordner@6");
-            Assert.That(doc, HasLastRevision(18));           
+            Assert.That(RevisionOrder(1, 5, 6, -1), 
+                Is.EquivalentTo(new List<RevisionRange>{new RevisionRange(1, 4), new RevisionRange(5, 5), new RevisionRange(6, 99999999)}));
         }
 
-        [Test, Ignore]
-        public void Index_FileInDeleteFolder_NoHeadRevisionPresent()
+        [Test]
+        public void RevisionOrder_NonContinous()
         {
-            var doc = FindDoc("/Folder/Neuer Ordner/Second/first.txt@10");
-            Assert.That(doc, HasLastRevision(18));            
-        }      
+            Assert.That(RevisionOrder(3, 5, 0, 7, 8), Is.EqualTo(new[] { new RevisionRange(3, 4), new RevisionRange(7, 7)}));
+        }
 
-        [Test, Ignore]
+        //void AssertRevisions(string path, params int[] revisions)
+        //{
+        //    for (int i = 1; i < revisions.Length; ++i)
+        //    {                
+        //        var doc = FindDoc(path + "@" + revisions[i - 1]);
+        //        Assert.That(doc, HasLastRevision(revisions[i]));
+        //    }
+        //}
+
+        //[Test, Ignore]
+        //public void Index_DeletedFolderNeuerOrdner_NoHeadRevisionPresent()
+        //{
+        //    var doc = FindDoc("/Folder/Neuer Ordner@6");
+        //    Assert.That(doc, HasLastRevision(18));           
+        //}
+
+        //[Test, Ignore]
+        //public void Index_FileInDeleteFolder_NoHeadRevisionPresent()
+        //{
+        //    var doc = FindDoc("/Folder/Neuer Ordner/Second/first.txt@10");
+        //    Assert.That(doc, HasLastRevision(18));            
+        //}      
+
+        [Test]
         public void Index_FileAddModifyReplace_RevisionRangeExist()
         {
-            AssertRevisions("/Folder/Second/second.txt", 3, 7, 8, 17, 18, 9999999);
+
+            Assert.That(RevisionOrder("/Folder/Second/second.txt"), Is.EquivalentTo(RevisionOrder(3, 7, 8, 17, 18, 9999999)));
         }
+
+        // Tests
+        // Non continous RevsionOrder
+        // CopiedPath
+        // DeletedPath
+        // HeadRevision
+        // AtMaxOneHeadRevisionPerPath
+
+//       @" CopyWithDeletedFolder/
+//CopyWithDeletedFolder/Second/
+//CopyWithDeletedFolder/Second/first.txt
+//CopyWithDeletedFolder/Second/second.txt
+//Folder/
+//Folder/C#/
+//Folder/Second/
+//Folder/Second/SvnQuery.dll
+//Folder/Second/first.txt
+//Folder/Second/second.txt
+//Folder/Subfolder/
+//Folder/Subfolder/CopiedAndRenamed/
+//Folder/Subfolder/CopiedAndRenamed/second.txt
+//Folder/Subfolder/Second/
+//Folder/Subfolder/Second/first.txt
+//Folder/Subfolder/Second/second.txt
+//Folder/import/
+//šml„ute ”„/
+//šml„ute ”„/bla#[1]{}.txt"
     }
 }

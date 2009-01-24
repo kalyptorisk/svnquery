@@ -16,6 +16,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Lucene.Net.Index;
 
@@ -27,37 +28,57 @@ namespace SvnQuery
     public class HighestRevision
     {
         readonly Dictionary<string, int> highest = new Dictionary<string, int>();
-        
-        public IndexReader Reader {get; set;}
+
+        public IndexReader Reader; 
 
         public int Get(string path)
         {
             int revision;
-            if (highest.TryGetValue(path, out revision)) return revision;
+            lock (highest) highest.TryGetValue(path, out revision);
+            if (revision != 0) return revision;
 
-            TermEnum t = Reader.Terms(new Term(FieldName.Id, path));
+            if (Reader == null) return 0;
             int max = 0;
-            while (t.Next())
+            path += "@";
+            TermEnum t = Reader.Terms(new Term(FieldName.Id, path));
+            while (t.Term() != null && t.Term().Text().StartsWith(path))
             {
                 int r = int.Parse(t.Term().Text().Substring(path.Length));
                 if (r > max)
                 {
                     max = r;
                 }
-            }
+                t.Next();
+            }  
             t.Close();
 
-            var td = Reader.TermDocs(new Term(FieldName.Id, path + "@" + max));
-            var doc = Reader.Document(td.Doc());
-            td.Close();
-            return int.Parse(doc.Get(FieldName.RevisionLast));
+            var td = Reader.TermDocs(new Term(FieldName.Id, path + max));
+            if (td.Next())
+            {
+                var doc = Reader.Document(td.Doc());
+                revision = int.Parse(doc.Get(FieldName.RevisionLast));
+                td.Close();                
+            }
+            return revision;
         }
 
-        public void Set(string path, int revision)
+        /// <summary>
+        /// Sets the highest revision for a path. Returns true if revision was already set
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="revision"></param>
+        /// <returns></returns>
+        public bool Set(string path, int revision)
         {
-            highest[path] = revision;           
+            lock (highest)
+            {
+                int existing;
+                if (highest.TryGetValue(path, out existing) && existing == revision) return false;
+                if (revision < existing) throw new InvalidOperationException("revision order is badly wrong");
+                highest[path] = revision;
+                return true;
+            }
         }
-
 
     }
 }

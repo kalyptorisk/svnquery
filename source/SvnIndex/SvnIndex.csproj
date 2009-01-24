@@ -67,7 +67,7 @@
     <Compile Include="Indexer.cs" />
     <Compile Include="IndexerArgs.cs" />
     <Compile Include="ISvnApi.cs" />
-    <Compile Include="PendingReads.cs" />
+    <Compile Include="PendingJobs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharpSvnApi.cs" />

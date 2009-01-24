@@ -56,7 +56,7 @@ namespace SvnIndexTests
         [Test]
         public void GetYoungestRevision()
         {
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(19));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(20));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace SvnIndexTests
             
             Assert.That(rev, Has.Count(1));
             Assert.That(rev[0].Author, Is.EqualTo("Christian"));
-            Assert.IsTrue(rev[0].Changes.TrueForAll(c => api.GetPathData(c.Path, c.Revision).Author == rev[0].Author));
+            Assert.IsTrue(rev[0].Changes.TrueForAll(c => api.GetPathInfo(c.Path, c.Revision).Author == rev[0].Author));
         }
 
         [Test]
@@ -141,7 +141,7 @@ namespace SvnIndexTests
         public void GetPathInfo_AtomicCopyWithDeleteInRev16_NoData()
         {
             string path = GetFilteredPathList(Change.Delete, 16).First();
-            Assert.That(api.GetPathData(path, 16), Is.Null);
+            Assert.That(api.GetPathInfo(path, 16), Is.Null);
         }
 
         List<string> GetFilteredPathList(Change allowed, int revision)

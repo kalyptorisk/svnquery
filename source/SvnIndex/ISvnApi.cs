@@ -44,11 +44,6 @@ namespace SvnQuery
         void ForEachChild(string path, int revision, Change change, Action<PathChange> action);
 
         /// <summary>
-        /// Gets data for a path in a given revision
-        /// </summary>
-        PathData GetPathData(string path, int revision);
-
-        /// <summary>
         /// Gets a PathInfo for a path in a given revision
         /// </summary>
         PathInfo GetPathInfo(string path, int revision);
@@ -91,18 +86,16 @@ namespace SvnQuery
         public Change Change;
         public int Revision;
         public string Path;
-        public bool IsCopy; //  if IsCopy and IsDirectory than children need to be added explicitely
-        //public bool FetchChildren
+        public bool IsCopy; // for Add or Replace: Is this a copy from another path?        
 
         public override string ToString()
         {
-            return Change + " " + Path + "@" + Revision;
+            return Change.ToString().PadRight(7) + Path + "@" + Revision;
         }
     }
 
     public class PathInfo
     {
-        public int Revision;        // Revision as stored in the repository, last commit revision
         public string Author;
         public DateTime Timestamp;
         public int Size;

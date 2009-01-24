@@ -1,0 +1,25 @@
+PLAIN
+K 21
+CopyWithDeletedFolder
+V 19
+dir 0-6.0-16.r16/95
+K 6
+Folder
+V 17
+dir 0-1.0.r19/337
+END
+ENDREP
+id: 0.0.r20/103
+type: dir
+pred: 0.0.r19/641
+count: 20
+text: 20 0 90 90 088ffe3dc28e837562c94b655b5477ce
+props: 13 171 40 0 7389e645121053447b3f2c073c489217
+cpath: /
+copyroot: 0 /
+minfo-cnt: 6
+
+0-13.0.r14/501 delete false false /Ümläute öäü
+
+
+103 296

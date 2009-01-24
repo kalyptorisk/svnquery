@@ -63,7 +63,7 @@ namespace SvnQuery
                             Password = arg;
                             break;
                         case 't':
-                            MaxThreads = int.Parse(arg);
+                            MaxThreads = Math.Min(2, int.Parse(arg));
                             break;
                         case 'o':
                             Optimize = int.Parse(arg);

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 using SharpSvn;
 
 namespace SvnQuery
@@ -32,7 +33,7 @@ namespace SvnQuery
         readonly Dictionary<int, string> messages = new Dictionary<int, string>();
         readonly List<SvnClient> clientPool = new List<SvnClient>();
         
-        public SharpSvnApi(string repositoryUrl) : this(repositoryUrl, "", "")
+        public SharpSvnApi(string repositoryUri) : this(repositoryUri, "", "")
         {}
 
         public SharpSvnApi(string repositoryUri, string user, string password)
@@ -105,7 +106,7 @@ namespace SvnQuery
                 SvnClient client = AllocSvnClient();
                 try
                 {
-                    SvnUriTarget target = new SvnUriTarget(uri);
+                    SvnUriTarget target = new SvnUriTarget(uri, revision);
                     client.GetRevisionProperty(target, "svn:log", out message); 
                     message = "";
                 }
@@ -182,14 +183,16 @@ namespace SvnQuery
         public void ForEachChild(string path, int revision, Change change, Action<PathChange> action)
         {
             SvnClient client = AllocSvnClient();
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), change == Change.Delete ? revision -1 : revision);
+            SvnTarget target = MakeTarget(path, change == Change.Delete ? revision - 1 : revision);
             try
             {
-                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Children};
+                SvnListArgs args = new SvnListArgs {Depth = SvnDepth.Infinity};
                 client.List(target, args, delegate(object s, SvnListEventArgs e)
                 {
                     if (string.IsNullOrEmpty(e.Path)) return;
-                    action(new PathChange {Change = change, Revision = revision, Path = e.BasePath + "/" + e.Path});
+                    // to be compatible with the log output (which has no trailing '/' for directories)
+                    // we need to remove trailing '/' 
+                    action(new PathChange {Change = change, Revision = revision, Path = e.BasePath + "/" + e.Path.TrimEnd('/')});
                 });
             }
             finally
@@ -200,18 +203,17 @@ namespace SvnQuery
 
         public PathInfo GetPathInfo(string path, int revision)
         {
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
             SvnClient client = AllocSvnClient();
             try
             {
                 SvnInfoEventArgs info;
-                client.GetInfo(target, out info);
+                client.GetInfo(MakeTarget(path, revision), out info);
 
                 PathInfo result = new PathInfo();
                 result.Size = (int) info.RepositorySize;
                 result.Author = info.LastChangeAuthor ?? "";
                 result.Timestamp = info.LastChangeTime;
-                result.Revision = (int) info.LastChangeRevision; // wrong if data is directory                
+                //result.Revision = (int) info.LastChangeRevision; // wrong if data is directory                
                 result.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
                 return result;
             }
@@ -237,12 +239,11 @@ namespace SvnQuery
 
         public IDictionary<string, string> GetPathProperties(string path, int revision)
         {
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
             SvnClient client = AllocSvnClient();
             try
             {
                 Collection<SvnPropertyListEventArgs> pc;
-                client.GetPropertyList(target, out pc);
+                client.GetPropertyList(MakeTarget(path, revision), out pc);
                 Dictionary<string, string> properties = new Dictionary<string, string>();
                 foreach (var proplist in pc)
                 {
@@ -261,13 +262,12 @@ namespace SvnQuery
 
         public string GetPathContent(string path, int revision, int size)
         {
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
             SvnClient client = AllocSvnClient();
             try
             {
                 using (MemoryStream stream = new MemoryStream(size))
                 {
-                    client.Write(target, stream);
+                    client.Write(MakeTarget(path, revision), stream);
                     stream.Position = 0;
                     using (StreamReader reader = new StreamReader(stream))
                     {
@@ -281,64 +281,17 @@ namespace SvnQuery
             }
         }
 
-        public PathData GetPathData(string path, int revision)
+        SvnTarget MakeTarget(string path, int revision)
         {
-            PathData data = null;
-            SvnTarget target = new SvnUriTarget(new Uri(uri + path), revision);
-            SvnClient client = AllocSvnClient();
-            try
+            StringBuilder sb = new StringBuilder();
+            foreach (string part in path.Split('/')) // Build an escaped Uri in the way svn likes it
             {
-                SvnInfoEventArgs info;
-                client.GetInfo(target, out info);
-
-                data = new PathData();
-                data.Path = path;
-                data.Size = (int) info.RepositorySize;
-                data.Author = info.LastChangeAuthor ?? "";
-                data.Timestamp = info.LastChangeTime;
-                data.Revision = (int) info.LastChangeRevision;  // wrong if data is directory
-                data.FinalRevision = revision;
-                data.IsDirectory = info.NodeKind == SvnNodeKind.Directory;
-
-                Collection<SvnPropertyListEventArgs> pc;
-                client.GetPropertyList(target, out pc);
-                foreach (var proplist in pc)
-                {
-                    foreach (var property in proplist.Properties)
-                    {
-                        data.Properties.Add(property.Key, property.StringValue.ToLowerInvariant());
-                    }
-                }
-
-                string mime;
-                data.Properties.TryGetValue("svn:mime-type", out mime);
-                const int MaxFileSize = 128*1024*1024;
-                if (!data.IsDirectory && (string.IsNullOrEmpty(mime) || mime.StartsWith("text/")) &&
-                    data.Size < MaxFileSize)
-                {
-                    MemoryStream stream = new MemoryStream(data.Size);
-                    client.Write(target, stream);
-                    stream.Position = 0;
-                    data.Text = new StreamReader(stream).ReadToEnd();
-                        // default utf-8 encoding, does not work with codepages
-                    stream.Dispose();
-                }
+                sb.Append(Uri.EscapeDataString(part));
+                sb.Append('/');
             }
-            catch (SvnException x)
-            {
-                if (path.IndexOfAny(invalidChars) >= 0)
-                {
-                    Console.WriteLine("WARNING: path could not be indexed: " + path + " in revision " + revision);
-                }
-                else if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_RA_ILLEGAL_URL) throw;
-            }              
-            finally
-            {
-                FreeSvnClient(client);
-            }
-            return data;
+            sb.Length -= 1;
+            return new SvnUriTarget(new Uri(uri + sb.ToString()), revision);
         }
 
-       
     }
 }

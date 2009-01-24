@@ -20,11 +20,11 @@ using System.Threading;
 
 namespace SvnQuery
 {
-    class PendingReads : EventWaitHandle
+    class PendingJobs : EventWaitHandle
     {
         int pending;
 
-        public PendingReads() : base(false, EventResetMode.ManualReset)
+        public PendingJobs() : base(true, EventResetMode.ManualReset)
         {}
 
         public void Increment()

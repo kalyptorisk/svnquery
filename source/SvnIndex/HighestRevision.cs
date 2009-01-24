@@ -29,7 +29,16 @@ namespace SvnQuery
     {
         readonly Dictionary<string, int> highest = new Dictionary<string, int>();
 
-        public IndexReader Reader; 
+        public IndexReader Reader
+        {
+            get { return _reader; }
+            set
+            {
+                _reader = value;
+                highest.Clear();
+            }
+        }
+        IndexReader _reader;
 
         public int Get(string path)
         {
@@ -38,27 +47,18 @@ namespace SvnQuery
             if (revision != 0) return revision;
 
             if (Reader == null) return 0;
-            int max = 0;
             path += "@";
             TermEnum t = Reader.Terms(new Term(FieldName.Id, path));
             while (t.Term() != null && t.Term().Text().StartsWith(path))
             {
                 int r = int.Parse(t.Term().Text().Substring(path.Length));
-                if (r > max)
+                if (r > revision)
                 {
-                    max = r;
+                    revision = r;
                 }
                 t.Next();
             }  
             t.Close();
-
-            var td = Reader.TermDocs(new Term(FieldName.Id, path + max));
-            if (td.Next())
-            {
-                var doc = Reader.Document(td.Doc());
-                revision = int.Parse(doc.Get(FieldName.RevisionLast));
-                td.Close();                
-            }
             return revision;
         }
 

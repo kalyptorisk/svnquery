@@ -38,6 +38,7 @@ SvnIndex action index_path repository_url [Options]
   -c commit interval
   -o optimize interval
   -n name of the index (for display in clients e.g. SvnWebQuery)
+  -v verbosity level (0..3, default is 0 = one message per revision)
 ";
 
         static void Main(string[] args)

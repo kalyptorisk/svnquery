@@ -184,7 +184,7 @@ namespace SvnQuery
             }
             CommitIndex();
             TimeSpan time = DateTime.UtcNow - start;            
-            Console.WriteLine("Finished in {0}:{1}:{2}", time.Hours, time.Minutes, time.Seconds);
+            Console.WriteLine("Finished in {0:00}:{1:00}:{2:00}", time.Hours, time.Minutes, time.Seconds);
         }
 
         void CommitIndex()
@@ -213,6 +213,7 @@ namespace SvnQuery
             {
                 QueueFetch(job);
             }
+            headJobs.Clear();
 
             pendingFetchJobs.Wait();
             indexQueueIsEmpty.WaitOne();
@@ -220,7 +221,6 @@ namespace SvnQuery
             IndexProperty.SetRevision(indexWriter, stop);
             Console.WriteLine("Index revision is now " + stop);
         }
-        
 
         void QueueAnalyzeRecursive(PathChange change)
         {
@@ -264,7 +264,8 @@ namespace SvnQuery
             string path = job.Change.Path;
             int revision = job.Change.Revision;
          
-            Console.WriteLine("Analyze " + job.Change.Change.ToString().PadRight(7) + path + "   " + revision);
+            if (args.Verbosity > 3)
+                Console.WriteLine("Analyze " + job.Change.Change.ToString().PadRight(7) + path + "   " + revision);
             switch (job.Change.Change)
             {
                 case Change.Add:
@@ -343,7 +344,8 @@ namespace SvnQuery
 
         void Fetch(IndexJob job)
         {            
-            Console.WriteLine("Fetch          " + job.Path + "   " + job.RevisionFirst + ":" + job.RevisionLast);
+            if (args.Verbosity > 1)
+                Console.WriteLine("Fetch          " + job.Path + "   " + job.RevisionFirst + ":" + job.RevisionLast);
           
             job.Properties = svn.GetPathProperties(job.Path, job.RevisionFirst);
             //if (job.Info.IsDirectory && !job.Path.EndsWith("/"))
@@ -401,7 +403,10 @@ namespace SvnQuery
         void IndexDocument(IndexJob data)
         {
             ++indexedDocuments;
-            Console.WriteLine("Index {0,8} {1}   {2}:{3}", indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
+            if (args.Verbosity == 0 && data.Path[0] == '$')
+                Console.WriteLine("Revision " + data.RevisionFirst);
+            else 
+                Console.WriteLine("Index {0,8} {1}   {2}:{3}", indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
 
             Term id = idTerm.CreateTerm(data.Path + "@" + data.RevisionFirst);
             indexWriter.DeleteDocuments(id);

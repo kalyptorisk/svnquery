@@ -36,7 +36,7 @@ namespace SvnQuery
                                 // as a general rule, the higher the latency the higher the number of threads should be
         public int Optimize = 25; // number of revisions that lead to optimization
         public int CommitInterval = 1000; // the interval between the index gets committed
-        public bool IsLocalRepository;  // HACK: Invalid characters like ':' in pathes for file repositories
+        public int Verbosity; // Output data about the
 
         public IndexerArgs(string[] args)
         {
@@ -74,9 +74,9 @@ namespace SvnQuery
                         case 'n':
                             RepositoryName = arg;
                             break;
-                        //case 'v':
-                        //    Verbose = true;
-                        //    break;
+                        case 'v':
+                            Verbosity = int.Parse(arg);
+                            break;
                         default:
                             throw new Exception("Unknown option -" + option);
                     }
@@ -107,7 +107,6 @@ namespace SvnQuery
             }
             if (iMandatory != 3) throw new Exception("Missing arguments");
             
-            IsLocalRepository = RepositoryUri.StartsWith("file") || Regex.IsMatch(RepositoryUri, @"^[a-zA-Z]\:");
             if (MaxThreads == 0) MaxThreads = GetMaxThreadsFromUri(RepositoryUri);
         }
 

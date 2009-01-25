@@ -40,16 +40,9 @@ namespace SvnIndexTests
             var dir = new RAMDirectory();
             //var dir = FSDirectory.GetDirectory(Path.Combine(Path.GetTempPath(), "DummyIndex")); 
             //var dir = FSDirectory.GetDirectory(@"d:\testindex");
-            Indexer indexer = new Indexer(new IndexerArgs(new[] {"create", "DummyIndex", repository, "-n", "Test", "-c3"}), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] {"create", "DummyIndex", repository, "-r21", "-c3", "-n", "Test"}), dir);
             indexer.Run();
             searcher = new IndexSearcher(dir);
-        }
-
-        Document FindDoc(string id)
-        {
-            Hits h = searcher.Search(new TermQuery(new Term(FieldName.Id, id)));
-            Assert.That(h.Length() == 1, id + " not found");
-            return h.Doc(0);
         }
 
         class Range : IComparable<Range>
@@ -91,13 +84,14 @@ namespace SvnIndexTests
             IndexReader r = searcher.Reader;
             path = path + "@";
 
-            var t = r.Terms(new Term(FieldName.Id, path));
+            var t = r.Terms(new Term(FieldName.Id, path));            
             while (t.Term() != null && t.Term().Text().StartsWith(path))
             {
                 int revisionId = int.Parse(t.Term().Text().Substring(path.Length));
                 var d = r.TermDocs(t.Term());
-                Assert.That(d.Next());
+                Assert.That(d.Next(), "document must exist:" + t.Term().Text());
                 Document doc = r.Document(d.Doc());
+                Assert.That(!d.Next(), "only one document can have this id: " + t.Term().Text());
                 int first = int.Parse(doc.Get(FieldName.RevisionFirst));
                 int last = int.Parse(doc.Get(FieldName.RevisionLast));
 
@@ -162,6 +156,7 @@ namespace SvnIndexTests
             headItems.Add("/Folder/Subfolder/Second/first.txt");
             headItems.Add("/Folder/Subfolder/Second/second.txt");
             headItems.Add("/Folder/import");
+            headItems.Add("/Folder/text.txt");
 
             Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)));
             for (int i = 0; i < hits.Length(); ++i)
@@ -176,14 +171,47 @@ namespace SvnIndexTests
         [Test]
         public void Index_FolderSecondSecondTxt_ContinousRevisionOrder()
         {
-            Assert.That(RevisionOrder("/Folder/Second/second.txt"), Is.EquivalentTo(RevisionOrder(3, 8, 18, -1)));
+            Assert.That(
+                RevisionOrder("/Folder/Second/second.txt"), 
+                Is.EquivalentTo(RevisionOrder(3, 8, 18, -1)));
         }
 
-        // Tests
-        // Non continous RevsionOrder
-        // CopiedPath
-        // DeletedPath
-        // HeadRevision
-        // AtMaxOneHeadRevisionPerPath
+        [Test]
+        public void Index_CopiedAndRenamed_RevisionOrder()
+        {
+            Assert.That(
+                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed"),
+                Is.EquivalentTo(RevisionOrder(6, 19)));
+            Assert.That(
+               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt"),
+               Is.EquivalentTo(RevisionOrder(6, 9, 19)));
+        }
+
+        [Test]
+        public void Index_FolderTextTxt_NonContinousRevisionOrder()
+        {
+            Assert.That(
+                RevisionOrder("/Folder/text.txt"),
+                Is.EquivalentTo(RevisionOrder(3, 11, 0, 21, -1)));
+        }
+
+        [Test]
+        public void Index_MessageContainsBinary_ExpectedResults()
+        {
+            Parser p = new Parser(searcher.Reader);
+            Hits h = searcher.Search(p.Parse("m:binary"));
+            Assert.That(h.Length(), Is.EqualTo(4));
+            var expected = new HashSet<string>();
+            expected.Add("$Revision@17");
+            expected.Add("/Folder/Second@17");
+            expected.Add("/Folder/import@17");
+            expected.Add("/Folder/Second/SvnQuery.dll@17");
+            for (int i = 0; i < h.Length(); i++)
+            {
+                Assert.That(expected, Has.Member(h.Doc(i).Get(FieldName.Id)));
+            }
+
+        }
+    
     }
 }

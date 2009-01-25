@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -56,7 +55,7 @@ namespace SvnIndexTests
         [Test]
         public void GetYoungestRevision()
         {
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(20));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(21));
         }
 
         [Test]
@@ -212,7 +211,7 @@ namespace SvnIndexTests
         [Test]
         public void GetRevisionData_InvalidRevision_Exception()
         {
-            Exception exception = CatchException(delegate { api.GetRevisionData(5000, 10000); });
+            var exception = CatchException(() => api.GetRevisionData(5000, 10000));
             Assert.That(exception, Is.Not.Null);
         }      
 

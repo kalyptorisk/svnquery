@@ -30,7 +30,8 @@ namespace SvnQuery
         const string RepositoryIdProperty = "RepositoryId";
         const string RepositoryNameProperty = "RepositoryName";
         const string RepositoryUriProperty = "RepositoryUri";
-
+        const string DocumentCountProperty = "DocumentCount";
+        
         /// <summary>
         /// returns a term that uniquely identifies a document containing an index property
         /// </summary>        
@@ -94,6 +95,14 @@ namespace SvnQuery
             UpdateProperty(writer, RepositoryUriProperty, uri);
         }
 
+        public static int GetDocumentCount(IndexReader reader)
+        {
+            return int.Parse(GetProperty(reader, DocumentCountProperty));
+        }
 
+        public static void SetDocumentCount(IndexWriter writer, int documents)
+        {
+           UpdateProperty(writer, DocumentCountProperty, documents.ToString());
+        }
     }
 }

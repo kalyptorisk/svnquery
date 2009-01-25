@@ -130,11 +130,6 @@ namespace SvnQuery
             Console.WriteLine();
         }
 
-        public void Check()
-        {
-            
-        }
-
         public void Run()
         {
             Console.WriteLine("Begin indexing ...");
@@ -149,12 +144,14 @@ namespace SvnQuery
             indexThread.IsBackground = true;
             indexThread.Start();
 
+            indexedDocuments = 0;
             if (!create)
             {
                 IndexReader reader = IndexReader.Open(indexDirectory);
                 highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
-                Guid repositoryId = IndexProperty.GetRepositoryId(reader); 
+                Guid repositoryId = IndexProperty.GetRepositoryId(reader);
+                indexedDocuments = IndexProperty.GetDocumentCount(reader);
                                 
                 if (svn.GetRepositoryId() != repositoryId)
                     Console.WriteLine("WARNING: Existing index was created from a different repository. (UUID does not match)");
@@ -219,6 +216,7 @@ namespace SvnQuery
             indexQueueIsEmpty.WaitOne();
 
             IndexProperty.SetRevision(indexWriter, stop);
+            IndexProperty.SetDocumentCount(indexWriter, indexedDocuments);
             Console.WriteLine("Index revision is now " + stop);
         }
 

@@ -25,21 +25,6 @@ namespace SvnQuery
 {
     static class Program
     {
-        const string usage_msg =
-            @"          
-SvnIndex action index_path repository_url [Options] 
-  action := create | update
-  Options:
-  -r max revision to be included in the index
-  -u User
-  -p Password
-  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
-  -t max number of threads used to query the repository in parallel
-  -c commit interval
-  -o optimize interval
-  -n name of the index (for display in clients e.g. SvnWebQuery)
-  -v verbosity level (0..3, default is 0 = one message per revision)
-";
 
         static void Main(string[] args)
         {
@@ -63,14 +48,7 @@ SvnIndex action index_path repository_url [Options]
                 }
 
                 Indexer indexer = new Indexer(indexerArgs);
-                if (indexerArgs.Command == Indexer.Command.Check)
-                {
-                    indexer.Check();
-                }
-                else
-                {
-                    indexer.Run();
-                }
+                indexer.Run();
             }
             finally
             {
@@ -96,7 +74,7 @@ SvnIndex action index_path repository_url [Options]
                     Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
                     Environment.CommandLine + Environment.NewLine + x);
             }
-            Console.WriteLine(usage_msg);
+            Console.WriteLine(IndexerArgs.HelpMessage);
         }
     }
 }

@@ -38,6 +38,21 @@ namespace SvnQuery
         public int CommitInterval = 1000; // the interval between the index gets committed
         public int Verbosity; // Output data about the
 
+        public const string HelpMessage = @"          
+SvnIndex action index_path repository_url [Options] 
+  action := create | update
+  Options:
+  -r max revision to be included in the index
+  -u User
+  -p Password
+  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
+  -t max number of threads used to query the repository in parallel
+  -c commit interval
+  -o optimize interval
+  -n name of the index (for display in clients e.g. SvnWebQuery)
+  -v verbosity level (0..3, 0 is lowest, 1 is default)
+";
+
         public IndexerArgs(string[] args)
         {
             int iMandatory = 0;
@@ -100,7 +115,7 @@ namespace SvnQuery
                             IndexPath = Path.GetFullPath(arg);
                             break;
                         case 2:
-                            RepositoryUri = arg;                            
+                            RepositoryUri = arg.Replace('\\', '/');                            
                             break;
                     }
                 }

@@ -23,7 +23,8 @@ using Lucene.Net.Index;
 namespace SvnQuery
 {
     /// <summary>
-    /// Threadsafe lookup and updates of highest revision
+    /// Threadsafe lookup and updates of highest active revision.
+    /// Should be used only by the Analyze Threads
     /// </summary>
     public class HighestRevision
     {
@@ -43,22 +44,30 @@ namespace SvnQuery
         public int Get(string path)
         {
             int revision;
-            lock (highest) highest.TryGetValue(path, out revision);
-            if (revision != 0) return revision;
+            lock (highest)
+            {
+                if (highest.TryGetValue(path, out revision)) return revision;
+            }
 
             if (Reader == null) return 0;
             path += "@";
             TermEnum t = Reader.Terms(new Term(FieldName.Id, path));
+            int doc = -1;
             while (t.Term() != null && t.Term().Text().StartsWith(path))
             {
                 int r = int.Parse(t.Term().Text().Substring(path.Length));
                 if (r > revision)
                 {
                     revision = r;
+                    TermDocs d = Reader.TermDocs(t.Term());
+                    d.Next();
+                    doc = d.Doc();                    
                 }
                 t.Next();
-            }  
+            }              
             t.Close();
+            if (revision != 0 && Reader.Document(doc).Get(FieldName.RevisionLast) != RevisionFilter.HeadString)
+                return 0;
             return revision;
         }
 
@@ -66,7 +75,7 @@ namespace SvnQuery
         /// Sets the highest revision for a path. Returns true if revision was already set
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="revision"></param>
+        /// <param name="revision">if 0 then the path is currently deleted</param>
         /// <returns></returns>
         public bool Set(string path, int revision)
         {
@@ -74,7 +83,7 @@ namespace SvnQuery
             {
                 int existing;
                 if (highest.TryGetValue(path, out existing) && existing == revision) return false;
-                if (revision < existing) throw new InvalidOperationException("revision order is badly wrong");
+                //if (revision < existing) throw new InvalidOperationException("revision order is badly wrong");
                 highest[path] = revision;
                 return true;
             }

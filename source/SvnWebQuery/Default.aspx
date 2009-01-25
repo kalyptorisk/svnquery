@@ -62,9 +62,9 @@
         </tr>
     </table></td>
     <td valign="top" >
-    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px;  font-style: italic; font-weight: bold;">
+    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px; text-align: center; font-style: italic; font-weight: bold;">
            <a href="http://svnquery.tigris.org" style="color:#909090"> 
-             <span style="font-size: xx-small;" >powered by</span><br/>
+             <span style="font-size: xx-small; " >powered by</span><br/>
               <span style="font-size: large; " >Svn Query</span></a>
 </p>
     </td>

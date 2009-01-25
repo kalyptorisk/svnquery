@@ -292,6 +292,7 @@ namespace SvnQuery
             job.RevisionFirst = revision;
             job.RevisionLast = RevisionFilter.Head;
             job.Info = svn.GetPathInfo(path, revision);
+            if (job.Info == null) return; // workaround for issues with forbidden characters in local repository access
             lock (headJobs) headJobs[path] = job;
 
             if (recursive && job.Info.IsDirectory)
@@ -319,6 +320,9 @@ namespace SvnQuery
                 job.Info = svn.GetPathInfo(path, highest);
             }
             job.RevisionLast = revision - 1;
+            highestRevision.Set(path, 0);
+
+            if (job.Info == null) return;  // workaround for issues with forbidden characters in local repository access
             if (recursive && job.Info.IsDirectory)
             {
                 svn.ForEachChild(path, revision, Change.Delete, QueueAnalyze);

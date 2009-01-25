@@ -92,8 +92,8 @@ namespace SvnQuery
 
         public Indexer(IndexerArgs args)
         {
-            PrintLogo();
-            PrintArgs();
+            WriteLogo();
+            WriteArgs();
 
             this.args = args;
             indexDirectory = FSDirectory.GetDirectory(args.IndexPath);
@@ -118,14 +118,14 @@ namespace SvnQuery
             indexDirectory = dir;
         }
 
-        static void PrintLogo()
+        static void WriteLogo()
         {
             Console.WriteLine();
             AssemblyName name = Assembly.GetExecutingAssembly().GetName();
             Console.WriteLine(name.Name + " " + name.Version);
         }
 
-        static void PrintArgs()
+        static void WriteArgs()
         {
             Console.WriteLine();
         }

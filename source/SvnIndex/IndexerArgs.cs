@@ -78,7 +78,7 @@ SvnIndex action index_path repository_url [Options]
                             Password = arg;
                             break;
                         case 't':
-                            MaxThreads = Math.Min(2, int.Parse(arg));
+                            MaxThreads = int.Parse(arg);
                             break;
                         case 'o':
                             Optimize = int.Parse(arg);
@@ -122,7 +122,7 @@ SvnIndex action index_path repository_url [Options]
             }
             if (iMandatory != 3) throw new Exception("Missing arguments");
             
-            if (MaxThreads == 0) MaxThreads = GetMaxThreadsFromUri(RepositoryUri);
+            if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryUri);
         }
 
         static int GetMaxThreadsFromUri(string uri)

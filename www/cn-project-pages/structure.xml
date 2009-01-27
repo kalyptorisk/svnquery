@@ -6,5 +6,11 @@
     <directory>Documentation</directory>
     <ordinal>1</ordinal>
   </page>
+  <page>
+    <id>g8GcCC</id>
+    <name>Demo</name>
+    <directory>Demo</directory>
+    <ordinal>2</ordinal>
+  </page>
 </structure>
 

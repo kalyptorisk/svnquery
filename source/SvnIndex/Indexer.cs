@@ -195,7 +195,7 @@ namespace SvnQuery
             foreach (var data in svn.GetRevisionData(start, stop))
             {
                 IndexJob job = new IndexJob();
-                job.Path = "$Revision";
+                job.Path = "$Revision " + data.Revision;
                 job.RevisionFirst = data.Revision;
                 job.RevisionLast = data.Revision;
                 job.Info = new PathInfo();
@@ -410,7 +410,8 @@ namespace SvnQuery
             else 
                 Console.WriteLine("Index {0,8} {1}   {2}:{3}", indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
 
-            Term id = idTerm.CreateTerm(data.Path + "@" + data.RevisionFirst);
+            if (data.Path[0] != '$') data.Path += "@" + data.RevisionFirst;
+            Term id = idTerm.CreateTerm(data.Path);
             indexWriter.DeleteDocuments(id);
             Document doc = MakeDocument();
 

@@ -202,7 +202,7 @@ namespace SvnIndexTests
             Hits h = searcher.Search(p.Parse("m:binary"));
             Assert.That(h.Length(), Is.EqualTo(4));
             var expected = new HashSet<string>();
-            expected.Add("$Revision@17");
+            expected.Add("$Revision 17");
             expected.Add("/Folder/Second@17");
             expected.Add("/Folder/import@17");
             expected.Add("/Folder/Second/SvnQuery.dll@17");

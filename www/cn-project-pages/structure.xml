@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <structure>
   <page>
-    <id>o0dpdE</id>
-    <name>Documentation</name>
-    <directory>Documentation</directory>
-    <ordinal>1</ordinal>
-  </page>
-  <page>
     <id>g8GcCC</id>
     <name>Demo</name>
     <directory>Demo</directory>
+    <ordinal>1</ordinal>
+  </page>
+  <page>
+    <id>o0dpdE</id>
+    <name>Documentation</name>
+    <directory>Documentation</directory>
     <ordinal>2</ordinal>
   </page>
 </structure>

@@ -23,17 +23,31 @@
 		frontend. The full text search is done by Lucene.Net which delivers an 
 		astonishing search speed.</p>
     <p>
-        The interface to subversion should be isolated so that the svn command 
+        The interface to subversion is isolated so that the svn command 
 		line client or something like SharpSvn can be used as an implementation. 
 		Porting to Java using the original implementation of Lucene should be 
 		easy.
     </p>
     <h3>
+        Download</h3>
+	<p>Download a self running demo of SvnWebQuery with an already created 
+	index. As a prerequisite you need the
+	<a href="http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=333325fd-ae52-4e35-b531-508d977d32a6">
+	.Net Framework 3.5</a>. Start SvnQueryDemo.exe to open the web ui for 
+	querying the index. If you want to recreate or update the index look into 
+	index_create.cmd and index_update.cmd. Note that because of their size the 
+	downloads are hosted on atombrenner.de. SvnWebQuery Quickstart</p>
+<ul>
+	<li>
+	<a href="http://www.atombrenner.de/downloads/SvnQueryDemo_Subversion.zip">SvnWebQuery 0.3 with an index of subversion up to revision 10000 (55MB)</a></li>
+	<li><a href="http://www.atombrenner.de/downloads/SvnQueryDemo_SvnQuery.zip">SvnWebQuery 0.3 with an index of svnquery (1MB)</a></li>
+</ul>
+	<h3>
         Roadmap</h3>
     <ol>
-    <li>Version 0.3: A simple demo to download and play with (simple local web 
-	server, asp.net frontend, index of the subversion )</li>
-    <li>Version 0.4: Viewing the content of (non-binary) files results html page</li>
+    <li>Version 0.4: Complete the query language and provide a complete help 
+	page</li>
+    <li>Version 0.5: Viewing the content of (non-binary) files from SvnWebQuery</li>
     <li>Version 1.0: Syntax highlighted file content with GeSHI</li>
     </ol>
     <h3>

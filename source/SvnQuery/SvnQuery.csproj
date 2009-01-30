@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{04B2FFD5-A748-402B-88C6-C3A2E0BC3A42}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdParty\Lucene.Net\Lucene.Net.dll</HintPath>
     </Reference>
+    <Reference Include="SharpSvn, Version=1.5001.662.32487, Culture=neutral, PublicKeyToken=d729672594885a28, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\3rdParty\SharpSvn\SharpSvn.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -46,6 +50,7 @@
     <Compile Include="ContentTokenStream.cs" />
     <Compile Include="ExternalsTokenStream.cs" />
     <Compile Include="FieldName.cs" />
+    <Compile Include="ISvnApi.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="PackedSizeConverter.cs" />
     <Compile Include="PathTokenStream.cs" />
@@ -53,6 +58,7 @@
     <Compile Include="Parser.cs" />
     <Compile Include="IndexProperty.cs" />
     <Compile Include="RevisionFilter.cs" />
+    <Compile Include="SharpSvnApi.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

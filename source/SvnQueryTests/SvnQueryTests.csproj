@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{386EE9EF-D710-4F4A-8040-A4B9130DAA3D}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -40,12 +40,17 @@
       <HintPath>..\..\3rdParty\nunit\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContentTest.cs" />
     <Compile Include="ExternalsTest.cs" />
     <Compile Include="PackedSizeConverterTest.cs" />
     <Compile Include="RevisionFilterTest.cs" />
+    <Compile Include="SvnApiAuthenticationTests.cs" />
+    <Compile Include="SvnApiTest.cs" />
     <Compile Include="TestIndex.cs" />
     <Compile Include="ParserTest.cs" />
     <Compile Include="PathTest.cs" />

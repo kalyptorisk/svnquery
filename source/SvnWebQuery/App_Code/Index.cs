@@ -51,7 +51,7 @@ namespace App_Code
 
         ~Index()
         {
-            timer.Dispose();
+            if (timer != null) timer.Dispose();
             if (indexSearcher != null) indexSearcher.Close();
         }
 

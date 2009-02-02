@@ -150,15 +150,10 @@ namespace SvnQuery
                 IndexReader reader = IndexReader.Open(indexDirectory);
                 highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
-                Guid repositoryId = IndexProperty.GetRepositoryId(reader);
                 indexedDocuments = IndexProperty.GetDocumentCount(reader);
-                                
-                if (svn.GetRepositoryId() != repositoryId)
-                    Console.WriteLine("WARNING: Existing index was created from a different repository. (UUID does not match)");
             }
            
             indexWriter = new IndexWriter(indexDirectory, false, null, create);
-            if (create) IndexProperty.SetRepositoryId(indexWriter, svn.GetRepositoryId());
             if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
             IndexProperty.SetRepositoryUri(indexWriter, args.RepositoryUri);
 
@@ -349,11 +344,7 @@ namespace SvnQuery
             if (args.Verbosity > 1)
                 Console.WriteLine("Fetch          " + job.Path + "   " + job.RevisionFirst + ":" + job.RevisionLast);
           
-            job.Properties = svn.GetPathProperties(job.Path, job.RevisionFirst);
-            //if (job.Info.IsDirectory && !job.Path.EndsWith("/"))
-            //{
-            //    job.Path += "/";
-            //}
+            job.Properties = svn.GetPathProperties(job.Path, job.RevisionFirst);           
             string mime;
             bool isText = !job.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");          
             const int MaxFileSize = 128*1024*1024;
@@ -410,8 +401,7 @@ namespace SvnQuery
             else 
                 Console.WriteLine("Index {0,8} {1}   {2}:{3}", indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
 
-            if (data.Path[0] != '$') data.Path += "@" + data.RevisionFirst;
-            Term id = idTerm.CreateTerm(data.Path);
+            Term id = idTerm.CreateTerm(data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst);
             indexWriter.DeleteDocuments(id);
             Document doc = MakeDocument();
 

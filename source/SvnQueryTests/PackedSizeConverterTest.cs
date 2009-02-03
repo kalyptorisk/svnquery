@@ -23,41 +23,42 @@ namespace SvnQuery.Tests
     [TestFixture]
     public class PackedSizeConverterTest
     {
+        const int kb = 1024;
+        const int mb = 1024*kb;
+        const int gb = 1024*mb;
+
         [Test]
         public void ToSortableString_Bytes()
         {
             Assert.AreEqual("b000", PackedSizeConverter.ToSortableString(0));
             Assert.AreEqual("b3E7", PackedSizeConverter.ToSortableString(999));
-            Assert.AreEqual("b3FF", PackedSizeConverter.ToSortableString(1023));
-            Assert.AreEqual("k001", PackedSizeConverter.ToSortableString(1024));
+            Assert.AreEqual("b3FF", PackedSizeConverter.ToSortableString(kb - 1));
+            Assert.AreEqual("k001", PackedSizeConverter.ToSortableString(kb));
         }
 
         [Test]
         public void ToSortableString_KBytes()
         {
-            Assert.AreEqual("k001", PackedSizeConverter.ToSortableString(1024));
-            Assert.AreEqual("k3FF", PackedSizeConverter.ToSortableString(1024*1024 - 1));
-            Assert.AreEqual("m001", PackedSizeConverter.ToSortableString(1024*1024));
+            Assert.AreEqual("k001", PackedSizeConverter.ToSortableString(kb));
+            Assert.AreEqual("k3FF", PackedSizeConverter.ToSortableString(mb - 1));
+            Assert.AreEqual("m001", PackedSizeConverter.ToSortableString(mb));
         }
 
         [Test]
         public void ToSortableString_MBytes()
         {
-            Assert.AreEqual("m001", PackedSizeConverter.ToSortableString(1024*1024));
-            Assert.AreEqual("m3FF", PackedSizeConverter.ToSortableString(1024*1024*1024 - 1));
-            Assert.AreEqual("z001", PackedSizeConverter.ToSortableString(1024*1024*1024));
+            Assert.AreEqual("m001", PackedSizeConverter.ToSortableString(mb));
+            Assert.AreEqual("m3FF", PackedSizeConverter.ToSortableString(gb - 1));
+            Assert.AreEqual("z001", PackedSizeConverter.ToSortableString(gb));
         }
 
         [Test]
         public void FromSortableString()
         {
             Assert.AreEqual(999, PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(999)));
-            Assert.AreEqual(999*1024,
-                            PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(999*1024)));
-            Assert.AreEqual(999*1024*1024,
-                            PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(999*1024*1024)));
-            Assert.AreEqual(1*1024*1024*1024,
-                            PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(1*1024*1024*1024)));
+            Assert.AreEqual(999, PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(999*kb)) / kb);
+            Assert.AreEqual(999, PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(999*mb)) / mb);
+            Assert.AreEqual(1, PackedSizeConverter.FromSortableString(PackedSizeConverter.ToSortableString(1*gb)) / gb);
         }
     }
 }

@@ -27,7 +27,6 @@ namespace SvnQuery
         const string IdField = "$Property";
         const string ValueField = "$Value";
         const string RevisionProperty = "Revision";
-        const string RepositoryIdProperty = "RepositoryId";
         const string RepositoryNameProperty = "RepositoryName";
         const string RepositoryUriProperty = "RepositoryUri";
         const string DocumentCountProperty = "DocumentCount";
@@ -63,16 +62,6 @@ namespace SvnQuery
         public static void SetRevision(IndexWriter writer, int revision)
         {
             UpdateProperty(writer, RevisionProperty, revision.ToString());
-        }
-
-        public static Guid GetRepositoryId(IndexReader reader)
-        {
-            return new Guid(GetProperty(reader, RepositoryIdProperty));
-        }
-
-        public static void SetRepositoryId(IndexWriter writer, Guid repositoryId)
-        {
-            UpdateProperty(writer, RepositoryIdProperty, repositoryId.ToString());            
         }
 
         public static string GetRepositoryName(IndexReader reader)

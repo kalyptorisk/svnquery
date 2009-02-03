@@ -53,7 +53,7 @@ namespace App_Code
 
         public Hit this[int i]
         {
-            get { return new Hit(_luceneHits.Doc(i), uri); }
+            get { return new Hit(_luceneHits.Doc(i)); }
         }
 
         public int SearchTime

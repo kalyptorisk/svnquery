@@ -47,17 +47,18 @@ namespace SvnQuery
 
         public static int FromSortableString(string size)
         {
+            if (string.IsNullOrEmpty(size)) return 0;
             int v = int.Parse(size.Substring(1), NumberStyles.HexNumber);
             switch (size[0])
             {
                 case 'b':
                     return v;
                 case 'k':
-                    return v*kb;
+                    return v*kb + kb - 1;
                 case 'm':
-                    return v*mb;
+                    return v*mb + mb - 1;
                 case 'z':
-                    return v*gb;
+                    return v*gb + gb - 1;
             }
             throw new ArgumentException("size is not a packed size");
         }

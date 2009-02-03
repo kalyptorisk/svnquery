@@ -347,7 +347,7 @@ namespace SvnQuery
             job.Properties = svn.GetPathProperties(job.Path, job.RevisionFirst);           
             string mime;
             bool isText = !job.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");          
-            const int MaxFileSize = 128*1024*1024;
+            const int MaxFileSize = 2*1024*1024;
             if (!job.Info.IsDirectory && isText && 0 < job.Info.Size && job.Info.Size < MaxFileSize)
             {
                 job.Content = svn.GetPathContent(job.Path, job.RevisionFirst, job.Info.Size);

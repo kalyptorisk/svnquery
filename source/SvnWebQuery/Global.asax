@@ -1,4 +1,5 @@
-﻿<%@ Import Namespace="System.Web.Configuration"%>
+﻿<%@ Import Namespace="App_Code"%>
+<%@ Import Namespace="System.Web.Configuration"%>
 <%@ Import Namespace="System.Diagnostics"%>
 <%@ Application Language="C#" %>
 
@@ -7,7 +8,8 @@
     void Application_Start(object sender, EventArgs e) 
     {
         string indexPath = WebConfigurationManager.AppSettings["IndexPath"];
-        Application["Index"] = new App_Code.Index(indexPath);
+        Application["Index"] = new Index(indexPath);
+        Application["SvnApi"] = new SvnQuery.SharpSvnApi(QueryApplicationIndex.Uri);
     }       
     
     void Application_End(object sender, EventArgs e) 

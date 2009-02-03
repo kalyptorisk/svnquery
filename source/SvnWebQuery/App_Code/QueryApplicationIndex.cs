@@ -31,11 +31,26 @@ namespace App_Code
             get { return (Index) HttpContext.Current.Application["Index"]; }
         }
 
+        public static string Name
+        {
+            get { return Index.Name; }
+        }
+
+        public static string Uri
+        {
+            get { return Index.Uri; }
+        }
+
         public static QueryResult Query(string query, string revFirst, string revLast)
         {
             return Index.Query(query, revFirst, revLast);
         }
 
+        public static Hit QueryId(string id)
+        {
+            return Index.Query(id);
+        }
+        
         public static IEnumerable<Hit> Select(string query, string revFirst, string revLast, int maximumRows,
                                               int startRowIndex)
         {
@@ -51,9 +66,5 @@ namespace App_Code
             return Query(query, revFirst, revLast).HitCount;
         }
 
-        public static string Name
-        {
-            get { return Index.Name; }
-        }
     }
 }

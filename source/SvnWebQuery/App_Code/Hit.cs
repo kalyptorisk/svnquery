@@ -27,22 +27,22 @@ namespace App_Code
         readonly string path;
         readonly string url;
 
-        public Hit(Document doc, string repositoryUri)
+        public Hit(Document doc)
         {
             this.doc = doc;
-            string id = doc.Get("id");
+            string id = doc.Get(FieldName.Id);
             path = id.Split('@')[0];
-            url = repositoryUri + id;             
-        }
-
-        public string Path
-        {
-            get { return path; }
+            url = "View.aspx?id=" + id ;            
         }
 
         public string Url
         {
             get { return url; }
+        }
+
+        public string Path
+        {
+            get { return path; }
         }
 
         public string Folder
@@ -68,6 +68,22 @@ namespace App_Code
         public string RevLast
         {
             get { return NiceRev(doc.Get(FieldName.RevisionLast)); }
+        }
+
+        public int Revision
+        {
+            get { return int.Parse(doc.Get(FieldName.RevisionFirst)); }
+        }
+
+        /// <summary>
+        /// The maximum size as extracted from the packed size
+        /// </summary>
+        public int MaxSize
+        {
+            get
+            {                
+                return PackedSizeConverter.FromSortableString(doc.Get(FieldName.Size));
+            }
         }
 
         public string Size

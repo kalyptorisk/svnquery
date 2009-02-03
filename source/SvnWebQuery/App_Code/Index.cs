@@ -32,11 +32,10 @@ namespace App_Code
         readonly string index;
         readonly Timer timer;
         readonly Dictionary<string, CachedQueryResult> cache = new Dictionary<string, CachedQueryResult>();
+        readonly object sync = new object();
 
         IndexSearcher indexSearcher;
         int repositoryRevision;
-        string repositoryUri;
-        string _name;
 
         public Index(string index)
         {
@@ -55,45 +54,33 @@ namespace App_Code
             if (indexSearcher != null) indexSearcher.Close();
         }
 
+        public string Name { get; set; }
+
+        public string Uri { get; set; }
+
         // creates and warms up a new IndexSearcher if necessary
         bool UpdateIndexSearcher()
         {
-            if (indexSearcher == null || !indexSearcher.Reader.IsCurrent())
+            if (indexSearcher != null && indexSearcher.Reader.IsCurrent())
+               return false;
+            
+            IndexSearcher searcher = new IndexSearcher(index);
+            IndexReader reader = searcher.Reader;
+            int indexRevision = IndexProperty.GetRevision(reader);
+            string indexUri = IndexProperty.GetRepositoryUri(reader);
+            string indexName = IndexProperty.GetRepositoryName(reader) ?? Enumerable.Last<string>(indexUri.Split('/'));
+
+            searcher.Search(new TermQuery(new Term("path", "warmup")));
+
+            lock (sync)
             {
-                IndexSearcher searcher = new IndexSearcher(index);
-                IndexReader reader = searcher.Reader;
-                int revision = IndexProperty.GetRevision(reader);
-                string uri = IndexProperty.GetRepositoryUri(reader);
-                string name = IndexProperty.GetRepositoryName(reader) ?? uri.Split('/').Last();
-
-                searcher.Search(new TermQuery(new Term("path", "warmup")));
-                if (indexSearcher == null)
-                {
-                    indexSearcher = searcher;
-                    repositoryRevision = revision;
-                    repositoryUri = uri;
-                    _name = name;
-                }
-                else
-                {
-                    IndexSearcher oldSearcher = indexSearcher;
-                    lock (indexSearcher)
-                    {
-                        indexSearcher = searcher;
-                        repositoryRevision = revision;
-                        repositoryUri = uri;
-                        _name = name;
-                    }
-                    oldSearcher.Close();
-                }
-                return true;
+                if (indexSearcher != null) indexSearcher.Close();
+                indexSearcher = searcher;
+                repositoryRevision = indexRevision;
+                Uri = indexUri;
+                Name = indexName;
             }
-            return false;
-        }
-
-        public string Name
-        {
-            get { return _name; }
+            return true;
         }
 
         public QueryResult Query(string query, string revFirst, string revLast)
@@ -110,6 +97,13 @@ namespace App_Code
             return result.Result;
         }
 
+        public Hit Query(string id)
+        {
+            IndexSearcher s = indexSearcher;
+            Hits h = s.Search(new TermQuery(new Term(FieldName.Id, id)));
+            return h.Length() == 1 ? new Hit(h.Doc(0)) : null; 
+        }
+
         QueryResult ExecuteQuery(string query, string revFirst, string revLast)
         {
             Stopwatch sw = Stopwatch.StartNew();
@@ -117,7 +111,7 @@ namespace App_Code
             IndexSearcher searcher;
             int revision;
 
-            lock (indexSearcher)
+            lock (sync)
             {
                 searcher = indexSearcher;
                 revision = repositoryRevision;
@@ -147,7 +141,7 @@ namespace App_Code
                 hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
             }
 
-            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, repositoryUri);
+            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, Uri);
         }
 
         class CachedQueryResult

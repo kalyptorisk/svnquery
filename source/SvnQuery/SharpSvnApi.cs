@@ -107,8 +107,8 @@ namespace SvnQuery
                 try
                 {
                     SvnUriTarget target = new SvnUriTarget(uri, revision);
-                    client.GetRevisionProperty(target, "svn:log", out message); 
-                    message = "";
+                    if (!client.GetRevisionProperty(target, "svn:log", out message))
+                        message = "";
                 }
                 finally
                 {

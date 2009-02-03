@@ -46,7 +46,7 @@ namespace SvnQueryDemo
                 Process.Start("WebDev.WebServer.exe", "/port:7029 /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"').WaitForInputIdle();
 
             Thread.Sleep(500);
-            Process.Start("http://localhost:7029/");
+            Process.Start("http://localhost:7029/Query.aspx");
         }
 
         static bool IsWebServerRunning()

@@ -161,14 +161,19 @@ namespace SvnQuery
             while (startRevision <= stopRevision) 
             {
                 IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
-                if (highestRevision.Reader != null) highestRevision.Reader.Close();
-                startRevision += args.CommitInterval;                     
-                if (startRevision > stopRevision) break;
-                CommitIndex();
-                highestRevision.Reader = IndexReader.Open(indexDirectory);
-                indexWriter = new IndexWriter(indexDirectory, false, null, false);
+                startRevision += args.CommitInterval;
+
+                if (startRevision <= stopRevision)
+                {
+                    if (highestRevision.Reader != null) highestRevision.Reader.Close();
+                    CommitIndex();
+                    highestRevision.Reader = IndexReader.Open(indexDirectory);
+                    indexWriter = new IndexWriter(indexDirectory, false, null, false);
+                }
             }
             stopIndexThread.Set();
+            if (highestRevision.Reader != null) highestRevision.Reader.Close();
+            highestRevision.Reader = null;
             if (optimize)
             {
                 Console.WriteLine("Optimizing index ...");

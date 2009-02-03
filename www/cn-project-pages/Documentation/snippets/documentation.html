@@ -55,7 +55,7 @@ The command line tool SvnIndex maintains the full text index of a
 subversion repository. It has two subcommands for creating and updating an index.
 </p>
 <p>
-<code>svnindex create &lt;IndexFolder&gt; &lt;RepositoryUrl&gt; [Revision]</code></p>
+<code>svnindex create &lt;IndexFolder&gt; &lt;RepositoryUrl&gt; [Options]</code></p>
 <p>
 Creates a new index at <code>IndexFolder</code> for the repository located at
 <code>RepositoryUrl</code>. Any existing content at <code>IndexFolder</code> will be overwritten.
@@ -67,27 +67,19 @@ time (probably hours).
 It is a good idea to initially index only a few revisions and check if 
 the basic mechanisms work. Then update the index later.</p>
 <p>
-<code>svnindex update &lt;IndexFolder&gt; &lt;RepositoryUrl&gt; [Revision]</code></p>
+<code>svnindex update &lt;IndexFolder&gt; &lt;RepositoryUrl&gt; [Options]</code></p>
 <p>
 Updates an existing index at <code>IndexFolder</code> for the repository located at <code>RepositoryUrl</code>. The optional <code>Revision</code> parameter specifies the
 youngest revision to be included in the index. If <code>Revision</code> is 
 omitted the head revision will be used. <code>Revision</code> needs to be greater than the index revision and smaller or equal to the repositories head revision.
 </p>
-<p>
-Known limitations:</p>
-<ul>
-	<li>a) currently <code>RepositoryUrl</code> must be an absolute path to the repository folder, e.g. 
-	c:\myrepository</li>
-	<li>b) currently indexing is quite slow, because for each file in the document there are several calls to svnclient and svnlook
-	</li>
-</ul>
 <h4>SVN WebQuery</h4>
 <ul>
 	<li>create virtual directory</li>
 	<li>open web page, enter query, press search or enter</li>
 	<li>detailed help is available on the associated help page</li>
 </ul>
-<h4>SvnQuery Code Librarry</h4>
+<h4>SvnQuery Code Library</h4>
 <ul>
 	<li>get the source</li>
 	<li>look into the tests and the SVN Query implementation </li>

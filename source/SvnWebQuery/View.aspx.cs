@@ -45,7 +45,7 @@ public partial class View : System.Web.UI.Page
             contentWarning.InnerText = "Content size is too big to display";
         else if (binary)
             contentWarning.InnerText = "Content type is binary";
-        else
+        else if (hit.MaxSize > 0)
             content.InnerText = svn.GetPathContent(path, revision, hit.MaxSize);
     }
 

@@ -22,7 +22,7 @@
             <td>File Size:</td><td id="size" runat="server" ></td>
         </tr>
         <tr>
-            <td valign="top">Message:</td><td id="message" runat="server" ></td>
+            <td valign="top">Message:</td><td id="message" runat="server" style="white-space: pre"></td>
         </tr>
     </table>
     <p id="contentWarning" runat="server" style="font-style:italic; color:Gray"></p>

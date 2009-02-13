@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyVersion Include="..\source\**\AssemblyInfo.cs" />
+    <VersionFiles Include="..\source\**\AssemblyInfo.cs" />
     <Projects Include="..\source\**\*.csproj" />
     <FilesToClean Include="..\source\**\bin\$(Configuration)\*;..\source\**\obj\$(Configuration)\*" />
   </ItemGroup>
@@ -41,6 +41,12 @@
       <Output TaskParameter="Lines" PropertyName="Version"/>
     </ReadLinesFromFile>    
   </Target>
+  
+  <Target Name="SetVersion" DependsOnTargets="GetVersion">
+    <FileUpdate Files="@(VersionFiles)"
+                Regex='Assembly(File)?Version\s*\(".*"\)'
+                ReplacementText='Assembly$1Version("$(Version)")' />
+  </Target>
 
   <Target Name="GetPublishFolder" DependsOnTargets="GetVersion">
     <CreateProperty Value="builds\SvnQuery_$(Version)">
@@ -48,7 +54,7 @@
     </CreateProperty>
   </Target>
 
-  <Target Name="Publish" DependsOnTargets="Build;GetPublishFolder">
+  <Target Name="Publish" DependsOnTargets="SetVersion;Build;GetPublishFolder">
     <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
     <ItemGroup>
       <SvnIndex Include="..\source\SvnIndex\bin\$(Configuration)\*" 

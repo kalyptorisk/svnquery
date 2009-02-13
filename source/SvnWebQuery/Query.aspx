@@ -24,6 +24,13 @@
         }                    
     </script>
 
+    <style type="text/css">
+        .style1
+        {
+            text-align: left;
+        }
+    </style>
+
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
     <form id="form1" runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">  
@@ -104,15 +111,16 @@
                 </div>
             </ItemTemplate>
         </asp:ListView>
-        <p style="word-spacing: 3px">
+        <p style="word-spacing: 3px" class="style1">
             <asp:DataPager ID="dataPager" PagedControlID="listView" runat="server" PageSize="20">
                 <Fields>
                     <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
                     <asp:NumericPagerField />
                     <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
                 </Fields>
-            </asp:DataPager>
+            </asp:DataPager>                       
         </p>
+        <asp:Button ID="DownloadResults" runat="server" Text="Download Results" onclick="DownloadResults_Click" />
     </asp:Panel>
     <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="App_Code.QueryApplicationIndex">
         <SelectParameters>

@@ -19,6 +19,8 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Web.UI;
+using System.Linq;
+using System.Linq.Expressions;
 using App_Code;
 using SvnQuery;
 
@@ -130,4 +132,26 @@ public partial class _Default : Page
         }
         return new Pair(first, last > 0 ? last : first);
     }
+    
+    protected void DownloadResults_Click(object sender, EventArgs e)
+    {
+        Response.ContentType = "application/x-msdownload";
+        string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
+        Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
+
+        Response.Write(Join("Path", "Author", "Modified", "Revision", "Size"));
+        foreach (Hit hit in QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value))
+        {
+            Response.Write(Join(hit.Path, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
+        }        
+        Response.End();
+    }
+
+    static string Join(params string[] strings)
+    {
+        return string.Join(";", strings) + "\n";
+    }
+    
+
+    
 }

@@ -16,6 +16,8 @@
 
 #endregion
 
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Lucene.Net.Search;
 
@@ -24,7 +26,7 @@ namespace App_Code
     /// <summary>
     /// Summary description for QueryResult
     /// </summary>
-    public class QueryResult
+    public class QueryResult: IEnumerable<Hit>
     {
         readonly Hits _luceneHits;
         readonly int _searchTime;
@@ -51,11 +53,6 @@ namespace App_Code
             get { return _luceneHits.Length(); }
         }
 
-        public Hit this[int i]
-        {
-            get { return new Hit(_luceneHits.Doc(i)); }
-        }
-
         public int SearchTime
         {
             get { return _searchTime; }
@@ -64,6 +61,24 @@ namespace App_Code
         public int IndexRevision
         {
             get { return _indexRevision; }
+        }
+
+        public Hit this[int i]
+        {
+            get { return new Hit(_luceneHits.Doc(i)); }
+        }
+
+        public IEnumerator<Hit> GetEnumerator()
+        {
+            for (int i = 0; i < HitCount; ++i)
+            {
+                yield return this[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

@@ -38,11 +38,11 @@ namespace SvnQuery
 
         public static string ToString(int size)
         {
-            if (size < kb) return size + "b";
-            if (size < mb) return (size/kb) + "kb";
-            if (size < gb) return (size/mb) + "mb";
+            if (size < kb) return size + " bytes";
+            if (size < mb) return (size/kb) + " kb";
+            if (size < gb) return (size/mb) + " mb";
 
-            return (size/gb) + "gb";
+            return (size/gb) + " gb";
         }
 
         public static int FromSortableString(string size)

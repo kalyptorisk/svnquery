@@ -2,17 +2,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Query Syntax Help</title>
-   
+    <title>SvnWebQuery Help</title>   
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
+
     <h1 style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic; ">
-        SVN Query Help</h1>
+        SvnWebQuery Help</h1>
 
 <p>
-    This is a fulltext search engine into a subversion repository for every document 
-    that was ever present in a revision. It uses Lucene.NET as a fulltext engine.</p>
-    <p>
+    SvnQuery is a fulltext index of a subversion repository that contains every document 
+    of every revision. It uses Lucene.NET as a fulltext engine behind the scenes. You can query for the content as well as metadata 
+    like path, author, log-messages or subversion properties. SvnWebQuery is a web front end for SvnQuery.</p>
+    <h2>
+        Quickstart</h2>
+<p>
     First rule: Don&#39;t think too much about the query syntax, just enter what you are searching for. Examples</p>
     <ul>
         <li>debughelper.cpp-&gt; finds all occurrences of 

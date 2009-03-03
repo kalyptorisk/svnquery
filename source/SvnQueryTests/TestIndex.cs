@@ -1,21 +1,3 @@
-#region Apache License 2.0
-
-// Copyright 2008-2009 Christian Rodemeyer
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#endregion
-
 using System;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
@@ -31,56 +13,26 @@ namespace SvnQuery.Tests
     {
         static readonly string[,] data = new[,]
                                          {
-                                             {
-                                                 " 0", "/csharp/fileio.cs",
-                                                 "The quick brown fox jumps over the lazy dog", ""
-                                             },
-                                             {
-                                                 " 1", "/shared/general/FileIO/FileIO.cpp", "class Special:Abstract",
-                                                 ""
-                                             },
-                                             {
-                                                 " 2", "/shared/general/FileIO/FileIO.design.cpp",
-                                                 "obj.method(arg1, arg2, arg3) < 4711", ""
-                                             },
+                                             {" 0", "/csharp/fileio.cs", "The quick brown fox jumps over the lazy dog", ""},
+                                             {" 1", "/shared/general/FileIO/FileIO.cpp", "class Special:Abstract", ""},
+                                             {" 2", "/shared/general/FileIO/FileIO.design.cpp", "obj.method(arg1, arg2, arg3) < 4711", ""},
                                              {" 3", "/shared/general/FileIO/FileIO.h", "", ""},
                                              {" 4", "/shared/general/FileIO/FileIO.xml", "", ""},
                                              {" 5", "/shared/general/bla/FileIO/FileIO.h", "", ""},
-                                             {
-                                                 " 6", "/shared/general/FileIO/anders.h",
-                                                 "flip fileio cpp shared general", ""
-                                             },
+                                             {" 6", "/shared/general/FileIO/anders.h", "flip fileio cpp shared general", ""},
                                              {" 7", "/shared/general/FileIO/anders.cpp", "", ""},
                                              {" 8", "/tags/shared/general/FileIO/FileIO.cpp", "", ""},
                                              {" 9", "/tags/shared/general/FileIO/FileIO.h", "", ""},
-                                             {
-                                                 "10", "/tags/shared/general/FileIO/anders.h",
-                                                 "max und moritz sind anders", ""
-                                             },
-                                             {
-                                                 "11", "/tags/shared/general/FileIO/anders.cpp",
-                                                 "anders sind moritz und max", ""
-                                             },
+                                             {"10", "/tags/shared/general/FileIO/anders.h", "max und moritz sind anders", ""},
+                                             {"11", "/tags/shared/general/FileIO/anders.cpp", "anders sind moritz und max", ""},
                                              {"12", "/woanders/FileIO.cpp", "elephant", ""},
                                              {"13", "/woanders/FileIO.h", "cat and mice", ""},
                                              {"14", "/woanders/flip.cs", "cat and dog", ""},
-                                             {
-                                                 "15", "/woanders/FileIO/hier/und/dort/fileio.cpp",
-                                                 "elefant, cat, dog, mice, rabbit, hedgehog and", ""
-                                             },
-                                             {
-                                                 "16", "/woanders/FileIO/hier/und/dort/fileio.h",
-                                                 "Elefant Katze Maus Hase Igel", ""
-                                             },
-                                             {
-                                                 "17", "/selt.sam/source/form1.design.cs",
-                                                 "Der Elefant sitzt auf dem Trommelklo", ""
-                                             },
+                                             {"15", "/woanders/FileIO/hier/und/dort/fileio.cpp", "elefant, cat, dog, mice, rabbit, hedgehog and", ""},
+                                             {"16", "/woanders/FileIO/hier/und/dort/fileio.h", "Elefant Katze Maus Hase Igel", ""},
+                                             {"17", "/selt.sam/source/form1.design.cs", "Der Elefant sitzt auf dem Trommelklo", ""},
                                              {"18", "/woanders/", "", "/shared shared"},
-                                             {
-                                                 "19", "/project/import/", "",
-                                                 "/Shared/General general\r\n /woanders woanders"
-                                             },
+                                             {"19", "/project/import/", "", "/Shared/General general\r\n /woanders woanders"},
                                              {"20", "/project_zwei/import/", "", "/Shared/Animals animals"},
                                              // special revision entries start with /revision, if so the next two fields are firtst rev and alst rev
                                              {"21", "/revisions/bla.cpp", "1", "5"},

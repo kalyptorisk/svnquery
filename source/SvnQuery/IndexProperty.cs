@@ -19,6 +19,7 @@
 using System;
 using Lucene.Net.Index;
 using Lucene.Net.Documents;
+using System.Reflection;
 
 namespace SvnQuery
 {
@@ -28,7 +29,8 @@ namespace SvnQuery
         const string ValueField = "$Value";
         const string RevisionProperty = "Revision";
         const string RepositoryNameProperty = "RepositoryName";
-        const string RepositoryUriProperty = "RepositoryUri";
+        const string RepositoryLocalUriProperty = "RepositoryLocalUri";
+        const string RepositoryExternalUriProperty = "RepositoryExternalUri";
         const string DocumentCountProperty = "DocumentCount";
         
         /// <summary>
@@ -74,14 +76,24 @@ namespace SvnQuery
             UpdateProperty(writer, RepositoryNameProperty, name);
         }
 
-        public static string GetRepositoryUri(IndexReader reader)
+        public static string GetRepositoryLocalUri(IndexReader reader)
         {
-            return GetProperty(reader, RepositoryUriProperty);
+            return GetProperty(reader, RepositoryLocalUriProperty);
         }
 
-        public static void SetRepositoryUri(IndexWriter writer, string uri)
+        public static void SetRepositoryLocalUri(IndexWriter writer, string uri)
         {
-            UpdateProperty(writer, RepositoryUriProperty, uri);
+            UpdateProperty(writer, RepositoryLocalUriProperty, uri);
+        }
+
+        public static string GetRepositoryExternalUri(IndexReader reader)
+        {
+            return GetProperty(reader, RepositoryExternalUriProperty);
+        }
+
+        public static void SetRepositoryExternalUri(IndexWriter writer, string uri)
+        {
+            UpdateProperty(writer, RepositoryExternalUriProperty, uri);  
         }
 
         public static int GetDocumentCount(IndexReader reader)
@@ -93,5 +105,11 @@ namespace SvnQuery
         {
            UpdateProperty(writer, DocumentCountProperty, documents.ToString());
         }
+
+        public static string SvnQueryVersion
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
+        }
+
     }
 }

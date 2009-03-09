@@ -69,10 +69,11 @@
         </tr>
     </table></td>
     <td valign="top" >
-    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px; text-align: center; font-style: italic; font-weight: bold;">
+    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px; text-align: center; font-style: italic; color:#909090;">
            <a href="http://svnquery.tigris.org" style="color:#909090"> 
-             <span style="font-size: xx-small; " >powered by</span><br/>
-              <span style="font-size: large; " >Svn Query</span></a>
+             <span style="font-size: xx-small;font-weight: bold; " >powered by</span><br/>
+             <span style="font-size: large; font-weight: bold;" >Svn Query</span></a><br />
+             <span style="font-size: xx-small; font-style: normal"><asp:Label ID="SvnQueryVersionLabel" runat="server">0.0.0.0</asp:Label></span> 
 </p>
     </td>
     </tr>
@@ -121,6 +122,7 @@
             </asp:DataPager>                       
         </p>
         <asp:Button ID="DownloadResults" runat="server" Text="Download Results" onclick="DownloadResults_Click" />
+        <asp:Button ID="DownloadTargets" runat="server" Text="Download Targets" onclick="DownloadTargets_Click" />
     </asp:Panel>
     <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="App_Code.QueryApplicationIndex">
         <SelectParameters>

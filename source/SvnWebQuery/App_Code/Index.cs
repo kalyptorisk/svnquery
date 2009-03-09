@@ -54,9 +54,14 @@ namespace App_Code
             if (indexSearcher != null) indexSearcher.Close();
         }
 
-        public string Name { get; set; }
+        public string Name { get { return _name; } }
+        string _name;
 
-        public string Uri { get; set; }
+        public string LocalUri { get { return _localUri; } }
+        string _localUri;
+
+        public string ExternalUri { get { return _externalUri; } }
+        string _externalUri;
 
         // creates and warms up a new IndexSearcher if necessary
         bool UpdateIndexSearcher()
@@ -65,20 +70,22 @@ namespace App_Code
                return false;
             
             IndexSearcher searcher = new IndexSearcher(index);
+            searcher.Search(new TermQuery(new Term("path", "warmup")));
+
             IndexReader reader = searcher.Reader;
             int indexRevision = IndexProperty.GetRevision(reader);
-            string indexUri = IndexProperty.GetRepositoryUri(reader);
-            string indexName = IndexProperty.GetRepositoryName(reader) ?? Enumerable.Last<string>(indexUri.Split('/'));
-
-            searcher.Search(new TermQuery(new Term("path", "warmup")));
+            string localUri = IndexProperty.GetRepositoryLocalUri(reader);
+            string externalUri = IndexProperty.GetRepositoryExternalUri(reader);
+            string indexName = IndexProperty.GetRepositoryName(reader) ?? localUri.Split('/').Last();
 
             lock (sync)
             {
                 if (indexSearcher != null) indexSearcher.Close();
                 indexSearcher = searcher;
                 repositoryRevision = indexRevision;
-                Uri = indexUri;
-                Name = indexName;
+                _localUri = localUri;
+                _externalUri = externalUri;
+                _name = indexName;
             }
             return true;
         }
@@ -141,7 +148,7 @@ namespace App_Code
                 hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
             }
 
-            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, Uri);
+            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, LocalUri);
         }
 
         class CachedQueryResult

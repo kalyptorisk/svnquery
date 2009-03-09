@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SvnQuery
@@ -26,7 +27,8 @@ namespace SvnQuery
     {
         public Indexer.Command Command;        
         public string IndexPath;
-        public string RepositoryUri;
+        public string RepositoryLocalUri;
+        public string RepositoryExternalUri;
         public string RepositoryName;
         public string User;
         public string Password;
@@ -39,7 +41,7 @@ namespace SvnQuery
         public int Verbosity; // Output data about the
 
         public const string HelpMessage = @"          
-SvnIndex action index_path repository_url [Options] 
+SvnIndex action index_path repository_uri [Options] 
   action := create | update
   Options:
   -r max revision to be included in the index
@@ -50,6 +52,7 @@ SvnIndex action index_path repository_url [Options]
   -c commit interval
   -o optimize interval
   -n name of the index (for display in clients e.g. SvnWebQuery)
+  -x external visible repository uri 
   -v verbosity level (0..3, 0 is lowest, 1 is default)
 ";
 
@@ -89,6 +92,9 @@ SvnIndex action index_path repository_url [Options]
                         case 'n':
                             RepositoryName = arg;
                             break;
+                        case 'x':
+                            RepositoryExternalUri = arg.Replace('\\', '/').TrimEnd('/');
+                            break;
                         case 'v':
                             Verbosity = int.Parse(arg);
                             break;
@@ -101,7 +107,7 @@ SvnIndex action index_path repository_url [Options]
                     string arg = args[i];
                     switch (iMandatory++)
                     {
-                        case 0:
+                        case 0: // first argument is the command
                             try
                             {
                                 Command = (Indexer.Command) Enum.Parse(typeof (Indexer.Command), arg, true);
@@ -111,26 +117,26 @@ SvnIndex action index_path repository_url [Options]
                                 throw new Exception("Unknown command '" + arg + "'", x);
                             }
                             break;
-                        case 1:
+                        case 1: // second comes the path to the index directory
                             IndexPath = Path.GetFullPath(arg);
                             break;
-                        case 2:
-                            RepositoryUri = arg.Replace('\\', '/');                            
+                        case 2: // third is the uri used to index the repository
+                            RepositoryLocalUri = arg.Replace('\\', '/').TrimEnd('/');                            
                             break;
                     }
                 }
             }
             if (iMandatory != 3) throw new Exception("Missing arguments");
             
-            if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryUri);
+            if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
         }
 
         static int GetMaxThreadsFromUri(string uri)
         {
             uri = uri.ToLowerInvariant();
-            if (uri.StartsWith("svn")) return 8;
             if (uri.StartsWith("http")) return 16;
-            if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 2; // local file repository            
+            if (uri.StartsWith("svn")) return 8;
+            if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 4; // local file repository            
             return 4; // unknown protocol
         }
     }

@@ -9,7 +9,7 @@
     {
         string indexPath = WebConfigurationManager.AppSettings["IndexPath"];
         Application["Index"] = new Index(indexPath);
-        Application["SvnApi"] = new SvnQuery.SharpSvnApi(QueryApplicationIndex.Uri);
+        Application["SvnApi"] = new SvnQuery.SharpSvnApi(QueryApplicationIndex.LocalUri);
     }       
     
     void Application_End(object sender, EventArgs e) 

@@ -106,8 +106,7 @@ namespace SvnQuery
             externalsField = new Field(FieldName.Externals, externalsTokenStream);
             messageField = new Field(FieldName.Message, messageTokenStream);
 
-            svn = new SharpSvnApi(args.RepositoryUri, args.User, args.Password);
-
+            svn = new SharpSvnApi(args.RepositoryLocalUri, args.User, args.Password);
         }
 
         /// <summary>
@@ -137,7 +136,6 @@ namespace SvnQuery
             bool create = args.Command == Command.Create;
             int startRevision = 1; 
             int stopRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
-            bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
 
             Thread indexThread = new Thread(ProcessIndexQueue);
             indexThread.Name = "IndexThread";
@@ -145,19 +143,26 @@ namespace SvnQuery
             indexThread.Start();
 
             indexedDocuments = 0;
-            if (!create)
+            if (!create) // update, important, must be run *before* creating the indexWriter
             {
-                IndexReader reader = IndexReader.Open(indexDirectory);
+                IndexReader reader = IndexReader.Open(indexDirectory); // important: create reader before creating indexWriter!
                 highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
-                indexedDocuments = IndexProperty.GetDocumentCount(reader);
+                indexedDocuments = IndexProperty.GetDocumentCount(reader);                
             }
-           
             indexWriter = new IndexWriter(indexDirectory, false, null, create);
-            if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
-            IndexProperty.SetRepositoryUri(indexWriter, args.RepositoryUri);
+            if (create)
+            {
+                args.RepositoryExternalUri = args.RepositoryExternalUri ?? args.RepositoryLocalUri;
+                args.RepositoryName = args.RepositoryName ?? args.RepositoryExternalUri.Split('/').Last();
 
-            if (create) QueueAnalyze(new PathChange { Path = "/", Revision = 1, Change = Change.Add }); // add root directory manually
+                QueueAnalyze(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+            }
+            IndexProperty.SetRepositoryLocalUri(indexWriter, args.RepositoryLocalUri);
+            if (args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(indexWriter, args.RepositoryExternalUri);
+            if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
+
+            bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
             while (startRevision <= stopRevision) 
             {
                 IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));

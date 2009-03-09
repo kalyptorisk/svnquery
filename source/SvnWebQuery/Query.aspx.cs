@@ -20,7 +20,6 @@ using System;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Linq;
-using System.Linq.Expressions;
 using App_Code;
 using SvnQuery;
 
@@ -42,6 +41,7 @@ public partial class _Default : Page
             optGroup.Style[HtmlTextWriterStyle.Display] = "none";
         }
         RepositoryLabel.Text = QueryApplicationIndex.Name;
+        SvnQueryVersionLabel.Text = IndexProperty.SvnQueryVersion;
         Title = QueryApplicationIndex.Name + " Search";
     }
 
@@ -151,7 +151,19 @@ public partial class _Default : Page
     {
         return string.Join(";", strings) + "\n";
     }
-    
+
+    protected void DownloadTargets_Click(object sender, EventArgs e)
+    {
+        Response.ContentType = "application/x-msdownload";
+        string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
+        Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
+
+        foreach (Hit hit in QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value))
+        {
+            Response.Write(QueryApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
+        }
+        Response.End();
+    }
 
     
 }

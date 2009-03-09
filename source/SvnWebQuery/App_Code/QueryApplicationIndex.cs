@@ -36,9 +36,20 @@ namespace App_Code
             get { return Index.Name; }
         }
 
-        public static string Uri
+        /// <summary>
+        /// used to access the repository from this application
+        /// </summary>
+        public static string LocalUri
         {
-            get { return Index.Uri; }
+            get { return Index.LocalUri; }
+        }
+
+        /// <summary>
+        /// used to access the repository from this application
+        /// </summary>
+        public static string ExternalUri
+        {
+            get { return Index.ExternalUri; }
         }
 
         public static QueryResult Query(string query, string revFirst, string revLast)

@@ -51,7 +51,8 @@ namespace SvnQuery
 
         public override BitArray Bits(IndexReader reader)
         {
-            Debug.WriteLine(reader.GetVersion()); // could be used to cache
+            // reader.GetVersion could be used to cache
+            // Debug.WriteLine(reader.GetVersion()); // could be used to cache
             // if (cached reader == reader && revFirst == 
 
             if (revFirst == All || revLast == All) // optimization

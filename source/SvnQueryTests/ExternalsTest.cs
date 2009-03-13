@@ -22,62 +22,58 @@ using NUnit.Framework;
 
 namespace SvnQuery.Tests
 {
-    [TestFixture]
+    [TestFixture, Ignore]
     public class ExternalsTest
-    {
-        static string NextToken(TokenStream s, Token t)
+    {      
+
+        [Test]
+        public void DirectReference__shared_general()
         {
-            t = s.Next(t);
-            return t.TermText();
+            TestIndex.AssertQueryFromHeadRevision("x:/shared/general", 19);
         }
 
         [Test]
-        public void TokenStream()
+        public void SubReference__shared()
         {
-            const string eol = ExternalsTokenStream.Eol;
-            ExternalsTokenStream ts = new ExternalsTokenStream();
-            ts.SetText("/Internals/shared/ shared" + Environment.NewLine + "/Internals/MCL/export mcl/dlls");
-
-            Token t = new Token();
-
-            Assert.AreEqual(eol, NextToken(ts, t));
-
-            Assert.AreEqual("internals", NextToken(ts, t));
-            Assert.AreEqual("shared", NextToken(ts, t));
-
-            Assert.AreEqual(eol, NextToken(ts, t));
-
-            Assert.AreEqual("internals", NextToken(ts, t));
-            Assert.AreEqual("mcl", NextToken(ts, t));
-            Assert.AreEqual("export", NextToken(ts, t));
-
-            Assert.AreEqual(eol, NextToken(ts, t));
+            TestIndex.AssertQueryFromHeadRevision("x:/shared", 18, 19, 20);
         }
 
         [Test]
-        public void Empty()
+        public void NonFirstReference_woanders()
         {
-            ExternalsTokenStream ts = new ExternalsTokenStream();
-            ts.SetText("");
-            Assert.IsNull(ts.Next());
+            TestIndex.AssertQueryFromHeadRevision("x:/woanders", 19);
         }
 
         [Test]
-        public void DirectReference()
+        public void LocalFolder_Found()
         {
-            TestIndex.AssertQuery("x:/shared/general", 18, 19);
+            TestIndex.AssertQueryFromHeadRevision("x:\"localfolder\"", 17);            
         }
 
         [Test]
-        public void SubReference()
+        public void AbsoluteExternal_Found()
         {
-            TestIndex.AssertQuery("x:/shared", 18, 19, 20);
+            TestIndex.AssertQueryFromHeadRevision("x:\"svn://svnquery.tigris.org\"", 17);            
         }
 
         [Test]
-        public void NonFirstReference()
+        public void FixedExternals()
         {
-            TestIndex.AssertQuery("x:/woanders", 19);
+            TestIndex.AssertQueryFromHeadRevision("x:\"-r5000\"", 16);
         }
+
+        [Test]
+        public void FixedExternalsWildcards()
+        {
+            TestIndex.AssertQueryFromHeadRevision("x:\"-r*\"", 16, 15);
+        }
+
+        [Test]
+        public void SomePathInFixedExternals()
+        {
+            TestIndex.AssertQueryFromHeadRevision("x:products/internal", 16);
+        }
+        
+
     }
 }

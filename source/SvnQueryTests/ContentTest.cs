@@ -16,7 +16,10 @@
 
 #endregion
 
+using Lucene.Net.Search;
 using NUnit.Framework;
+using Lucene.Net.Search.Spans;
+using Lucene.Net.Index;
 
 namespace SvnQuery.Tests
 {
@@ -24,9 +27,23 @@ namespace SvnQuery.Tests
     public class ContentTest
     {
         [Test]
-        public void Wildcards()
+        public void WildcardStar()
         {
-            TestIndex.AssertQuery("c:Ele*ant", 12, 15, 16, 17);
+            TestIndex.AssertQueryFromHeadRevision("c:El*ant", 12, 15, 16, 17);
         }
+        
+        [Test]
+        public void WildcardsQuestionMark()
+        {
+            TestIndex.AssertQueryFromHeadRevision("c:Ele?ant", 15, 16, 17);
+        }
+
+        [Test, Ignore]
+        public void Gap()
+        {
+            TestIndex.AssertQueryFromHeadRevision("c:\"comment ** that", 8, 9);            
+        }
+
+    
     }
 }

@@ -89,7 +89,7 @@ namespace SvnQuery
                     }
                     offset = 0;
                 }
-                char c = char.ToLowerInvariant(line[offset++]);
+                char c = char.ToUpperInvariant(line[offset++]);
                 if (char.IsLetterOrDigit(c) || c == '_' || (includeWildcards && (c == '*' || c == '?')))
                 {
                     if (length < MaxTokenLength) buffer[length++] = c;

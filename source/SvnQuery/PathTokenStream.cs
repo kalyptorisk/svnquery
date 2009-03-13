@@ -40,6 +40,11 @@ namespace SvnQuery
             Reset(path_to_tokenize);
         }
 
+        public void SetText(string text)
+        {
+            Reset(text);
+        }
+
         public void Reset(string path_to_tokenize)
         {
             path = path_to_tokenize;
@@ -58,7 +63,7 @@ namespace SvnQuery
             int length = 0;
             while (true)
             {
-                char c = char.ToLowerInvariant(path[position++]);
+                char c = char.ToUpperInvariant(path[position++]);
                 if (c == '\\') c = '/';
                 buffer[length++] = c;
                 if (c == '/') break;

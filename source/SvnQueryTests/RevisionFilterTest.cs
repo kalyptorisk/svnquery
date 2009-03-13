@@ -26,13 +26,13 @@ namespace SvnQuery.Tests
         [Test]
         public void HeadRevisionExist_Flip_cs()
         {
-            TestIndex.AssertQuery("p:flip.cs", 14);
+            TestIndex.AssertQueryFromHeadRevision("p:flip.cs", 14);
         }
 
         [Test]
         public void DeletedFile_DoesNotExistInHeadRevision()
         {
-            TestIndex.AssertQuery("p:deleted.cpp");
+            TestIndex.AssertQueryFromHeadRevision("p:deleted.cpp");
         }
 
         [Test]

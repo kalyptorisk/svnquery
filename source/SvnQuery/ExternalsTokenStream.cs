@@ -101,7 +101,7 @@ namespace SvnQuery
                     break;
                 }
 
-                char c = char.ToLowerInvariant(line[offset++]);
+                char c = char.ToUpperInvariant(line[offset++]);
                 if (c == '\\') c = '/';
                 if (c == '/')
                 {

@@ -1,4 +1,23 @@
+#region Apache License 2.0
+
+// Copyright 2008-2009 Christian Rodemeyer
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#endregion
+
 using System;
+using System.Linq;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -11,26 +30,28 @@ namespace SvnQuery.Tests
 {
     public static class TestIndex
     {
-        static readonly string[,] data = new[,]
-                                         {
+        const string longContentA = "#include \"FileIO.h\" // another comment that is just here to generate some text that can be searched";
+        const string longContentB = "#include <general/path/bla.h> // some very funky and long comment that is total useless";
+
+        static readonly string[,] data = {
                                              {" 0", "/csharp/fileio.cs", "The quick brown fox jumps over the lazy dog", ""},
                                              {" 1", "/shared/general/FileIO/FileIO.cpp", "class Special:Abstract", ""},
                                              {" 2", "/shared/general/FileIO/FileIO.design.cpp", "obj.method(arg1, arg2, arg3) < 4711", ""},
-                                             {" 3", "/shared/general/FileIO/FileIO.h", "", ""},
-                                             {" 4", "/shared/general/FileIO/FileIO.xml", "", ""},
-                                             {" 5", "/shared/general/bla/FileIO/FileIO.h", "", ""},
+                                             {" 3", "/shared/general/FileIO/FileIO.h", "aa bb cc dd ee ff ee dd cc bb aa aa bb cc dd", ""},
+                                             {" 4", "/shared/general/FileIO/FileIO.xml", "aa bb cc dd cc", ""},
+                                             {" 5", "/shared/general/bla/FileIO/FileIO.h", "cc dd ee ff", ""},
                                              {" 6", "/shared/general/FileIO/anders.h", "flip fileio cpp shared general", ""},
                                              {" 7", "/shared/general/FileIO/anders.cpp", "", ""},
-                                             {" 8", "/tags/shared/general/FileIO/FileIO.cpp", "", ""},
-                                             {" 9", "/tags/shared/general/FileIO/FileIO.h", "", ""},
+                                             {" 8", "/tags/shared/general/FileIO/FileIO.cpp", longContentA, ""},
+                                             {" 9", "/tags/shared/general/FileIO/FileIO.h", longContentB, ""},
                                              {"10", "/tags/shared/general/FileIO/anders.h", "max und moritz sind anders", ""},
                                              {"11", "/tags/shared/general/FileIO/anders.cpp", "anders sind moritz und max", ""},
                                              {"12", "/woanders/FileIO.cpp", "elephant", ""},
                                              {"13", "/woanders/FileIO.h", "cat and mice", ""},
                                              {"14", "/woanders/flip.cs", "cat and dog", ""},
-                                             {"15", "/woanders/FileIO/hier/und/dort/fileio.cpp", "elefant, cat, dog, mice, rabbit, hedgehog and", ""},
-                                             {"16", "/woanders/FileIO/hier/und/dort/fileio.h", "Elefant Katze Maus Hase Igel", ""},
-                                             {"17", "/selt.sam/source/form1.design.cs", "Der Elefant sitzt auf dem Trommelklo", ""},
+                                             {"15", "/woanders/FileIO/hier/und/dort/fileio.cpp", "elefant, cat, dog, mice, rabbit, hedgehog and", "-r4000 /bla/bli localbli"},
+                                             {"16", "/woanders/FileIO/hier/und/dort/fileio.h", "Elefant Katze Maus Hase Igel", "-r5000 ^/products/internal internal"},
+                                             {"17", "/selt.sam/source/form1.design.cs", "Der Elefant sitzt auf dem Trommelklo", "svn://svnquery.tigris.org/one/two/three localfolder"},
                                              {"18", "/woanders/", "", "/shared shared"},
                                              {"19", "/project/import/", "", "/Shared/General general\r\n /woanders woanders"},
                                              {"20", "/project_zwei/import/", "", "/Shared/Animals animals"},
@@ -80,12 +101,17 @@ namespace SvnQuery.Tests
             return searcher.Search(q, new RevisionFilter(revFirst, revLast));
         }
 
-        public static void AssertQuery(Query q, params int[] expected)
+        public static Hits SearchHeadRevision(Query q)
         {
-            AssertHitsAreOK(Search(q, RevisionFilter.Head, RevisionFilter.Head), expected);
+            return Search(q, RevisionFilter.Head, RevisionFilter.Head);
         }
 
-        public static void AssertQuery(string query, params int[] expected)
+        public static void AssertQuery(Query q, params int[] expected)
+        {
+            AssertHitsAreOK(SearchHeadRevision(q), expected);
+        }
+
+        public static void AssertQueryFromHeadRevision(string query, params int[] expected)
         {
             AssertQueryFromRevisionRange(RevisionFilter.Head, RevisionFilter.Head, query, expected);
         }
@@ -99,6 +125,16 @@ namespace SvnQuery.Tests
         {
             Parser p = new Parser(Reader);
             AssertHitsAreOK(Search(p.Parse(query), revFirst, revLast), expected);
+        }
+
+        public static void PrintHits(string query)
+        {
+            PrintHits(SearchHeadRevision(new Parser(Reader).Parse(query)));
+        }
+
+        public static void PrintHits(Query query)
+        {
+            PrintHits(SearchHeadRevision(query));
         }
 
         public static void PrintHits(Hits hits)
@@ -168,8 +204,7 @@ namespace SvnQuery.Tests
         static TestIndex()
         {
             Directory directory = new RAMDirectory();
-            Analyzer analyzer = new StandardAnalyzer();
-            IndexWriter writer = new IndexWriter(directory, analyzer, true);
+            IndexWriter writer = new IndexWriter(directory, null, true);
             PathTokenStream pathTokenStream = new PathTokenStream();
             ContentTokenStream contentTokenStream = new ContentTokenStream();
             ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
@@ -187,7 +222,7 @@ namespace SvnQuery.Tests
             {
                 string id = data[i, 1];
                 field_id.SetValue(id);
-                pathTokenStream.Reset(id);
+                pathTokenStream.SetText(id);
                 int rev_first = RevisionFilter.Head;
                 if (id.StartsWith("/revisions"))
                 {
@@ -210,7 +245,7 @@ namespace SvnQuery.Tests
                     // Warning: It is not possible to load a document from the index
                     // We have to rebuild/reparse it from the scratch
                     writer.DeleteDocuments(new Term("id", id));
-                    pathTokenStream.Reset(id);
+                    pathTokenStream.SetText(id);
                     contentTokenStream.SetText("");
                     externalsTokenStream.SetText("");
                     int rev_last = int.Parse(data[i, 3]);

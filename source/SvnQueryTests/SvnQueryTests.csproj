@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ContentTest.cs" />
     <Compile Include="ExternalsTest.cs" />
+    <Compile Include="GapPhraseParserTest.cs" />
     <Compile Include="SpanQueryProblemsTest.cs" />
     <Compile Include="PackedSizeConverterTest.cs" />
     <Compile Include="RevisionFilterTest.cs" />

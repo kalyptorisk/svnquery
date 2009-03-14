@@ -22,9 +22,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using SvnQuery;
 
-namespace SvnIndexTests
+namespace SvnQuery.Tests
 {
     [TestFixture]
     public class SvnApiTest

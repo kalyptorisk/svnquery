@@ -49,12 +49,19 @@ namespace SvnQuery.Tests
             return new SpanNearQuery(clauses, gap, true);
         }
 
+        static Query Content(string query)
+        {
+            return new Parser(TestIndex.Reader).ParseSimpleTerm(FieldName.Content, query);
+        }
+
         [Test]
         public void TheProblem_OverlappingSpans()
         {
             // Content 3: aa bb cc dd ee ff ee dd cc bb aa aa bb cc dd
             // Content 4: aa bb cc dd cc
             // Content 5: cc dd ee ff 
+
+            //TestIndex.AssertQuery(Content("cc dd ** dd cc"), 3);
 
             // A SpanQuery clause can overlap its preceding clause if its
             // slope is greater than 0

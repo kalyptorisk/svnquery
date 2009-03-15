@@ -33,60 +33,95 @@ namespace SvnQuery.Tests
         }
 
         [Test]
+        public void SimpleTokenStream()
+        {
+            var ts = new SimpleTokenStream();
+            ts.Text = @"Hullebulle * trallala #include <bli\bla\blub>";
+            var t = new Token();            
+
+            Assert.That(NextToken(ts, t), Is.EqualTo("HULLEBULLE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("TRALLALA"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("INCLUDE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("BLI"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("BLA"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("BLUB"));
+            Assert.That(NextToken(ts, t), Is.Null);
+        }
+        
+        [Test]
+        public void SimpleWildcardTokenStream()
+        {
+            var ts = new SimpleWildcardTokenStream();
+            ts.Text = @"Hull*bulle tra??ala * bla";
+            var t = new Token();            
+
+            Assert.That(NextToken(ts, t), Is.EqualTo("HULL*BULLE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("TRA??ALA"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("*"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("BLA"));
+            Assert.That(NextToken(ts, t), Is.Null);
+        }
+
+        [Test]
         public void PathTokenStream()
         {
-            //var ts = new PathTokenStreamEx();
-            //ts.SetText("/Internals/White Space/str#nge.net/file.des*n?r.ext");
-            //var t = new Token();
+            var ts = new PathTokenStream();
+            ts.Text = "/Internals/White Space/str#nge.net/file.des*n?r.ext";
+            var t = new Token();
 
-            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("WHITE"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("SPACE"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("STR#NGE"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("NET"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("FILE"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("DES*N?R"));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            //Assert.That(NextToken(ts, t), Is.EqualTo("EXT"));
-            //Assert.That(NextToken(ts, t), Is.Null);
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("WHITE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SPACE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("STR#NGE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo("NET"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("FILE"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo("DES*N?R"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo("EXT"));
+            Assert.That(NextToken(ts, t), Is.Null);
         }
 
         [Test]
         public void ExternalsTokenStream()
         {
-            //const string eol = PathTokenStream.Eol;
-            //SimpleTokenStream ts = new SimpleTokenStream();
-            //ts.SetText("^/Internals/shared/ shared" + Environment.NewLine 
-            //         + "svn://moria/Internals/MCL/export mcl/dlls");
+            PathTokenStream ts = new PathTokenStream();
+            ts.Text = "-r5000 ^/Internals/shared/ shared" + Environment.NewLine
+                      + "svn://moria/export mcl/dlls";
+            Token t = new Token();
 
-            //Token t = new Token();
-
-            //Assert.AreEqual(eol, NextToken(ts, t));
-
-            //Assert.AreEqual("internals", NextToken(ts, t));
-            //Assert.AreEqual("shared", NextToken(ts, t));
-
-            //Assert.AreEqual(eol, NextToken(ts, t));
-
-            //Assert.AreEqual("internals", NextToken(ts, t));
-            //Assert.AreEqual("mcl", NextToken(ts, t));
-            //Assert.AreEqual("export", NextToken(ts, t));
-
-            //Assert.AreEqual(eol, NextToken(ts, t));
+            Assert.That(NextToken(ts, t), Is.EqualTo("-R5000"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("^"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SHARED"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SHARED"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SVN"));
+            Assert.That(NextToken(ts, t), Is.EqualTo(":"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/")); 
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("MORIA"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("EXPORT"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("MCL")); 
+            Assert.That(NextToken(ts, t), Is.EqualTo("/")); 
+            Assert.That(NextToken(ts, t), Is.EqualTo("DLLS")); 
+            Assert.That(NextToken(ts, t), Is.Null);
         }
 
         [Test]
         public void Empty()
         {
-            //SimpleTokenStream ts = new SimpleTokenStream();
-            //ts.SetText("");
-            //Assert.IsNull(ts.Next());
+            SimpleTokenStream ts = new SimpleTokenStream();
+            ts.Text = "";
+            Assert.IsNull(ts.Next());
         }
     }
 }

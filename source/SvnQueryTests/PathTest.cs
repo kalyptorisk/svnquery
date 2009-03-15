@@ -19,7 +19,6 @@
 using System.Collections.Generic;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Search.Spans;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 
@@ -28,27 +27,6 @@ namespace SvnQuery.Tests
     [TestFixture]
     public class PathTest
     {
-
-        [Test]
-        public void ManualSpanQuery()
-        {
-            // simulates the query shared/**/fileio/fileio.(#cpp #h #xml)
-            // which itself is a prototype for shared/**/fileio/fileio.*
-
-            //SpanQuery slash = new SpanTermQuery(new Term(FieldName.Path, "/"));
-            //SpanQuery dot = new SpanTermQuery(new Term(FieldName.Path, "."));
-            //SpanQuery shared = new SpanTermQuery(new Term(FieldName.Path, "SHARED"));
-            //SpanQuery fileio = new SpanTermQuery(new Term(FieldName.Path, "FILEIO"));
-            //SpanQuery fileioSpan = new SpanNearQuery(new[] {fileio, slash, fileio}, 0, true);
-            //SpanQuery firstSpan = new SpanNearQuery(new[] {shared, fileioSpan}, 10, true);
-            //SpanQuery cpp = new SpanTermQuery(new Term(FieldName.Path, "CPP"));
-            //SpanQuery h = new SpanTermQuery(new Term(FieldName.Path, "H"));
-            //SpanQuery xml = new SpanTermQuery(new Term(FieldName.Path, "XML"));
-            //SpanQuery ext = new SpanOrQuery(new[] {cpp, h, xml});
-            //Query q = new SpanNearQuery(new[] {firstSpan, dot, ext}, 0, true); 
-
-            //TestIndex.AssertQuery(q, 1, 3, 4, 5, 8, 9);
-        }
 
         static Query PathQuery(string query)
         {
@@ -79,7 +57,7 @@ namespace SvnQuery.Tests
         {           
             TestIndex.AssertQuery(PathQuery("FileIO/**/fileio.cpp"), 1, 8, 15);
             TestIndex.AssertQuery(PathQuery("/woanders/FileIO/**/fileio.*"), 15, 16);
-            //TestIndex.AssertQuery(PathQuery("shared/**/fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            TestIndex.AssertQuery(PathQuery("shared/**/fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
         }
 
         [Test]

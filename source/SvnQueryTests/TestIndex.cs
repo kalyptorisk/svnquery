@@ -264,7 +264,7 @@ namespace SvnQuery.Tests
             writer.Close();
 
             searcher = new IndexSearcher(directory);
-            Assert.AreEqual(data.GetLength(0), searcher.MaxDoc());
+            Assert.AreEqual(data.GetLength(0), searcher.MaxDoc()); // smoke test for index creation 
         }
     }
 }

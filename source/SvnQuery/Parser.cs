@@ -17,219 +17,23 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
-using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Search.Spans;
 
 namespace SvnQuery
 {
     public class Parser
     {
-        static readonly char[] Wildcards = new[] {'*', '?'};
-
         readonly IndexReader reader;
+        readonly GapPhraseParser phraseParser;
 
         public Parser(IndexReader r)
         {
             reader = r;
-        }
-
-        public Query ParsePathTerm(string path)
-        {
-            var pts = new PathTokenStream(path);
-
-            var span = new List<SpanQuery>();
-            SpanQuery q = null;
-            int gap = 0;
-
-            for (Token token = pts.Next(); token != null; token = pts.Next(token))
-            {
-                string text = token.TermText();
-
-                if (Regex.IsMatch(text, @"^\.?\*+/?$")) // single gap, * or .* or */ or pure wildcard pattern
-                {
-                    if (span.Count > 0)
-                    {
-                        q = CombineSpans(q, span, gap);
-                        span.Clear();
-                        gap = 0;
-                    }
-                    gap += text == "**/" ? 100 : 1;
-                }
-                else
-                {
-                    span.Add(WildcardPathTerm(text));
-                }
-            }
-            return span.Count == 0 ? q : CombineSpans(q, span, gap);
-        }
-
-        SpanQuery CombineSpans(SpanQuery q, List<SpanQuery> span, int gap)
-        {
-            SpanQuery current = (span.Count == 1) ? span[0] : new SpanNearQuery(span.ToArray(), 0, true);
-            return (q == null) ? current : new SpanNearQuery(new[] {q, current}, gap, true);
-        }
-
-        SpanQuery WildcardPathTerm(string text)
-        {
-            Term term = new Term(FieldName.Path, text);
-
-            if (text.IndexOfAny(Wildcards) < 0)
-                return new SpanTermQuery(term);
-
-            bool fileOnly = !text.EndsWith("/");
-            var terms = new List<SpanTermQuery>();
-            var termEnum = new WildcardTermEnum(reader, term);
-            term = termEnum.Term();
-            while (term != null)
-            {
-                if (terms.Count > 2000)
-                    throw new Exception("too many matches for wildcard query, please be more specific");
-
-                if (!(fileOnly && term.Text().EndsWith("/")))
-                    terms.Add(new SpanTermQuery(term));
-                termEnum.Next();
-                term = termEnum.Term();
-            }
-            if (terms.Count == 0)
-                return new SpanTermQuery(new Term(FieldName.Path, ":")); // query will never find anything
-            return new SpanOrQuery(terms.ToArray());
-        }
-
-        Term[] WildcardContentTerms(Term wildcard)
-        {
-            string text = wildcard.Text();
-            if (text.IndexOfAny(Wildcards) < 0) return new[] {wildcard};
-
-            if (Regex.IsMatch(text, @"^[\*\?]*$"))
-                throw new Exception("too many matches for wildcard query, please be more specific");
-
-            var terms = new List<Term>();
-            var termEnum = new WildcardTermEnum(reader, wildcard);
-            Term term = termEnum.Term();
-            while (term != null)
-            {
-                terms.Add(term);
-                termEnum.Next();
-                term = termEnum.Term();
-
-                if (terms.Count > 2000)
-                    throw new Exception("too many matches for wildcard query, please be more specific");
-            }
-            return terms.ToArray();
-        }
-
-        public Query ParseContentTerm(string field, string content)
-        {
-            var q = new MultiPhraseQuery();
-            bool hasTerm = false;
-
-            TokenStream ts = new ContentTokenStream(content, true);
-            for (Token token = ts.Next(); token != null; token = ts.Next(token))
-            {
-                Term[] terms = WildcardContentTerms(new Term(field, token.TermText()));
-                if (terms.Length > 0)
-                {
-                    q.Add(terms);
-                    hasTerm = true;
-                }
-            }
-            return (hasTerm) ? q : null;
-        }
-
-        public Query ParseContentOrPathTerm(string term)
-        {
-            var path = ParsePathTerm(term);
-
-            // Heuristic to detect path terms, scan for 
-            if (Regex.IsMatch(term, @"(^/|\.)|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
-                return path;
-
-            var content = ParseContentTerm("content", term);
-            if (path != null && content != null)
-            {
-                var q = new BooleanQuery();
-                q.Add(path, BooleanClause.Occur.SHOULD);
-                q.Add(content, BooleanClause.Occur.SHOULD);
-                q.SetMinimumNumberShouldMatch(1);
-                return q;
-            }
-            return path ?? content;
-        }
-
-        static Query ParseExternalsTerm(string externals)
-        {
-            TokenStream ts = new ExternalsTokenStream(externals);
-            List<string> parts = new List<string>();
-            for (Token token = ts.Next(); token != null; token = ts.Next(token))
-            {
-                string text = token.TermText();
-                if (text != ExternalsTokenStream.Eol) parts.Add(text);
-            }
-
-            if (parts.Count == 0) return null;
-
-            if (parts.Count == 1) return new TermQuery(new Term(FieldName.Externals, parts[0]));
-
-            var bq = new BooleanQuery();
-            Term eop = new Term(FieldName.Externals, ExternalsTokenStream.Eol);
-            for (int i = 0; i++ < parts.Count;)
-            {
-                var q = new PhraseQuery();
-                q.Add(eop);
-                for (int j = 0; j < i; j++)
-                {
-                    q.Add(new Term(FieldName.Externals, parts[j]));
-                }
-                if (i < parts.Count) q.Add(eop);
-                bq.Add(q, BooleanClause.Occur.SHOULD);
-            }
-            return bq;
-        }
-
-        public static Query ParseAuthorTerm(string author)
-        {
-            return new TermQuery(new Term(FieldName.Author, author));
-        }
-
-        public static Query ParseTypeTerm(string type)
-        {
-            return new WildcardQuery(new Term(FieldName.MimeType, type));
-        }
-
-        public Query ParseTerm(string term, string field)
-        {
-            if (field == null) return ParseContentOrPathTerm(term);
-
-            switch (field)
-            {
-                case "a":
-                case "author":
-                    return ParseAuthorTerm(term);
-                case "c":
-                case "content":
-                    return ParseContentTerm(FieldName.Content, term);
-                case "p":
-                case "path":
-                    return ParsePathTerm(term);
-                case "e":
-                case "x":
-                case "externals":
-                    return ParseExternalsTerm(term);
-                case "m":
-                case "message":
-                    return ParseContentTerm(FieldName.Message, term);
-                case "t":
-                case "type":
-                case "mime-type":
-                    return ParseTypeTerm(term);
-                default:
-                    return ParseContentTerm(field.Replace('_', ':'), term);
-            }
+            phraseParser = new GapPhraseParser();
         }
 
         /// <summary>
@@ -284,6 +88,77 @@ namespace SvnQuery
                 }
             }
             return query;
+        }
+
+        public Query ParseTerm(string term, string field)
+        {
+            if (field == null) return ParseContentOrPathTerm(term);
+
+            switch (field)
+            {
+                case "a":
+                case "author":
+                    return ParseAuthorTerm(term);
+                case "c":
+                case "content":
+                    return ParseSimpleTerm(FieldName.Content, term);
+                case "p":
+                case "path":
+                    return ParsePathTerm(FieldName.Path, term);
+                case "e":
+                case "x":
+                case "externals":
+                    return ParsePathTerm(FieldName.Externals, term);
+                case "m":
+                case "message":
+                    return ParseSimpleTerm(FieldName.Message, term);
+                case "t":
+                case "type":
+                case "mime-type":
+                    return ParseTypeTerm(term);
+                default:
+                    return ParseSimpleTerm(field.Replace('_', ':'), term);
+            }
+        }
+
+        public Query ParseContentOrPathTerm(string term)
+        {
+            var path = ParsePathTerm(FieldName.Path, term);
+
+            // Heuristic to detect path terms, scan for 
+            if (Regex.IsMatch(term, @"(^/|\.)|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
+                return path;
+
+            var content = ParseSimpleTerm(FieldName.Content, term);
+            if (path != null && content != null)
+            {
+                var q = new BooleanQuery();
+                q.Add(path, BooleanClause.Occur.SHOULD);
+                q.Add(content, BooleanClause.Occur.SHOULD);
+                q.SetMinimumNumberShouldMatch(1);
+                return q;
+            }
+            return path ?? content;
+        }
+
+        public Query ParseSimpleTerm(string field, string term)
+        {
+            return phraseParser.Parse(field, new SimpleWildcardTokenStream {Text = term}, reader);
+        }
+
+        public Query ParsePathTerm(string field, string path)
+        {
+            return phraseParser.Parse(field, new PathTokenStream {Text = path}, reader);
+        }
+
+        public static Query ParseAuthorTerm(string author)
+        {
+            return new TermQuery(new Term(FieldName.Author, author));
+        }
+
+        public static Query ParseTypeTerm(string type)
+        {
+            return new WildcardQuery(new Term(FieldName.MimeType, type));
         }
     }
 }

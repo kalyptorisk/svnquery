@@ -38,7 +38,7 @@ namespace SvnQuery.Tests
             TestIndex.AssertQueryFromHeadRevision("c:Ele?ant", 15, 16, 17);
         }
 
-        [Test, Ignore]
+        [Test]
         public void Gap()
         {
             TestIndex.AssertQueryFromHeadRevision("c:\"comment ** that", 8, 9);            

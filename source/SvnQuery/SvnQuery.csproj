@@ -47,19 +47,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContentTokenStream.cs" />
-    <Compile Include="ExternalsTokenStream.cs" />
     <Compile Include="FieldName.cs" />
     <Compile Include="GapPhraseParser.cs" />
     <Compile Include="ISvnApi.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="PackedSizeConverter.cs" />
-    <Compile Include="PathTokenStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="IndexProperty.cs" />
     <Compile Include="RevisionFilter.cs" />
     <Compile Include="SharpSvnApi.cs" />
+    <Compile Include="SimpleTokenStream.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

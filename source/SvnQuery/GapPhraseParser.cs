@@ -125,6 +125,7 @@ namespace SvnQuery
                     if (terms.Count > 2000)
                         throw new Exception("too many matches for wildcard query, please be more specific");
 
+                    terms.Add(new SpanTermQuery(term));
                     termEnum.Next();
                     term = termEnum.Term();
                 }

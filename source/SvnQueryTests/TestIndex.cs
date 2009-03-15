@@ -205,9 +205,9 @@ namespace SvnQuery.Tests
         {
             Directory directory = new RAMDirectory();
             IndexWriter writer = new IndexWriter(directory, null, true);
-            PathTokenStream pathTokenStream = new PathTokenStream();
-            ContentTokenStream contentTokenStream = new ContentTokenStream();
-            ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
+            var pathTokenStream = new PathTokenStream();
+            var contentTokenStream = new SimpleTokenStream();
+            var externalsTokenStream = new PathTokenStream();
             Field field_id = new Field("id", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
             Field field_rev_first = new Field(FieldName.RevisionFirst, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
             Field field_rev_last = new Field(FieldName.RevisionLast, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
@@ -222,18 +222,18 @@ namespace SvnQuery.Tests
             {
                 string id = data[i, 1];
                 field_id.SetValue(id);
-                pathTokenStream.SetText(id);
+                pathTokenStream.Text = id;
                 int rev_first = RevisionFilter.Head;
                 if (id.StartsWith("/revisions"))
                 {
-                    contentTokenStream.SetText("");
-                    externalsTokenStream.SetText("");
+                    contentTokenStream.Text = "";
+                    externalsTokenStream.Text = "";
                     rev_first = int.Parse(data[i, 2]);
                 }
                 else
                 {
-                    contentTokenStream.SetText(data[i, 2]);
-                    externalsTokenStream.SetText(data[i, 3]);
+                    contentTokenStream.Text = data[i, 2];
+                    externalsTokenStream.Text = data[i, 3];
                 }
                 field_rev_first.SetValue(RevisionFieldValue(rev_first));
                 field_rev_last.SetValue(HeadRevisionFieldValue());
@@ -245,9 +245,9 @@ namespace SvnQuery.Tests
                     // Warning: It is not possible to load a document from the index
                     // We have to rebuild/reparse it from the scratch
                     writer.DeleteDocuments(new Term("id", id));
-                    pathTokenStream.SetText(id);
-                    contentTokenStream.SetText("");
-                    externalsTokenStream.SetText("");
+                    pathTokenStream.Text = id;
+                    contentTokenStream.Text = "";
+                    externalsTokenStream.Text = "";
                     int rev_last = int.Parse(data[i, 3]);
                     field_rev_last.SetValue(RevisionFieldValue(rev_last));
                     id += "@" + rev_first;

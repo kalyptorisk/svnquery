@@ -62,10 +62,10 @@ namespace SvnQuery
         readonly Field pathField;
         readonly Field contentField;
         readonly Field externalsField;
-        readonly PathTokenStream pathTokenStream = new PathTokenStream();
-        readonly ContentTokenStream contentTokenStream = new ContentTokenStream();
-        readonly ExternalsTokenStream externalsTokenStream = new ExternalsTokenStream();
-        readonly ContentTokenStream messageTokenStream = new ContentTokenStream();
+        readonly SimpleTokenStream pathTokenStream = new PathTokenStream();
+        readonly SimpleTokenStream contentTokenStream = new SimpleTokenStream();
+        readonly SimpleTokenStream externalsTokenStream = new PathTokenStream();
+        readonly SimpleTokenStream messageTokenStream = new SimpleTokenStream();
 
         public enum Command
         {
@@ -416,12 +416,12 @@ namespace SvnQuery
             Document doc = MakeDocument();
 
             idField.SetValue(id.Text());
-            pathTokenStream.Reset(data.Path);
+            pathTokenStream.Text = data.Path;
             revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
             revLastField.SetValue(data.RevisionLast.ToString("d8"));
             authorField.SetValue(data.Info.Author.ToLowerInvariant());
             SetTimestampField(data.Info.Timestamp);
-            messageTokenStream.SetText(svn.GetLogMessage(data.RevisionFirst));
+            messageTokenStream.Text = svn.GetLogMessage(data.RevisionFirst);
 
             if (!data.Info.IsDirectory)
             {
@@ -429,8 +429,8 @@ namespace SvnQuery
                 doc.Add(sizeField);
             }
 
-            if (contentTokenStream.SetText(data.Content))
-                doc.Add(contentField);
+            contentTokenStream.Text = data.Content;
+            if (!contentTokenStream.IsEmpty) doc.Add(contentField);
 
             IndexProperties(doc, data.Properties);
 
@@ -450,7 +450,7 @@ namespace SvnQuery
                 if (prop.Key == "svn:externals")
                 {
                     doc.Add(externalsField);
-                    externalsTokenStream.SetText(prop.Value);
+                    externalsTokenStream.Text = prop.Value;
                 }
                 else if (prop.Key == "svn:mime-type")
                 {
@@ -463,7 +463,7 @@ namespace SvnQuery
                 }
                 else
                 {
-                    doc.Add(new Field(prop.Key, new ContentTokenStream(prop.Value, false)));
+                    doc.Add(new Field(prop.Key, new SimpleTokenStream{Text = prop.Value}));
                 }
             }
         }

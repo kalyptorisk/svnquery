@@ -22,7 +22,7 @@ using NUnit.Framework;
 
 namespace SvnQuery.Tests
 {
-    [TestFixture, Ignore]
+    [TestFixture]
     public class ExternalsTest
     {      
 

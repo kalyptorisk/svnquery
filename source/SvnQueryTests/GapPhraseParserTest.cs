@@ -27,7 +27,7 @@ namespace SvnQuery.Tests
     {
         static string Parse(string content)
         {
-            return new GapPhraseParser().ParseToString(new ContentTokenStream(content, true));
+            return new GapPhraseParser().ParseToString(new SimpleWildcardTokenStream{Text = content});
         }
 
         [Test]

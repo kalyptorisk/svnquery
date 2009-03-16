@@ -37,6 +37,10 @@ namespace SvnQuery.Tests
     [TestFixture]
     public class SpanQueryProblemsTest
     {
+        // Content 3: aa bb cc dd ee ff ee dd cc bb aa aa bb cc dd
+        // Content 4: aa bb cc dd cc
+        // Content 5: cc dd ee ff 
+
         readonly SpanTermQuery aa = new SpanTermQuery(new Term("content", "AA"));
         readonly SpanTermQuery bb = new SpanTermQuery(new Term("content", "BB"));
         readonly SpanTermQuery cc = new SpanTermQuery(new Term("content", "CC"));
@@ -55,32 +59,42 @@ namespace SvnQuery.Tests
         }
 
         [Test]
-        public void TheProblem_OverlappingSpans()
+        public void OverlappingSpans_Part1()
         {
-            // Content 3: aa bb cc dd ee ff ee dd cc bb aa aa bb cc dd
-            // Content 4: aa bb cc dd cc
-            // Content 5: cc dd ee ff 
-
-            //TestIndex.AssertQuery(Content("cc dd ** dd cc"), 3);
 
             // A SpanQuery clause can overlap its preceding clause if its
             // slope is greater than 0
             // In the following example ((cc dd) ** (dd cc)) matches content 3 and 4!
             var lm = MakeSpan(0, cc, dd);
-            var rm = MakeSpan(0, dd, cc );
-            var q1 = MakeSpan(16, lm, rm );
+            var rm = MakeSpan(0, dd, cc);
+            var q1 = MakeSpan(16, lm, rm);
             TestIndex.AssertQuery(q1, 3, 4);
+        }
 
+        [Test]
+        public void OverlappingSpans_Part2()
+        {
             // If you rewrite the query as (cc (dd ** dd) cc) it doesn't work at all
             // because the inner match is to great
             var gap = MakeSpan(16, dd, dd);
             var q2 = MakeSpan(0, cc, gap, cc);
             TestIndex.AssertQuery(q2);
+        }
 
+        [Test]
+        public void OverlappingSpans_Part3()
+        {
             // If you rewrite it as (cc (dd ** (dd cc))) it matches only 4!
             Console.WriteLine("(cc (dd ** (dd cc)))");
             var q3 = MakeSpan(0, cc, MakeSpan(16, dd, MakeSpan(0, dd, cc)));
             TestIndex.AssertQuery(q3, 4);
+        }
+
+        [Test]
+        public void OverlappingSpans_Part4()
+        {
+            var lm = MakeSpan(0, cc, dd);
+            var rm = MakeSpan(0, dd, cc);
 
             // Rewriting with SpanNotQueries works!             
             Console.WriteLine("((cc dd) - (dd cc)) ** (dd cc)");
@@ -88,10 +102,33 @@ namespace SvnQuery.Tests
             var q4 = MakeSpan(16, not, rm);
             TestIndex.AssertQuery(q4, 3);
 
+            // This is was the current parser does
+            TestIndex.AssertQuery(Content("cc dd ** dd cc"), 3);
+        }
+
+        [Test]
+        public void OverlappingSpans_Part5()
+        {
             // Interestingly, the following does not work with SpanNotQueries
-            // dd ee * ee => ((dd ee) - ee) * ee never matches because the SpanNotQuery is alwys empty
-            var q5 = new SpanNotQuery(MakeSpan(0, dd, ee), ee);
+            // dd ee * ee => ((dd ee) - ee) * ee never matches because the 
+            // first span (dd ee) always overlaps with ee 
+            var span = MakeSpan(0, dd, ee);
+            TestIndex.AssertQuery(span, 3, 5);
+            var q5 = new SpanNotQuery(span, ee);
             TestIndex.AssertQuery(q5);
+        }
+
+        [Test]
+        public void OverlappingSpans_Part6()
+        {       
+            // But the reverse ways of excluding spans works
+            // (dd ee * ee) => (dd ee) * (ee -(dd ee))
+            var span = MakeSpan(0, dd, ee);
+            var not = new SpanNotQuery(ee, span);
+            var q6 = MakeSpan(1, span, not);
+            TestIndex.AssertQuery(q6, 3);
+
+            //TestIndex.AssertQuery(Content("dd ee * ee"), 3);
         }
 
         [Test]

@@ -87,7 +87,7 @@ namespace SvnQuery.Tests
         public void SimpleFieldQuery()
         {
             AssertParserQuery("p:Flip.cs", 14);
-            AssertParserQuery("p:Flip", 14);
+            AssertParserQuery("p:Flip", 5, 14);
         }
 
         [Test]

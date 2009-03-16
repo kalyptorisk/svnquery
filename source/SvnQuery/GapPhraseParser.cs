@@ -32,8 +32,9 @@ namespace SvnQuery
         TokenStream stream;
         Token token;
         int gap;
+        bool isFirstTerm; // current token is the first term parsed
 
-        public Query Parse(string field, TokenStream ts, IndexReader reader)
+        public SpanQuery Parse(string field, TokenStream ts, IndexReader reader)
         {
             IPhrase phrase = Parse(ts);
             if (phrase == null) return null;
@@ -52,6 +53,7 @@ namespace SvnQuery
             token = new Token();
             NextGap(); // Ignore leading gaps
             if (token == null) return null;
+            isFirstTerm = true;
             return Parse(int.MaxValue);
         }
 
@@ -60,7 +62,8 @@ namespace SvnQuery
         /// </summary>
         IPhrase Parse(int maxGap)
         {
-            IPhrase leaf = new PhraseTerm(token.TermText());
+            IPhrase leaf = new TermPhrase(token.TermText(), isFirstTerm);
+            isFirstTerm = false;
             NextGap();
             while (gap < maxGap)
             {
@@ -101,18 +104,23 @@ namespace SvnQuery
             SpanQuery BuildQuery(string field, IndexReader reader);
         }
 
-        class PhraseTerm : IPhrase
+        class TermPhrase : IPhrase
         {
             readonly string text;
+            readonly bool isFirst;
 
-            public PhraseTerm(string s)
+            public TermPhrase(string s, bool isFirstTerm)
             {
                 text = s;
+                isFirst = isFirstTerm;
             }
 
             public SpanQuery BuildQuery(string field, IndexReader reader)
             {
                 Term term = new Term(field, text);
+
+                if (isFirst && text == "/")
+                    return new SpanFirstQuery(new SpanTermQuery(term), 1);
 
                 if (text.All(c => c != '*' && c != '?'))
                     return new SpanTermQuery(term);
@@ -163,7 +171,13 @@ namespace SvnQuery
                 SpanQuery[] clauses = new SpanQuery[children.Count];
                 for (int i = 0; i < clauses.Length; ++i)
                 {
-                    clauses[i] = children[i].BuildQuery(field, reader);
+                    if (i < clauses.Length - 1)
+                    {
+                        SpanQuery first = children[i].BuildQuery(field, reader);
+                        SpanQuery second = children[i + 1].BuildQuery(field, reader);
+                        clauses[i] = new SpanNotQuery(first, second);
+                    }
+                    else clauses[i] = children[i].BuildQuery(field, reader);
                 }
                 return new SpanNearQuery(clauses, Gap, true);
             }

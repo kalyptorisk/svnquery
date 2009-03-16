@@ -39,7 +39,7 @@ namespace SvnQuery.Tests
                                              {" 2", "/shared/general/FileIO/FileIO.design.cpp", "obj.method(arg1, arg2, arg3) < 4711", ""},
                                              {" 3", "/shared/general/FileIO/FileIO.h", "aa bb cc dd ee ff ee dd cc bb aa aa bb cc dd", ""},
                                              {" 4", "/shared/general/FileIO/FileIO.xml", "aa bb cc dd cc", ""},
-                                             {" 5", "/shared/general/bla/FileIO/FileIO.h", "cc dd ee ff", ""},
+                                             {" 5", "/shared/general/flip/FileIO/FileIO.h", "cc dd ee ff", ""},
                                              {" 6", "/shared/general/FileIO/anders.h", "flip fileio cpp shared general", ""},
                                              {" 7", "/shared/general/FileIO/anders.cpp", "", ""},
                                              {" 8", "/tags/shared/general/FileIO/FileIO.cpp", longContentA, ""},
@@ -53,7 +53,7 @@ namespace SvnQuery.Tests
                                              {"16", "/woanders/FileIO/hier/und/dort/fileio.h", "Elefant Katze Maus Hase Igel", "-r5000 ^/products/internal internal"},
                                              {"17", "/selt.sam/source/form1.design.cs", "Der Elefant sitzt auf dem Trommelklo", "svn://svnquery.tigris.org/one/two/three localfolder"},
                                              {"18", "/woanders/", "", "/shared shared"},
-                                             {"19", "/project/import/", "", "/Shared/General general\r\n /woanders woanders"},
+                                             {"19", "/project/import/", "", "/Shared/General general\r\n  /woanders woanders"},
                                              {"20", "/project_zwei/import/", "", "/Shared/Animals animals"},
                                              // special revision entries start with /revision, if so the next two fields are firtst rev and alst rev
                                              {"21", "/revisions/bla.cpp", "1", "5"},

@@ -34,16 +34,30 @@ namespace SvnQuery.Tests
             return p.ParsePathTerm(FieldName.Path, query) ?? new TermQuery(new Term("never", "never"));
         }
 
-        [Test, Ignore]
+        [Test]
         public void StartAtRoot()
         {
             TestIndex.AssertQuery(PathQuery("/shared/"), 1, 2, 3, 4, 5, 6, 7);
         }
 
+
         [Test]
         public void CsExtension()
         {
             TestIndex.AssertQuery(PathQuery(".cs"), 0, 14, 17);
+            //TestIndex.AssertQuery(PathQuery("cs"));
+        }
+
+        [Test]
+        public void FindPathOrFile()
+        {
+            TestIndex.AssertQuery(PathQuery("flip"), 5, 14);
+        }
+
+        [Test]
+        public void FindPathOnly()
+        {
+            TestIndex.AssertQuery(PathQuery("flip/"), 5);
         }
 
         [Test]
@@ -55,9 +69,9 @@ namespace SvnQuery.Tests
         [Test]
         public void PathGap()
         {           
-            TestIndex.AssertQuery(PathQuery("FileIO/**/fileio.cpp"), 1, 8, 15);
-            TestIndex.AssertQuery(PathQuery("/woanders/FileIO/**/fileio.*"), 15, 16);
-            TestIndex.AssertQuery(PathQuery("shared/**/fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            TestIndex.AssertQuery(PathQuery("FileIO ** fileio.cpp"), 1, 8, 15);
+            TestIndex.AssertQuery(PathQuery("/woanders/FileIO ** fileio.*"), 15, 16);
+            TestIndex.AssertQuery(PathQuery("shared ** fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
         }
 
         [Test]

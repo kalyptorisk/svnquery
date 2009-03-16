@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using Lucene.Net.Analysis;
 using NUnit.Framework;
 
 namespace SvnQuery.Tests

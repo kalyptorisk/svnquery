@@ -32,13 +32,12 @@ namespace SvnQuery
         TokenStream stream;
         Token token;
         int gap;
-        bool isFirstTerm; // current token is the first term parsed
 
         public SpanQuery Parse(string field, TokenStream ts, IndexReader reader)
         {
             IPhrase phrase = Parse(ts);
             if (phrase == null) return null;
-            return phrase.BuildQuery(field, reader);
+            return phrase.BuildQuery(field, reader, true, true);
         }
 
         public string ParseToString(TokenStream ts)
@@ -53,7 +52,6 @@ namespace SvnQuery
             token = new Token();
             NextGap(); // Ignore leading gaps
             if (token == null) return null;
-            isFirstTerm = true;
             return Parse(int.MaxValue);
         }
 
@@ -62,8 +60,7 @@ namespace SvnQuery
         /// </summary>
         IPhrase Parse(int maxGap)
         {
-            IPhrase leaf = new TermPhrase(token.TermText(), isFirstTerm);
-            isFirstTerm = false;
+            IPhrase leaf = new TermPhrase(token.TermText());
             NextGap();
             while (gap < maxGap)
             {
@@ -90,57 +87,128 @@ namespace SvnQuery
                     gap = int.MaxValue;
                     return;
                 }
-                if (token.TermText().Any(c => c != '*')) // is gap
+
+                int gapLength = GapLength();
+
+                if (gapLength == 0)
                 {
                     gap = gap < 100 ? gap : 100;
                     return;
                 }
-                gap += token.TermLength() == 1 ? 1 : 100;
+                gap += gapLength;
             }
+        }
+
+        int GapLength()
+        {
+            int len = token.TermLength();
+            char[] buffer = token.TermBuffer();
+
+            int i = 0;
+            while (buffer[i] == '*' && i < len) ++i;
+            if (i > 0 && (i == len || (i == --len && buffer[len] == '/'))) 
+                return i == 1 ? 1 : 100;
+
+            return 0;
         }
 
         interface IPhrase
         {
-            SpanQuery BuildQuery(string field, IndexReader reader);
+            /// <summary>
+            /// Builds a query for the contained phrase
+            /// </summary>
+            /// <param name="field">the lucene field for which the query should be build</param>
+            /// <param name="reader">an IndexReader for enumerating wildcard terms</param>
+            /// <param name="isFirst">true if this is the first phrase in a span</param>
+            /// <param name="isLast">true if this is the last phrase in a span</param>
+            /// <returns></returns>
+            SpanQuery BuildQuery(string field, IndexReader reader, bool isFirst, bool isLast);
         }
 
         class TermPhrase : IPhrase
         {
             readonly string text;
-            readonly bool isFirst;
 
-            public TermPhrase(string s, bool isFirstTerm)
+            public TermPhrase(string s)
             {
                 text = s;
-                isFirst = isFirstTerm;
             }
 
-            public SpanQuery BuildQuery(string field, IndexReader reader)
+            public SpanQuery BuildQuery(string field, IndexReader reader, bool isFirst, bool isLast)
             {
-                Term term = new Term(field, text);
+                var terms = new List<SpanTermQuery>(WildcardTerms(PathTerms(field, isFirst, isLast), reader));
 
-                if (isFirst && text == "/")
-                    return new SpanFirstQuery(new SpanTermQuery(term), 1);
-
-                if (text.All(c => c != '*' && c != '?'))
-                    return new SpanTermQuery(term);
-
-                var terms = new List<SpanTermQuery>();
-                var termEnum = new WildcardTermEnum(reader, term);
-                term = termEnum.Term();
-                while (term != null)
-                {
-                    if (terms.Count > 2000)
-                        throw new Exception("too many matches for wildcard query, please be more specific");
-
-                    terms.Add(new SpanTermQuery(term));
-                    termEnum.Next();
-                    term = termEnum.Term();
-                }
-                if (terms.Count == 0)
-                    return new SpanTermQuery(new Term(FieldName.Path, ":")); // query will never find anything
+                if (terms.Count == 0) // return a query that will never find anything (':' is an invalid path character)
+                    return new SpanTermQuery(new Term(FieldName.Path, ":"));
+                if (terms.Count == 1)
+                    return terms[0];
 
                 return new SpanOrQuery(terms.ToArray());
+            }
+
+            IEnumerable<Term> PathTerms(string field, bool isFirst, bool isLast)
+            {
+                if (field == FieldName.Path || field == FieldName.Externals)
+                {
+                    foreach (string s in PathVariants(isFirst, isLast))
+                    {
+                        yield return new Term(field, s);
+                    }
+                }
+                else
+                {
+                    yield return new Term(field, text);
+                }
+            }
+
+            public IEnumerable<string> PathVariants(bool isFirst, bool isLast)
+            {
+                yield return text;
+                
+                if (isFirst && text[0] != '.' && text[0] != '/')
+                    yield return "." + text;
+
+                if (isLast && text[text.Length - 1] != '/')
+                {
+                    yield return text + "/";
+
+                    if (isFirst && text[0] != '.') 
+                        yield return "." + text + "/";
+                }
+            }
+
+            bool HasWildcards
+            {
+                get { return text.Any(c => c == '*' || c == '?'); }
+            }
+        
+            IEnumerable<SpanTermQuery> WildcardTerms(IEnumerable<Term> terms, IndexReader reader)
+            {
+                if (!HasWildcards)
+                {
+                    foreach (Term t in terms)
+                    {
+                        yield return new SpanTermQuery(t);
+                    }
+                }
+                else
+                {
+                    int maxTerms = 1000;
+                    foreach (Term t in terms)
+                    {
+                        var termEnum = new WildcardTermEnum(reader, t);
+                        var term = termEnum.Term();
+                        while (term != null)
+                        {
+                            if (--maxTerms < 0)
+                                throw new Exception("too many matches for wildcard query, please be more specific");
+
+                            yield return new SpanTermQuery(term);
+                            termEnum.Next();
+                            term = termEnum.Term();
+                        }
+                    }
+                }
             }
 
             public override string ToString()
@@ -166,19 +234,29 @@ namespace SvnQuery
                 children.Add(child);
             }
 
-            public SpanQuery BuildQuery(string field, IndexReader reader)
+            public SpanQuery BuildQuery(string field, IndexReader reader, bool isFirst, bool isLast)
             {
                 SpanQuery[] clauses = new SpanQuery[children.Count];
+                int lastClause = clauses.Length - 1;
                 for (int i = 0; i < clauses.Length; ++i)
                 {
-                    if (i < clauses.Length - 1)
-                    {
-                        SpanQuery first = children[i].BuildQuery(field, reader);
-                        SpanQuery second = children[i + 1].BuildQuery(field, reader);
-                        clauses[i] = new SpanNotQuery(first, second);
-                    }
-                    else clauses[i] = children[i].BuildQuery(field, reader);
+                    clauses[i] = children[i].BuildQuery(field, reader, i == 0, i == lastClause);
                 }
+                if (Gap > 0) // try to remove overlappings through SpanNotQueries
+                {
+                    for (int i = 0; i < clauses.Length; ++i)
+                    {
+                        if (i < lastClause && clauses[i].GetTerms().Count <= clauses[i + 1].GetTerms().Count)
+                        {
+                            clauses[i] = new SpanNotQuery(clauses[i], clauses[i + 1]);
+                        }
+                        if (i > 0 && clauses[i - 1].GetTerms().Count > clauses[i].GetTerms().Count)
+                        {
+                            clauses[i] = new SpanNotQuery(clauses[i], clauses[i - 1]);
+                        }
+                    }
+                }
+
                 return new SpanNearQuery(clauses, Gap, true);
             }
 

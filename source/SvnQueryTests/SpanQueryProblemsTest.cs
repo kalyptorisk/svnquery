@@ -32,7 +32,8 @@ namespace SvnQuery.Tests
     /// unexpected or completely wrong hits. What would help were a special
     /// LuceneQuery that would forbid overlaps and works with nested
     /// SpanQueries. Currently my Lucene understanding is not good enough
-    /// to start such a task, so my workaround is to use only simple gaps.
+    /// to start such a task, so my workaround is to use nested gaps with
+    /// overlap prevention through SpanNotQueries.
     /// </summary>
     [TestFixture]
     public class SpanQueryProblemsTest
@@ -41,12 +42,14 @@ namespace SvnQuery.Tests
         // Content 4: aa bb cc dd cc
         // Content 5: cc dd ee ff 
 
+#pragma warning disable 169
         readonly SpanTermQuery aa = new SpanTermQuery(new Term("content", "AA"));
         readonly SpanTermQuery bb = new SpanTermQuery(new Term("content", "BB"));
         readonly SpanTermQuery cc = new SpanTermQuery(new Term("content", "CC"));
         readonly SpanTermQuery dd = new SpanTermQuery(new Term("content", "DD"));
         readonly SpanTermQuery ee = new SpanTermQuery(new Term("content", "EE"));
         readonly SpanTermQuery ff = new SpanTermQuery(new Term("content", "FF"));
+#pragma warning restore 169
 
         static SpanQuery MakeSpan(int gap, params SpanQuery[] clauses)
         {
@@ -102,7 +105,7 @@ namespace SvnQuery.Tests
             var q4 = MakeSpan(16, not, rm);
             TestIndex.AssertQuery(q4, 3);
 
-            // This is was the current parser does
+            // This is now implemented int the parser
             TestIndex.AssertQuery(Content("cc dd ** dd cc"), 3);
         }
 
@@ -128,7 +131,9 @@ namespace SvnQuery.Tests
             var q6 = MakeSpan(1, span, not);
             TestIndex.AssertQuery(q6, 3);
 
-            //TestIndex.AssertQuery(Content("dd ee * ee"), 3);
+            // The parser now implements this strategy
+            var q = Content("dd ee * ee");
+            TestIndex.AssertQuery(Content("dd ee * ee"), 3);
         }
 
         [Test]

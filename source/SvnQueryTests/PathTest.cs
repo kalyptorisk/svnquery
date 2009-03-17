@@ -45,7 +45,7 @@ namespace SvnQuery.Tests
         public void CsExtension()
         {
             TestIndex.AssertQuery(PathQuery(".cs"), 0, 14, 17);
-            //TestIndex.AssertQuery(PathQuery("cs"));
+            TestIndex.AssertQuery(PathQuery("cs"), 0, 14, 17);
         }
 
         [Test]
@@ -69,9 +69,9 @@ namespace SvnQuery.Tests
         [Test]
         public void PathGap()
         {           
-            TestIndex.AssertQuery(PathQuery("FileIO ** fileio.cpp"), 1, 8, 15);
-            TestIndex.AssertQuery(PathQuery("/woanders/FileIO ** fileio.*"), 15, 16);
-            TestIndex.AssertQuery(PathQuery("shared ** fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            TestIndex.AssertQuery(PathQuery("FileIO/**/fileio.cpp"), 1, 8, 15);
+            TestIndex.AssertQuery(PathQuery("/woanders/FileIO/**/fileio.*"), 15, 16);
+            TestIndex.AssertQuery(PathQuery("shared/**/fileio"), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
         }
 
         [Test]

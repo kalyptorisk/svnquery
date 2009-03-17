@@ -87,6 +87,22 @@ namespace SvnQuery.Tests
             Assert.That(NextToken(ts, t), Is.Null);
         }
 
+
+        [Test]
+        public void PathTokenStream_GapQuery()
+        {
+            var ts = new PathTokenStream();
+            ts.Text = "Fileio/**/fileio.*";
+            var t = new Token();
+
+            Assert.That(NextToken(ts, t), Is.EqualTo("FILEIO/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("**/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("FILEIO"));
+            Assert.That(NextToken(ts, t), Is.EqualTo(".*"));
+            Assert.That(NextToken(ts, t), Is.Null);
+        }
+
+
         [Test]
         public void ExternalsTokenStream()
         {

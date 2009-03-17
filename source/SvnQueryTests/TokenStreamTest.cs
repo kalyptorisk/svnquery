@@ -70,20 +70,20 @@ namespace SvnQuery.Tests
             var t = new Token();
 
             Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
             Assert.That(NextToken(ts, t), Is.EqualTo("WHITE"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("SPACE"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SPACE/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
             Assert.That(NextToken(ts, t), Is.EqualTo("STR#NGE"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            Assert.That(NextToken(ts, t), Is.EqualTo("NET"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo(".NET/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
             Assert.That(NextToken(ts, t), Is.EqualTo("FILE"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            Assert.That(NextToken(ts, t), Is.EqualTo("DES*N?R"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("."));
-            Assert.That(NextToken(ts, t), Is.EqualTo("EXT"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo(".DES*N?R"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("."));
+            Assert.That(NextToken(ts, t), Is.EqualTo(".EXT"));
             Assert.That(NextToken(ts, t), Is.Null);
         }
 
@@ -98,20 +98,20 @@ namespace SvnQuery.Tests
             Assert.That(NextToken(ts, t), Is.EqualTo("-R5000"));
             Assert.That(NextToken(ts, t), Is.EqualTo("^"));
             Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("SHARED"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("INTERNALS/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("SHARED/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
             Assert.That(NextToken(ts, t), Is.EqualTo("SHARED"));
             Assert.That(NextToken(ts, t), Is.EqualTo("SVN"));
             Assert.That(NextToken(ts, t), Is.EqualTo(":"));
             Assert.That(NextToken(ts, t), Is.EqualTo("/")); 
             Assert.That(NextToken(ts, t), Is.EqualTo("/"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("MORIA"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("/"));
+            Assert.That(NextToken(ts, t), Is.EqualTo("MORIA/"));
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/"));
             Assert.That(NextToken(ts, t), Is.EqualTo("EXPORT"));
-            Assert.That(NextToken(ts, t), Is.EqualTo("MCL")); 
-            Assert.That(NextToken(ts, t), Is.EqualTo("/")); 
+            Assert.That(NextToken(ts, t), Is.EqualTo("MCL/")); 
+            //Assert.That(NextToken(ts, t), Is.EqualTo("/")); 
             Assert.That(NextToken(ts, t), Is.EqualTo("DLLS")); 
             Assert.That(NextToken(ts, t), Is.Null);
         }

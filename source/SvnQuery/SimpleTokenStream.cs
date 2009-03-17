@@ -84,21 +84,25 @@ namespace SvnQuery
                 }
                 char c = NormalizeCharacter(line[offset++]);
 
-                if (IsWordCharacter(c))
+                if (length == 0 && (IsFirstCharacter(c) || IsDelimiterCharacter(c)))
                 {
-                    if (length < MaxTokenLength) buffer[length++] = c;                    
+                    if (length < MaxTokenLength) buffer[length++] = c;
+                    if (IsDelimiterCharacter(c)) break;
+                }
+                else if (IsWordCharacter(c))
+                {
+                    if (length < MaxTokenLength) buffer[length++] = c;
+                } 
+                else if (IsLastCharacter(c))
+                {
+                    if (length < MaxTokenLength) buffer[length++] = c;
+                    break;
                 }
                 else if (length > 0) // token ready
                 {
-                    if (IsDelimiterCharacter(c)) --offset; // read again
+                    if (IsFirstCharacter(c) || IsDelimiterCharacter(c)) --offset; // read again
                     break;
                 }
-                else if (IsDelimiterCharacter(c))
-                {
-                    buffer[length++] = c;
-                    break;
-                }
-                else length = 0;
             }
             token.SetTermLength(length);
             return token;
@@ -118,7 +122,17 @@ namespace SvnQuery
         {
             return false;
         }
-       
+
+        protected virtual bool IsFirstCharacter(char c)
+        {
+            return false;
+        }
+
+        protected virtual bool IsLastCharacter(char c)
+        {
+            return false;
+        }
+
     }
 
     public class SimpleWildcardTokenStream: SimpleTokenStream
@@ -138,13 +152,25 @@ namespace SvnQuery
 
         protected override bool IsWordCharacter(char c)
         {
-            return !char.IsWhiteSpace(c) && !IsDelimiterCharacter(c);
+            return !(char.IsWhiteSpace(c) || (c == '/' || c == '.' || c == ':' || c == '^'));
         }
 
         protected override bool IsDelimiterCharacter(char c)
         {
-            return c == '/' || c == '.' || c == ':';
+            return c == ':' || c == '^';
         }
+
+        protected override bool IsFirstCharacter(char c)
+        {
+            return c == '.';
+        }
+
+        protected override bool IsLastCharacter(char c)
+        {
+            return c == '/';
+        }
+
+
     }
 
 

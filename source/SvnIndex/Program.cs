@@ -35,8 +35,7 @@ namespace SvnQuery
             Mutex mutex = null;
             try
             {
-                var indexerArgs = new IndexerArgs(args);
-
+                IndexerArgs indexerArgs = new IndexerArgs(args);
                 mutex = new Mutex(false, indexerArgs.IndexPath.ToLowerInvariant().Replace('\\', '_').Replace(':', '_'));
                 try
                 {
@@ -50,6 +49,10 @@ namespace SvnQuery
                 Indexer indexer = new Indexer(indexerArgs);
                 indexer.Run();
             }
+            catch (IndexerArgsException x)
+            {
+                Console.WriteLine(x.Message);
+            }
             finally
             {
                 if (mutex != null)
@@ -57,7 +60,8 @@ namespace SvnQuery
                     mutex.ReleaseMutex();
                     mutex.Close();
                 }
-            }
+            }            
+            AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
 #if DEBUG
             Console.WriteLine("Press any key");
             Console.ReadKey();
@@ -74,7 +78,6 @@ namespace SvnQuery
                     Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
                     Environment.CommandLine + Environment.NewLine + x);
             }
-            Console.WriteLine(IndexerArgs.HelpMessage);
         }
     }
 }

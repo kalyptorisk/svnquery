@@ -23,6 +23,28 @@ using System.Text.RegularExpressions;
 
 namespace SvnQuery
 {
+    public class IndexerArgsException: Exception
+    {
+         public IndexerArgsException(string msg): base(msg + Environment.NewLine + HelpMessage)
+         {}
+
+         const string HelpMessage = @"          
+SvnIndex action index_path repository_uri [Options] 
+  action := create | update
+  Options:
+  -r max revision to be included in the index
+  -u User
+  -p Password
+  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
+  -t max number of threads used to query the repository in parallel
+  -c commit interval
+  -o optimize interval
+  -n name of the index (for display in clients e.g. SvnWebQuery)
+  -x external visible repository uri 
+  -v verbosity level (0..3, 0 is lowest, 1 is default)
+";
+    }
+
     public class IndexerArgs
     {
         public Indexer.Command Command;        
@@ -40,30 +62,17 @@ namespace SvnQuery
         public int CommitInterval = 1000; // the interval between the index gets committed
         public int Verbosity; // Output data about the
 
-        public const string HelpMessage = @"          
-SvnIndex action index_path repository_uri [Options] 
-  action := create | update
-  Options:
-  -r max revision to be included in the index
-  -u User
-  -p Password
-  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
-  -t max number of threads used to query the repository in parallel
-  -c commit interval
-  -o optimize interval
-  -n name of the index (for display in clients e.g. SvnWebQuery)
-  -x external visible repository uri 
-  -v verbosity level (0..3, 0 is lowest, 1 is default)
-";
-
         public IndexerArgs(string[] args)
         {
+            if (args.Length == 0 || (args.Length == 1 && (args[0].EndsWith("?") || args[0].EndsWith("help", StringComparison.InvariantCultureIgnoreCase))))
+                throw new IndexerArgsException("Usage:");
+
             int iMandatory = 0;
             for (int i = 0; i < args.Length; ++i)
             {
                 if (args[i][0] == '-')
                 {
-                    if (args[i].Length < 2) throw new Exception("Empty Option");
+                    if (args[i].Length < 2) throw new IndexerArgsException("Empty Option");
                     char option = char.ToLowerInvariant(args[i][1]);
                     string arg = (args[i].Length == 2) ? args[++i] : args[i].Substring(2);
                     switch (option)
@@ -99,7 +108,7 @@ SvnIndex action index_path repository_uri [Options]
                             Verbosity = int.Parse(arg);
                             break;
                         default:
-                            throw new Exception("Unknown option -" + option);
+                            throw new IndexerArgsException("Unknown option -" + option);
                     }
                 }
                 else
@@ -114,7 +123,7 @@ SvnIndex action index_path repository_uri [Options]
                             }
                             catch (ArgumentException x)
                             {
-                                throw new Exception("Unknown command '" + arg + "'", x);
+                                throw new IndexerArgsException("Unknown command '" + arg + "'");
                             }
                             break;
                         case 1: // second comes the path to the index directory
@@ -126,7 +135,7 @@ SvnIndex action index_path repository_uri [Options]
                     }
                 }
             }
-            if (iMandatory != 3) throw new Exception("Missing arguments");
+            if (iMandatory != 3) throw new IndexerArgsException("Not enough arguments");
             
             if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
         }

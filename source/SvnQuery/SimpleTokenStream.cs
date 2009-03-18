@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.IO;
 using Lucene.Net.Analysis;
 
 namespace SvnQuery
@@ -34,55 +33,34 @@ namespace SvnQuery
         const int MinTokenLength = 1;
         const int MaxTokenLength = 100;
 
-        TextReader reader;
-        string line;
+        string text;
         int offset;
 
         public string Text
         {
             set
             {
-                reader = null;
-                line = "";
+                text = value;
                 offset = 0;
-
-                if (value == null) return;
-                value = value.Trim();
-                if (value == "") return;
-                reader = new StringReader(value);
             }
         }
 
         public bool IsEmpty
         {
-            get { return reader == null; }
+            get { return string.IsNullOrEmpty(text); }
         }
 
         public override Token Next(Token token)
         {
             token.Clear();
 
-            if (reader == null) return null;
-
             int length = 0;
             char[] buffer = token.TermBuffer();
             if (buffer.Length < MaxTokenLength) buffer = token.ResizeTermBuffer(MaxTokenLength);
 
-            while (true)
+            while (offset < text.Length)
             {
-                if (offset >= line.Length)
-                {
-                    if (length >= MinTokenLength) break;
-                    line = reader.ReadLine();
-                    while (line == "") line = reader.ReadLine();
-                    if (line == null)
-                    {
-                        reader = null;
-                        return null;
-                    }
-                    offset = 0;
-                }
-                char c = NormalizeCharacter(line[offset++]);
+                char c = NormalizeCharacter(text[offset++]);
 
                 if (length == 0 && (IsFirstCharacter(c) || IsDelimiterCharacter(c)))
                 {
@@ -104,6 +82,8 @@ namespace SvnQuery
                     break;
                 }
             }
+            if (length < MinTokenLength) return null;
+
             token.SetTermLength(length);
             return token;
         }

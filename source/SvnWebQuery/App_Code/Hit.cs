@@ -16,6 +16,7 @@
 
 #endregion
 
+using System;
 using Lucene.Net.Documents;
 using SvnQuery;
 
@@ -25,19 +26,19 @@ namespace App_Code
     {
         readonly Document doc;
         readonly string path;
-        readonly string url;
+        readonly string link;
 
         public Hit(Document doc)
         {
             this.doc = doc;
             string id = doc.Get(FieldName.Id);
             path = id.Split('@')[0];
-            url = "View.aspx?id=" + id ;            
+            link = "View.aspx?id=" +  Uri.EscapeDataString(id);            
         }
 
-        public string Url
+        public string Link
         {
-            get { return url; }
+            get { return link; }
         }
 
         public string Path

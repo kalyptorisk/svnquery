@@ -103,7 +103,7 @@
             </EmptyDataTemplate>
             <ItemTemplate>
                 <div style="margin-top: 3px;">
-                    <a style="" href='<%# Eval("Url") %>'>
+                    <a style="" href='<%# Eval("Link") %>'>
                         <%# Eval("Path") %></a>
                     <br />
                     <span style="font-size: 8pt; color: #707060">

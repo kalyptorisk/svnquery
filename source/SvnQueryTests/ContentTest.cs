@@ -16,10 +16,7 @@
 
 #endregion
 
-using Lucene.Net.Search;
 using NUnit.Framework;
-using Lucene.Net.Search.Spans;
-using Lucene.Net.Index;
 
 namespace SvnQuery.Tests
 {
@@ -44,6 +41,23 @@ namespace SvnQuery.Tests
             TestIndex.AssertQueryFromHeadRevision("c:\"comment ** that", 8, 9);            
         }
 
-    
+        [Test]
+        public void RealLifeIncludeQuery()
+        {
+            TestIndex.AssertQueryFromHeadRevision(@"c:""#include ** bla.h""", 9);            
+        }
+
+        [Test]
+        public void RealLifeFulltext()
+        {
+            TestIndex.AssertQueryFromHeadRevision(@"c:""include ** comment ** searched""", 8);
+        } 
+        
+        [Test]
+        public void RealLifeGrouping()
+        {
+            TestIndex.AssertQueryFromHeadRevision(@"c:(include comment searched)", 8);
+            TestIndex.AssertQueryFromHeadRevision(@"c:(include comment -searched)");
+        }
     }
 }

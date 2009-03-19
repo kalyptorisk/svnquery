@@ -3,104 +3,120 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>SvnWebQuery Help</title>   
+    <style type="text/css">
+        .query
+        {
+            color: #663300;
+            font-style: italic;
+        }
+        h1 {color: #CC6600; font-style: italic;}
+        h2 {color: #CC6600;font-style: italic;}
+        h3 {color: #CC6600;font-style: italic;}
+        h4 {color: #CC6600;font-style: italic;}        
+        </style>
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
 
-    <h1 style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic; ">
-        SvnWebQuery Help</h1>
+    <h1>
+        SvnQuery Help</h1>
 
 <p>
-    SvnQuery is a fulltext index of a subversion repository that contains every document 
-    of every revision. It uses Lucene.NET as a fulltext engine behind the scenes. You can query for the content as well as metadata 
-    like path, author, log-messages or subversion properties. SvnWebQuery is a web front end for SvnQuery.</p>
+    SvnQuery maintains a fulltext index of a subversion repository that contains the 
+    content and metadata of every document 
+    ever present in a revision. SvnWebQuery is an user friendly web interface 
+    inspired by google. You can also do programmatic queries from any .NET language 
+    by using the SvnQuery API. </p>
     <h2>
         Quickstart</h2>
 <p>
     First rule: Don&#39;t think too much about the query syntax, just enter what you are searching for. Examples</p>
-    <ul>
-        <li>debughelper.cpp-&gt; finds all occurrences of 
-            the file debughelper .cpp</li>
-        <li>*.dll -&gt; finds all files with the extension .dll</li>
-        <li>shared/* find all files directly below shared</li>
-        <li>internal/shared/**/ finds all files and folders below shared</li>
-        <li>Commodore Amiga&nbsp; finds all files containing the words &quot;Commodore&quot; and 
-            &quot;Amiga&quot;</li>
-    </ul>
-    <p>
-        You can also search for svn:externals:</p>
-    <ul>
-        <li>x:/Internal/shared/general</li>
-    </ul>
+   <table>
+   <tr><th>Query</th><th>What it finds</th></tr>
+   <tr><td class="query">debughelper.cpp</td>
+       <td >&nbsp;occurrences of the file debughelper.cpp</td></tr>
+   <tr><td><span class="query">*.dll</td><td>&nbsp;files with the extension 
+       .dll</td></tr>
+       <tr>
+           <td class="query">shared</td><td>&nbsp;items who have &quot;shared&quot; in its 
+            pass, e.g. &quot;/bla/shared.cpp&quot; and &quot;/shared/bla.cpp&quot; </td>
+       </tr>
+   <tr><td class="query">shared/</td><td>items which are below a 
+       folder named &quot;shared&quot;</td></tr>
+   <tr><td class="query">Commodore Amiga</td><td>&nbsp;files 
+       containing the words &quot;Commodore&quot; and &quot;Amiga&quot;</td></tr>
+   <tr><td><span class="query">c:&quot;commodore amiga&quot; </span></td><td>files 
+       containing the exact phrase &quot;commodore amiga&quot; in its content</td></tr>
+   <tr><td class="query">c:&quot;include ** bla.h&quot;</td><td>&nbsp;files containing 
+       the word &quot;include&quot; nearly followed by the word &quot;bla&quot; 
+       followed without gap by &quot;.h&quot; </td></tr>
+   <tr><td class="query">t:application*</td><td>&nbsp;files whose mimetype starts with &quot;application&quot;, 
+       that means all binary files</td></tr>
+   <tr><td class="query">x:^/Internal/shared/</td><td>all items with an externals 
+       property containing the phrase &quot;^/Internal/shared</td></tr>
+   <tr><td class="query">a:crodemeyer</td><td>all items commited by &quot;crodemeyer&quot;</td></tr>
+   </table>
     <h3>
-        Hints</h3>
+        Special rules for searching in path</h3>
 <p>
         The single &#39;/&#39; means that a path must start at the root. &quot;/shared/&quot; 
         will find all directories named &quot;shared&quot; directly below the root.</p>
     <h3>
         Query Language</h3>
 <p>
-        With a simple query language you can do more sophisticated queries. </p>
+        You can do more sophisticated queries if you know how to use field specifiers, query operators 
+        and subexpressions.</p>
     <h4>
         Operators</h4>
     <p>
         You can 
         control through prefixes if a word <b>must</b> (+), <b>should</b> (#) or <b>must 
         not</b> (-) be included in a document. </p>
+   <table>
+   <tr><th>Query</th><th>What it finds</th></tr>
+   <tr><td class="query">+fileio #.cpp #.h </td>
+       <td >&nbsp;finds fileio.cpp and fileio.h and fileio/bla.cpp but not fileio.xml</td></tr>
+   <tr><td><span class="query">*.dll -3rdParty</td><td>&nbsp;files with the extension 
+       .dll that are not below a 3rdParty folder</td></tr>
+   </table>
+<h4>
+        Subexpressions</h4>
+    <p>
+        You can create subexpressions by putting them in parentheses (). 
+        Subexpressions can be nested. For your 
+        convenience a group inherits its&nbsp;field if you give one explicitly.</p>
+   <table>
+   <tr><th>Query</th><th>What it finds</th></tr>
+   
+   <tr><td class="query">#(audio video)</td><td>short for #(+audio +video)</td></tr>
+   <tr><td class="query">c:(pragma warning disable)&nbsp;</td><td>the words &quot;pragma&quot;, 
+       &quot;warning&quot; and &quot;disable&quot; in arbitrary order inside the content field</td></tr>
+   <tr><td class="query">#p:(.cpp .h .hpp)</td><td>searches for files with one of the 
+       given extensions .cpp or .h or .hpp</td></tr>
+   </table>
     <h4>
         Fields</h4>
     <p>
-        You can state which field of a document to search. Curently the following 
-        fields are recognized:</p>
-<ol>
-    <li>p: (path:)</li>
-    <li>c: (content:) =&gt; the content of a file</li>
-    <li>x: or e: (externals: or &quot;svn:externals&quot;:) svn:external property of a directory</li>
-    <li>m: (message:) =&gt; log messages </li>
-    <li>t: (type: or &quot;svn:mime-type&quot;: ) =&gt; svn:mime-type property of a file</li>
-    <li>a: (author:)</li>
-    <li>&quot;svn:property&quot;: =&gt; searches a generic propertydurchsucht die benamste property</li>
-</ol>
-<p>
-    If you don&#39;t specify a field the field of your parent group is used. If there is 
-    no parent a heuristic is used to determine if the word could be a path. If the 
-    heuristic fails first the path and then the content is searched.</p>
-    <h4>
-        Shortcuts</h4>
-<p>
-        $binary finds binary files (no content indexed)</p>
-<h4>
-        Grouping</h4>
+        You can specify which field of a document should be search. If you don&#39;t 
+        specify a field only the path and content fields are searched. The following 
+        fields are predefined:</p>
+   <table>
+   <tr><th>Field</th><th>Description</th></tr>
+   
+   <tr><td class="query">p: (path:)</td><td>the path inside the repository of an item</td></tr>
+   <tr><td class="query">c: (content:)&nbsp;</td><td>the content of a file (folders have no 
+       content)</td></tr>
+   <tr><td class="query">m: (message:)</td><td>the commit message of an item (revisions 
+       are stored as pseudo-items, too)</td></tr>
+   <tr><td class="query">a: (author:)</td><td>the author who committed an item</td></tr>
+   <tr><td class="query">x: or e: (externals:)</td><td>the content of the 
+       &quot;svn:externals&quot; property of a folder</td></tr>
+   <tr><td class="query">t: (type: )</td><td>the content of the &quot;svn:mime-type&quot; 
+       property of an item</td></tr>
+   </table>
     <p>
-        You can create subexpressions by grouping them in parantheses (). For your 
-        convenience a group inherits its&nbsp; field if you give one explicitely.</p>
-    <ul>
-        <li>c:(max und moritz)&nbsp; -&gt; search for&nbsp; &#39;max&#39;, &#39;und&#39; und &#39;moritz&quot; im 
-            content field </li>
-        <li>#(audio video) -&gt; short for #(+audio +video)</li>
-        <li>c:&quot;max und moritz&quot; -&gt; search for the phrase &quot;max und moritz&quot; im content field</li>
-        <li>#p:(.cpp .h .hpp) -&gt; searches for files with one of the given extensions cpp or 
-            .</li>
-        <li>bla -(#(audio video) -&gt; searchdes for documents that contain bla but not audio 
-            or video (same as bla -(</li>
-    </ul>
-    <h3>
-        Index Organisation</h3>
-    <p>
-        To fully exploit the subversion index you need to understand how the index is 
-        organized.
-        The index contains every document of the head revisions of the repository. Each 
-        document has three searchable fields:</p>
-    <ul>
-        <li>Path: This field contains the path for every document (a folder is also a 
-            document in the index)</li>
-        <li>Content: For every document with a mimetype of text the content is indexed.</li>
-        <li>Externals: </li>
-    </ul>
-    <p>
-&nbsp;Constraints:</p>
-    <ul>
-        <li>You cannot search for non characters like &lt;&gt;&quot;!&quot;§$%&amp;%/()=?#+</li>
-    </ul>
-
+        &nbsp;You can also use arbitrary subversion properties as field specifiers if you put 
+        the property name in quotes. E.g. &quot;svn:ignore&quot;:debug finds all items which 
+        contain the word &quot;debug&quot; in their &quot;svn:ignore&quot; property.</p>
+    
 </body>
 </html>

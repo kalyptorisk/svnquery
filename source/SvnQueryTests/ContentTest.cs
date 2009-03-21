@@ -57,7 +57,8 @@ namespace SvnQuery.Tests
         public void RealLifeGrouping()
         {
             TestIndex.AssertQueryFromHeadRevision(@"c:(include comment searched)", 8);
-            TestIndex.AssertQueryFromHeadRevision(@"c:(include comment -searched)");
+            TestIndex.AssertQueryFromHeadRevision(@"c:(include comment)", 8, 9);
+            TestIndex.AssertQueryFromHeadRevision(@"c:(include comment -searched)", 9);
         }
     }
 }

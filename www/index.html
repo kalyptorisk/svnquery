@@ -19,7 +19,7 @@
 		is indexed, but also its complete metadata like path, author, comments 
 		and properties. A simple, Google-like web frontend is provided, but it 
 		is hoped that the query library and indexing mechanism can be reused in 
-		other frontends, e.g. a web service or a Visual Studio <span lang="de">P</span>lug-In.</p>
+		other frontends, e.g. a web service or a Visual Studio Plug-In.</p>
     <p>
         SvnQuery is implemented in C# 3.0 and ASP.NET is used for the web 
 		frontend. The full text search is done by Lucene.Net which delivers an 
@@ -48,12 +48,21 @@
 </ul>
 	<h3>
         Roadmap</h3>
+	<p>
+        The current version 0.5 is feature complete, well tested and working in 
+		a real life environment. For version 1.0 the following features are 
+		planned</p>
     <ol>
-    <li>Version 0.4: Viewing the content of (non-binary) files from SvnWebQuery</li>
-	<li>Version 0.5: Complete the query language and provide a complete help 
-	page</li>
-    <li>Version x: Syntax highlighted file content with GeSHI</li>
+    <li>compatible with Subversion 1.6</li>
+	<li>Syntax highlighting for common languages (C, C++, C#, Java, Xml) </li>
+    <li>Highlighting of hits</li>
     </ol>
+    <p>This projects needs more advertisement because only very few people seem 
+	to use it. Which made me a little bit sad, because the benefits of using a 
+	super fast search engine are much greater than I originally expected. I 
+	cannot imagine using a vcs without a sophisticated search any more, and if 
+	you need to scan your repository often for common anti patterns, misused 
+	patterns or garbage commits, this tool is worth gold. </p>
     <h3>
         Related resources</h3>
     <ul>
@@ -61,10 +70,8 @@
 		version control system</li>
         <li><a href="http://incubator.apache.org/projects/lucene.net.html">
 		Lucene.Net</a> - the full text search engine behind SVN Query </li>
-        <li><a href="http://sharpsvn.open.collab.net/">SharpSVN</a> - C# api for 
+        <li><a href="http://sharpsvn.open.collab.net/">SharpSVN</a> - C# API for 
 		Subversion</li>
-        <li><a href="http://qbnz.com/highlighter/">GeSHi</a> - Generic Syntax 
-		Highlighter</li>
     </ul>
 
 </body>

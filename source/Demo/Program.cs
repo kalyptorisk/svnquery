@@ -39,14 +39,23 @@ namespace SvnQueryDemo
             XmlDocument xml = new XmlDocument();
             xml.Load(webconfig);
             var n = xml.SelectSingleNode("//appSettings/add[@key='IndexPath']");
-            n.Attributes["value"].Value = Path.Combine(currentDir, "Index");
+            n.Attributes["value"].Value = Path.Combine(currentDir, "IndexData");
             xml.Save(webconfig);
-            
-            if (!IsWebServerRunning())          
-                Process.Start("WebDev.WebServer.exe", "/port:7029 /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"').WaitForInputIdle();
 
-            Thread.Sleep(500);
-            Process.Start("http://localhost:7029/Query.aspx");
+            int port = 9000 + currentDir.GetHashCode() % 1000;
+
+            if (!IsWebServerRunning())
+            {
+                Process p = Process.Start("WebDev.WebServer.exe", "/port:" + port + " /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"');
+                if (p != null)
+                {
+                    p.WaitForInputIdle();
+                    if (p.HasExited) return;
+                }
+            }
+            Thread.Sleep(500); // give the web server a chance to finish startup phase
+            if (IsWebServerRunning())
+               Process.Start("http://localhost:" + port + "/Query.aspx");
         }
 
         static bool IsWebServerRunning()

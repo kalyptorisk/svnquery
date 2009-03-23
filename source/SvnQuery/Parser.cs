@@ -81,8 +81,7 @@ namespace SvnQuery
                     }
                     else throw new InvalidOperationException("Unexpected token");
 
-                    Debug.Assert(q != null);
-                    query.Add(q, clause);
+                    if (q != null) query.Add(q, clause);
                     field = outerField;
                     clause = BooleanClause.Occur.MUST;
                 }

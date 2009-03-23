@@ -139,10 +139,10 @@ public partial class _Default : Page
         string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
         Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
-        Response.Write(Join("Path", "Author", "Modified", "Revision", "Size"));
+        Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
         foreach (Hit hit in QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value))
         {
-            Response.Write(Join(hit.Path, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
+            Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
         }        
         Response.End();
     }

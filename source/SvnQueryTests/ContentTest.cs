@@ -60,5 +60,13 @@ namespace SvnQuery.Tests
             TestIndex.AssertQueryFromHeadRevision(@"c:(include comment)", 8, 9);
             TestIndex.AssertQueryFromHeadRevision(@"c:(include comment -searched)", 9);
         }
+
+        [Test]
+        public void WildcardOnlyQuery_ExpectedResultsNothing()
+        {
+            TestIndex.AssertQueryFromHeadRevision("c:\"*\"");  
+            TestIndex.AssertQueryFromHeadRevision("c:\"**\"");  
+            TestIndex.AssertQueryFromHeadRevision("c:\"**/\"");  
+        }
     }
 }

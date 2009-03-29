@@ -26,14 +26,16 @@ namespace SvnQueryDemo
 {
     static class Program
     {
+        static readonly string currentDir = Environment.CurrentDirectory;
+        static readonly string webserverFolder = Path.GetDirectoryName(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory());
+        const string webserver = "WebDev.WebServer";
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
-            string currentDir = Environment.CurrentDirectory;
-
             // Set the 'IndexPath' appsetting to the absolute path to the subversion index
             const string webconfig = @"SvnWebQuery\web.config";
             XmlDocument xml = new XmlDocument();
@@ -46,7 +48,8 @@ namespace SvnQueryDemo
 
             if (!IsWebServerRunning())
             {
-                Process p = Process.Start("WebDev.WebServer.exe", "/port:" + port + " /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"');
+                string webserverPath = Path.Combine(webserverFolder, webserver + ".exe");
+                Process p = Process.Start(webserverPath, "/port:" + port + " /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"');
                 if (p != null)
                 {
                     p.WaitForInputIdle();
@@ -60,9 +63,9 @@ namespace SvnQueryDemo
 
         static bool IsWebServerRunning()
         {
-            foreach (var p in Process.GetProcessesByName("WebDev.WebServer"))
+            foreach (var p in Process.GetProcessesByName(webserver))
             {
-               if (Path.GetDirectoryName(p.MainModule.FileName) == Environment.CurrentDirectory)
+               if (Path.GetDirectoryName(p.MainModule.FileName) == webserverFolder)
                    return true;
             }
             return false;

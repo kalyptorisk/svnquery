@@ -121,7 +121,7 @@ SvnIndex action index_path repository_uri [Options]
                             {
                                 Command = (Indexer.Command) Enum.Parse(typeof (Indexer.Command), arg, true);
                             }
-                            catch (ArgumentException x)
+                            catch (ArgumentException)
                             {
                                 throw new IndexerArgsException("Unknown command '" + arg + "'");
                             }

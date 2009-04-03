@@ -106,8 +106,7 @@ namespace SvnQuery
                 SvnClient client = AllocSvnClient();
                 try
                 {
-                    SvnUriTarget target = new SvnUriTarget(uri, revision);
-                    if (!client.GetRevisionProperty(target, "svn:log", out message))
+                    if (!client.GetRevisionProperty(uri, new SvnRevision(revision), "svn:log", out message))
                         message = "";
                 }
                 finally

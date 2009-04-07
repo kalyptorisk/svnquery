@@ -16,12 +16,19 @@
 
   <Target Name="Clean" DependsOnTargets="GetPublishFolder">
     <RemoveDir Directories="%(FilesToClean.RelativeDir)" />
-    <RemoveDir Directories="$(PublishFolder)" />
+    <RemoveDir Directories="$(PublishFolder)" />    
   </Target>
   
   <Target Name="Build" DependsOnTargets="GetPublishFolder">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
-    <AspNetCompiler PhysicalPath="..\source\SvnWebQuery" VirtualPath="/SvnWebQuery" TargetPath="$(PublishFolder)\SvnWebQuery" Force="true" />
+    <ItemGroup>
+      <SvnQueryFiles Include="..\source\SvnQuery\bin\$(Configuration)\*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(SvnQueryFiles)" DestinationFolder="..\source\SvnWebQuery\bin"/>
+    <AspNetCompiler PhysicalPath="..\source\SvnWebQuery" 
+                    VirtualPath="/SvnWebQuery" 
+                    TargetPath="$(PublishFolder)\SvnWebQuery"                     
+                    Force="true" />
   </Target>
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />

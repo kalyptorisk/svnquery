@@ -19,7 +19,7 @@
     <RemoveDir Directories="$(PublishFolder)" />    
   </Target>
   
-  <Target Name="Build" DependsOnTargets="GetPublishFolder">
+  <Target Name="Build" DependsOnTargets="SetVersion;GetPublishFolder">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
     <ItemGroup>
       <SvnQueryFiles Include="..\source\SvnQuery\bin\$(Configuration)\*"/>

@@ -133,12 +133,12 @@
 .syntaxhighlighter .string,
 .syntaxhighlighter .string a
 {
-	color: blue !important; 
+	color: #A22 !important; 
 }
 
 .syntaxhighlighter .keyword
 { 
-	color: #069 !important; 
+	color: blue !important; 
 	font-weight: bold !important; 
 }
 

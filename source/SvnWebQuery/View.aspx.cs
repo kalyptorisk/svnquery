@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI.HtmlControls;
 using App_Code;
 using SvnQuery;
+using System.Text.RegularExpressions;
                                 
 public partial class View : System.Web.UI.Page
 {
@@ -12,9 +14,9 @@ public partial class View : System.Web.UI.Page
         Hit hit = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
         string path = hit.Path;
         int revision = hit.Revision;
-
+        
         // getting properties from the index
-        Title = "View " + path;
+        Title = path.Substring(path.LastIndexOf('/') + 1);
         header.InnerText = path;
         author.InnerText = hit.Author;
         modified.InnerText = hit.LastModification;
@@ -36,7 +38,34 @@ public partial class View : System.Web.UI.Page
         else if (binary)
             contentWarning.InnerText = "Content type is binary";
         else if (hit.MaxSize > 0)
+        {
+            content.Attributes.Add("class", GetClass(path));
             content.InnerText = svn.GetPathContent(path, revision, hit.MaxSize);
+        }
+    }
+
+    static readonly string[,] types = {
+                                            {"(.*ml)|(.*proj)|(targets)", "xml"},
+                                            {"cs", "csharp"},
+                                            {"(h)|(hpp)|(cpp)|(inl)", "cpp"},
+                                            {"js", "js"},
+                                            {"py", "python"}
+                                       };
+
+
+    /// <summary>
+    /// gets the syntax highlighting class fromt the extension of the file
+    /// </summary>
+    static string GetClass(string path)
+    {
+        string ext = path.Substring(path.LastIndexOf('.') + 1);
+
+        for (int i = 0; i < types.GetUpperBound(0); ++i)
+        {
+            if (Regex.IsMatch(ext, "^" +types[i, 0] + "$", RegexOptions.IgnoreCase))
+                return "brush: " + types[i, 1] + ";";
+        }
+        return "";
     }
 
     /// <summary>

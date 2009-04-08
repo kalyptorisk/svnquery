@@ -23,7 +23,7 @@ using System.Linq;
 using App_Code;
 using SvnQuery;
 
-public partial class _Default : Page
+public partial class Query : Page
 {
 
     protected override void OnPreRender(EventArgs e)

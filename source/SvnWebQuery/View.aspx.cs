@@ -33,40 +33,20 @@ public partial class View : System.Web.UI.Page
 
         bool binary = InitProperties(svn.GetPathProperties(path, revision));
 
-        if (hit.MaxSize > 1024 * 1024)
+        if (hit.MaxSize > 512 * 1024)
+        {
             contentWarning.InnerText = "Content size is too big to display";
+        }
         else if (binary)
+        {
             contentWarning.InnerText = "Content type is binary";
+        }
         else if (hit.MaxSize > 0)
         {
-            content.Attributes.Add("class", GetClass(path));
             content.InnerText = svn.GetPathContent(path, revision, hit.MaxSize);
         }
     }
 
-    static readonly string[,] types = {
-                                            {"(.*ml)|(.*proj)|(targets)", "xml"},
-                                            {"cs", "csharp"},
-                                            {"(h)|(hpp)|(cpp)|(inl)", "cpp"},
-                                            {"js", "js"},
-                                            {"py", "python"}
-                                       };
-
-
-    /// <summary>
-    /// gets the syntax highlighting class fromt the extension of the file
-    /// </summary>
-    static string GetClass(string path)
-    {
-        string ext = path.Substring(path.LastIndexOf('.') + 1);
-
-        for (int i = 0; i < types.GetUpperBound(0); ++i)
-        {
-            if (Regex.IsMatch(ext, "^" +types[i, 0] + "$", RegexOptions.IgnoreCase))
-                return "brush: " + types[i, 1] + ";";
-        }
-        return "";
-    }
 
     /// <summary>
     /// returns true if the mime type is not binary

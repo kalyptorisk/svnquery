@@ -9,9 +9,9 @@ arbitrary svn properties.</p><h3>How does it work?</h3><p>SvnQuery maintains a f
 This is usually triggered by a simple post-commit hook. Indexing is done in a detached background process, so users don't notice any delay when committing to the repository. </p><p>Alternatively, 
 if you have no access to the repository, you can choose to do scheduled updates, e.g. once a day. This is useful 
 if you want to index a remote subversion repository where you cannot use hooks. On Windows you can use <a href="http://support.microsoft.com/kb/308569">Scheduled Tasks</a> to do this</p><p>SvnQuery's frontend is an ASP.NET web application similar to a typical web search engine. You enter a query and milliseconds later you see your hits. You can not only search the head revision but also all revisions at once or an arbitrary custom revision range. There is one core library, SvnQuery.dll, which implements a simple but powerful query language especially suited to query code repositories. Hopefully other application, tools or addins will make use of this library. </p><h3>Detailed Documentation</h3><p>SvnQuery currently consists of three parts</p><ol><li>
-	<a target="_self" href="#SvnIndex">SvnIndex</a>, a command line tool for creating and updating the full text index </li><li>
-	<a target="_self" href="#SvnWebQuery">SvnWebQuery</a>, an ASP.NET web application for querying the index </li><li>
-	<a target="_self" href="#SvnQuery">SvnQuery.dll</a>, a programmers library which can be used to query the index </li></ol><h4>
+	<a target="_top" href="#SvnIndex">SvnIndex</a>, a command line tool for creating and updating the full text index </li><li>
+	<a target="_top" href="#SvnWebQuery">SvnWebQuery</a>, an ASP.NET web application for querying the index </li><li>
+	<a target="_top" href="#SvnQuery">SvnQuery.dll</a>, a programmers library which can be used to query the index </li></ol><h4>
 <a name="SvnIndex">SvnIndex</a> - Maintaining the repository index</h4><p>The command line tool SvnIndex maintains the full text index of a subversion repository. It has two subcommands for creating and updating an index. </p><p><code>svnindex create 
 &lt;Index&gt; &lt;Repository&gt; [Options]</code></p><p>Creates a new index at <code>Index</code> for the repository located at <code>Repository</code>. Any existing content at <code>Index</code> will be overwritten.&nbsp; The
 <code>-r </code>option (filter) specifies up to which revision the index will be created. If <code>

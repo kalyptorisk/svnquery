@@ -38,7 +38,19 @@ repository accessed by the svn: or http: protocol. </p>
 <code>-n</code> name of the index (for display in clients e.g. SvnWebQuery)<br>
 <code>-x</code> external visible repository uri (for downloadable result sets) <br>
 <code>-v</code> log verbosity level (0..3, 0 is lowest, 1 is default)
-</p><h4><a name="SvnWebQuery">SvnWebQuery</a> Web Frontend</h4><ul><li>create virtual directory</li><li>open web page, enter query, press search or enter</li><li>detailed help is available on the associated help page</li></ul><h4>
+</p><h4><a name="SvnWebQuery">SvnWebQuery</a> Web Frontend</h4>
+<p>SvnWebQuery is an ASP.NET web site which lets the user query the index 
+maintained by SvnIndex. You need IIS and the .NET Framework 3.5 installed. It 
+was tested with IIS 6.0 but should work with any version that is able to serve 
+ASP.NET pages. You need to setup an virtual directory, e.g. &quot;search&quot; and let it 
+point to to the SvnWebQuery directory contained in the distribution. 
+Instructions of how to setup SvnWebQuery with IIS 6.0 can be found in this
+<a href="http://svnquery.tigris.org/cn-project-pages/Documentation/SvnWebQuerySetup.html">
+document</a>. For other IIS versions the process should be similar. After you 
+have finished the setup process browse to the search page, enter your query 
+(google like) and press search or enter. Detailed help is available on the 
+integrated <a href="SvnWebQueryHelp.html">help page</a>.</p>
+<h4>
 <a name="SvnQuery">SvnQuery</a> Code Library</h4><ul><li>get the source</li><li>look into the tests and the SVN Query implementation </li></ul>
 </body>
 </html>

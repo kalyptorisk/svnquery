@@ -3,7 +3,7 @@
   <component_list>
     <component visibility="1" type="Html" order="1">
       <title localize="false">SvnWebQuery Help Page</title>
-      <filename>HtmlSnippet1.html</filename>
+      <filename>SvnWebQueryHelpPage.html</filename>
     </component>
   </component_list>
 </page>

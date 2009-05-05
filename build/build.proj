@@ -68,11 +68,16 @@
                 Exclude="..\source\SvnIndex\bin\$(Configuration)\*.xml;
                          ..\source\SvnIndex\bin\$(Configuration)\*.vshost.exe;" />
     </ItemGroup>
-    <RemoveDir Directories="$(PublishFolder)\SvnIndex"></RemoveDir>
+    <RemoveDir Directories="$(PublishFolder)\SvnIndex"/>
     <Copy DestinationFolder="$(PublishFolder)\SvnIndex"         
           SourceFiles="@(SvnIndex);..\source\RunDetached\Release\RunDetached.exe" />
     <!-- SvnWebQuery is build in place, no need to copy it again -->
-  </Target> 
+
+    <ItemGroup>
+      <ZipFiles Include="$(PublishFolder)\**\*" Exclude="**\SharpSvn.pdb; **\*.xml" />
+    </ItemGroup>
+    <Zip Files="@(ZipFiles)" ZipFileName="..\www\svnquery.zip" ZipLevel="9"/>
+  </Target>
 
 </Project>
 

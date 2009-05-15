@@ -29,9 +29,9 @@ namespace SvnQuery
 {
     public class GapPhraseParser
     {
-        TokenStream stream;
-        Token token;
-        int gap;
+        TokenStream _stream;
+        Token _token;
+        int _gap;
 
         public SpanQuery Parse(string field, TokenStream ts, IndexReader reader)
         {
@@ -48,10 +48,10 @@ namespace SvnQuery
 
         IPhrase Parse(TokenStream ts)
         {
-            stream = ts;
-            token = new Token();
-            NextGap(); // Ignore leading gaps
-            if (token == null) return null;
+            _stream = ts;
+            _token = new Token();
+            NextGap(); // Move _token to the next gap, ignore leading gaps
+            if (_token == null) return null;
             return Parse(int.MaxValue);
         }
 
@@ -60,14 +60,14 @@ namespace SvnQuery
         /// </summary>
         IPhrase Parse(int maxGap)
         {
-            IPhrase leaf = new TermPhrase(token.TermText());
+            IPhrase leaf = new TermPhrase(_token.TermText());
             NextGap();
-            while (gap < maxGap)
+            while (_gap < maxGap)
             {
-                GapPhrase node = new GapPhrase(gap);
+                GapPhrase node = new GapPhrase(_gap);
                 node.AddChild(leaf);
                 node.AddChild(Parse(node.Gap));
-                while (gap == node.Gap)
+                while (_gap == node.Gap)
                 {
                     node.AddChild(Parse(node.Gap));
                 }
@@ -78,13 +78,13 @@ namespace SvnQuery
 
         void NextGap()
         {
-            gap = 0;
+            _gap = 0;
             while (true)
             {
-                token = stream.Next(token);
-                if (token == null)
+                _token = _stream.Next(_token);
+                if (_token == null)
                 {
-                    gap = int.MaxValue;
+                    _gap = int.MaxValue;
                     return;
                 }
 
@@ -92,17 +92,17 @@ namespace SvnQuery
 
                 if (gapLength == 0)
                 {
-                    gap = gap < 100 ? gap : 100;
+                    _gap = _gap < 100 ? _gap : 100;
                     return;
                 }
-                gap += gapLength;
+                _gap += gapLength;
             }
         }
 
         int GapLength()
         {
-            int len = token.TermLength();
-            char[] buffer = token.TermBuffer();
+            int len = _token.TermLength();
+            char[] buffer = _token.TermBuffer();
 
             int i = 0;
             while (buffer[i] == '*' && i < len) ++i;
@@ -127,11 +127,11 @@ namespace SvnQuery
 
         class TermPhrase : IPhrase
         {
-            readonly string text;
+            readonly string _text;
 
             public TermPhrase(string s)
             {
-                text = s;
+                _text = s;
             }
 
             public SpanQuery BuildQuery(string field, IndexReader reader, bool isFirst, bool isLast)
@@ -157,29 +157,29 @@ namespace SvnQuery
                 }
                 else
                 {
-                    yield return new Term(field, text);
+                    yield return new Term(field, _text);
                 }
             }
 
-            public IEnumerable<string> PathVariants(bool isFirst, bool isLast)
+            IEnumerable<string> PathVariants(bool isFirst, bool isLast)
             {
-                yield return text;
+                yield return _text;
                 
-                if (isFirst && text[0] != '.' && text[0] != '/')
-                    yield return "." + text;
+                if (isFirst && _text[0] != '.' && _text[0] != '/')
+                    yield return "." + _text;
 
-                if (isLast && text[text.Length - 1] != '/')
+                if (isLast && _text[_text.Length - 1] != '/')
                 {
-                    yield return text + "/";
+                    yield return _text + "/";
 
-                    if (isFirst && text[0] != '.') 
-                        yield return "." + text + "/";
+                    if (isFirst && _text[0] != '.') 
+                        yield return "." + _text + "/";
                 }
             }
 
             bool HasWildcards
             {
-                get { return text.Any(c => c == '*' || c == '?'); }
+                get { return _text.Any(c => c == '*' || c == '?'); }
             }
         
             IEnumerable<SpanTermQuery> WildcardTerms(IEnumerable<Term> terms, IndexReader reader)
@@ -213,14 +213,14 @@ namespace SvnQuery
 
             public override string ToString()
             {
-                return text;
+                return _text;
             }
 
         }
 
         class GapPhrase : IPhrase
         {
-            readonly List<IPhrase> children = new List<IPhrase>();
+            readonly List<IPhrase> _children = new List<IPhrase>();
 
             public GapPhrase(int gap)
             {
@@ -231,16 +231,16 @@ namespace SvnQuery
 
             public void AddChild(IPhrase child)
             {
-                children.Add(child);
+                _children.Add(child);
             }
 
             public SpanQuery BuildQuery(string field, IndexReader reader, bool isFirst, bool isLast)
             {
-                SpanQuery[] clauses = new SpanQuery[children.Count];
+                SpanQuery[] clauses = new SpanQuery[_children.Count];
                 int lastClause = clauses.Length - 1;
                 for (int i = 0; i < clauses.Length; ++i)
                 {
-                    clauses[i] = children[i].BuildQuery(field, reader, i == 0, i == lastClause);
+                    clauses[i] = _children[i].BuildQuery(field, reader, i == 0, i == lastClause);
                 }
                 if (Gap > 0) // try to remove overlappings through SpanNotQueries
                 {
@@ -262,14 +262,14 @@ namespace SvnQuery
 
             public override string ToString() // needed for debugging and unit tests
             {
-                if (children.Count == 1) return children[0].ToString();
+                if (_children.Count == 1) return _children[0].ToString();
 
                 StringBuilder sb = new StringBuilder();
                 sb.Append('(');
-                for (int i = 0; i < children.Count; ++i)
+                for (int i = 0; i < _children.Count; ++i)
                 {
-                    sb.Append(children[i]);
-                    if (i < children.Count - 1)
+                    sb.Append(_children[i]);
+                    if (i < _children.Count - 1)
                     {
                         if (Gap < 0) sb.Append('$');
                         else if (Gap < 1) sb.Append(' ');

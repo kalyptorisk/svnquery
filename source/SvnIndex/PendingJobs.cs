@@ -22,20 +22,20 @@ namespace SvnQuery
 {
     class PendingJobs : EventWaitHandle
     {
-        int pending;
+        int _pending;
 
         public PendingJobs() : base(true, EventResetMode.ManualReset)
         {}
 
         public void Increment()
         {
-            if (Interlocked.Increment(ref pending) > 0)
+            if (Interlocked.Increment(ref _pending) > 0)
                 Reset();
         }
 
         public void Decrement()
         {
-            if (Interlocked.Decrement(ref pending) == 0)
+            if (Interlocked.Decrement(ref _pending) == 0)
                 Set();
         }
 

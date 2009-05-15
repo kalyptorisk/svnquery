@@ -27,48 +27,48 @@ namespace SvnQuery
 {
     public class SharpSvnApi : ISvnApi
     {
-        readonly Uri uri;
-        readonly string user;
-        readonly string password;
-        readonly Dictionary<int, string> messages = new Dictionary<int, string>();
-        readonly List<SvnClient> clientPool = new List<SvnClient>();
+        readonly Uri _uri;
+        readonly string _user;
+        readonly string _password;
+        readonly Dictionary<int, string> _messages = new Dictionary<int, string>();
+        readonly List<SvnClient> _clientPool = new List<SvnClient>();
         
         public SharpSvnApi(string repositoryUri) : this(repositoryUri, "", "")
         {}
 
         public SharpSvnApi(string repositoryUri, string user, string password)
         {
-            uri = new Uri(repositoryUri);
-            this.user = user;
-            this.password = password;
+            _uri = new Uri(repositoryUri);
+            _user = user;
+            _password = password;
         }
 
         SvnClient AllocSvnClient()
         {
             SvnClient client = null;
-            lock (clientPool)
+            lock (_clientPool)
             {
-                int last = clientPool.Count - 1;
+                int last = _clientPool.Count - 1;
                 if (last >= 0)
                 {
-                    client = clientPool[last];
-                    clientPool.RemoveAt(last);
+                    client = _clientPool[last];
+                    _clientPool.RemoveAt(last);
                 }
             }
 
             if (client == null) client = new SvnClient();
-            client.Authentication.UserNameHandlers += (s, e) => e.UserName = user;
+            client.Authentication.UserNameHandlers += (s, e) => e.UserName = _user;
             client.Authentication.UserNamePasswordHandlers += (s, e) =>
             {
-                e.UserName = user;
-                e.Password = password;
+                e.UserName = _user;
+                e.Password = _password;
             };
             return client;
         }
 
         void FreeSvnClient(SvnClient client)
         {
-            lock (clientPool) clientPool.Add(client);
+            lock (_clientPool) _clientPool.Add(client);
         }
 
         SvnInfoEventArgs Info
@@ -78,7 +78,7 @@ namespace SvnQuery
                 if (_info == null)
                 {
                     SvnClient client = AllocSvnClient();
-                    SvnTarget target = new SvnUriTarget(uri);
+                    SvnTarget target = new SvnUriTarget(_uri);
                     client.GetInfo(target, out _info);
                     FreeSvnClient(client);
                 }
@@ -100,20 +100,20 @@ namespace SvnQuery
         public string GetLogMessage(int revision)
         {
             string message;
-            lock (messages) messages.TryGetValue(revision, out message);
+            lock (_messages) _messages.TryGetValue(revision, out message);
             if (message == null)
             {
                 SvnClient client = AllocSvnClient();
                 try
                 {
-                    if (!client.GetRevisionProperty(uri, new SvnRevision(revision), "svn:log", out message))
+                    if (!client.GetRevisionProperty(_uri, new SvnRevision(revision), "svn:log", out message))
                         message = "";
                 }
                 finally
                 {
                     FreeSvnClient(client);
                 }
-                lock (messages) messages[revision] = message;
+                lock (_messages) _messages[revision] = message;
             }
             return message;
         }
@@ -130,7 +130,7 @@ namespace SvnQuery
                 args.ThrowOnError = true;
                 args.ThrowOnCancel = true;
                 Collection<SvnLogEventArgs> logEvents;
-                client.GetLog(uri, args, out logEvents);
+                client.GetLog(_uri, args, out logEvents);
                 foreach (SvnLogEventArgs e in logEvents)
                 {
                     RevisionData data = new RevisionData();
@@ -141,7 +141,7 @@ namespace SvnQuery
                     AddChanges(data, e.ChangedPaths);                    
                     revisions.Add(data);
                                 
-                    lock (messages) messages[data.Revision] = data.Message;
+                    lock (_messages) _messages[data.Revision] = data.Message;
                 }
             }
             finally
@@ -222,7 +222,7 @@ namespace SvnQuery
                 {
                     return null;
                 }
-                if (path.IndexOfAny(invalidChars) >= 0) // this condition exists only because of a bug in the svn client for local repositoreis
+                if (path.IndexOfAny(InvalidPathChars) >= 0) // this condition exists only because of a bug in the svn client for local repositoreis
                 {
                     Console.WriteLine("WARNING: path with invalid charactes could not be indexed: " + path + "@" + revision);
                     return null;
@@ -234,7 +234,8 @@ namespace SvnQuery
                 FreeSvnClient(client);
             }
         }
-        static readonly char[] invalidChars = new[] { ':', '$', '\\' };
+
+        static readonly char[] InvalidPathChars = new[] { ':', '$', '\\' };
 
         public IDictionary<string, string> GetPathProperties(string path, int revision)
         {
@@ -289,7 +290,7 @@ namespace SvnQuery
                 sb.Append('/');
             }
             sb.Length -= 1;
-            return new SvnUriTarget(new Uri(uri + sb.ToString()), revision);
+            return new SvnUriTarget(new Uri(_uri + sb.ToString()), revision);
         }
 
     }

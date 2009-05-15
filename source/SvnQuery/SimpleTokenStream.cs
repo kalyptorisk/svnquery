@@ -33,21 +33,21 @@ namespace SvnQuery
         const int MinTokenLength = 1;
         const int MaxTokenLength = 100;
 
-        string text;
-        int offset;
+        string _text;
+        int _offset;
 
         public string Text
         {
             set
             {
-                text = value;
-                offset = 0;
+                _text = value;
+                _offset = 0;
             }
         }
 
         public bool IsEmpty
         {
-            get { return string.IsNullOrEmpty(text); }
+            get { return string.IsNullOrEmpty(_text); }
         }
 
         public override Token Next(Token token)
@@ -58,9 +58,9 @@ namespace SvnQuery
             char[] buffer = token.TermBuffer();
             if (buffer.Length < MaxTokenLength) buffer = token.ResizeTermBuffer(MaxTokenLength);
 
-            while (offset < text.Length)
+            while (_offset < _text.Length)
             {
-                char c = NormalizeCharacter(text[offset++]);
+                char c = NormalizeCharacter(_text[_offset++]);
 
                 if (length == 0 && (IsFirstCharacter(c) || IsDelimiterCharacter(c)))
                 {
@@ -78,7 +78,7 @@ namespace SvnQuery
                 }
                 else if (length > 0) // token ready
                 {
-                    if (IsFirstCharacter(c) || IsDelimiterCharacter(c)) --offset; // read again
+                    if (IsFirstCharacter(c) || IsDelimiterCharacter(c)) --_offset; // read again
                     break;
                 }
             }

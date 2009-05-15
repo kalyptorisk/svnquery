@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Lucene.Net.Index;
@@ -27,13 +26,13 @@ namespace SvnQuery
 {
     public class Parser
     {
-        readonly IndexReader reader;
-        readonly GapPhraseParser phraseParser;
+        readonly IndexReader _reader;
+        readonly GapPhraseParser _phraseParser;
 
         public Parser(IndexReader r)
         {
-            reader = r;
-            phraseParser = new GapPhraseParser();
+            _reader = r;
+            _phraseParser = new GapPhraseParser();
         }
 
         /// <summary>
@@ -142,12 +141,12 @@ namespace SvnQuery
 
         public Query ParseSimpleTerm(string field, string term)
         {
-            return phraseParser.Parse(field, new SimpleWildcardTokenStream {Text = term}, reader);
+            return _phraseParser.Parse(field, new SimpleWildcardTokenStream {Text = term}, _reader);
         }
 
         public Query ParsePathTerm(string field, string path)
         {
-            return phraseParser.Parse(field, new PathTokenStream {Text = path}, reader);
+            return _phraseParser.Parse(field, new PathTokenStream {Text = path}, _reader);
         }
 
         public static Query ParseAuthorTerm(string author)

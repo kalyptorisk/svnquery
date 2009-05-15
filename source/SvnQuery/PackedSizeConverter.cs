@@ -18,31 +18,32 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace SvnQuery
 {
     public static class PackedSizeConverter
     {
-        const int kb = 1024;
-        const int mb = 1024*1024;
-        const int gb = 1024*1024*1024;
+        const int Kb = 1024;
+        const int Mb = 1024 * 1024;
+        const int Gb = 1024 * 1024 * 1024;
 
         public static string ToSortableString(int size)
         {
-            if (size < kb) return "b" + size.ToString("X3");
-            if (size < mb) return "k" + (size/kb).ToString("X3");
-            if (size < gb) return "m" + (size/mb).ToString("X3");
+            if (size < Kb) return "b" + size.ToString("X3");
+            if (size < Mb) return "k" + (size / Kb).ToString("X3");
+            if (size < Gb) return "m" + (size / Mb).ToString("X3");
 
             return "z001";
         }
 
         public static string ToString(int size)
         {
-            if (size < kb) return size + " bytes";
-            if (size < mb) return (size/kb) + " kb";
-            if (size < gb) return (size/mb) + " mb";
+            if (size < Kb) return size + " bytes";
+            if (size < Mb) return (size / Kb) + " kb";
+            if (size < Gb) return (size / Mb) + " mb";
 
-            return (size/gb) + " gb";
+            return (size / Gb) + " gb";
         }
 
         public static int FromSortableString(string size)
@@ -54,11 +55,11 @@ namespace SvnQuery
                 case 'b':
                     return v;
                 case 'k':
-                    return v*kb + kb - 1;
+                    return v * Kb + Kb - 1;
                 case 'm':
-                    return v*mb + mb - 1;
+                    return v * Mb + Mb - 1;
                 case 'z':
-                    return v*gb + gb - 1;
+                    return v * Gb + Gb - 1;
             }
             throw new ArgumentException("size is not a packed size");
         }

@@ -24,36 +24,36 @@ namespace App_Code
 {
     public class Hit
     {
-        readonly Document doc;
-        readonly string path;
-        readonly string link;
+        readonly Document _doc;
+        readonly string _path;
+        readonly string _link;
 
         public Hit(Document doc)
         {
-            this.doc = doc;
+            _doc = doc;
             string id = doc.Get(FieldName.Id);
-            path = id.Split('@')[0];
-            link = "View.aspx?id=" +  Uri.EscapeDataString(id);            
+            _path = id.Split('@')[0];
+            _link = "View.aspx?id=" +  Uri.EscapeDataString(id);            
         }
 
         public string Link
         {
-            get { return link; }
+            get { return _link; }
         }
 
         public string Path
         {
-            get { return path; }
+            get { return _path; }
         }
 
         public string Folder
         {
-            get { return path.Substring(0, path.LastIndexOf('/')); }
+            get { return _path.Substring(0, _path.LastIndexOf('/')); }
         }
 
         public string File
         {
-            get { return path.Substring(path.LastIndexOf('/') + 1); }
+            get { return _path.Substring(_path.LastIndexOf('/') + 1); }
         }
 
         static string NiceRev(string rev)
@@ -63,17 +63,17 @@ namespace App_Code
 
         public string RevFirst
         {
-            get { return NiceRev(doc.Get(FieldName.RevisionFirst)); }
+            get { return NiceRev(_doc.Get(FieldName.RevisionFirst)); }
         }
 
         public string RevLast
         {
-            get { return NiceRev(doc.Get(FieldName.RevisionLast)); }
+            get { return NiceRev(_doc.Get(FieldName.RevisionLast)); }
         }
 
         public int Revision
         {
-            get { return int.Parse(doc.Get(FieldName.RevisionFirst)); }
+            get { return int.Parse(_doc.Get(FieldName.RevisionFirst)); }
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace App_Code
         {
             get
             {                
-                return PackedSizeConverter.FromSortableString(doc.Get(FieldName.Size));
+                return PackedSizeConverter.FromSortableString(_doc.Get(FieldName.Size));
             }
         }
 
@@ -91,19 +91,19 @@ namespace App_Code
         {
             get
             {
-                string size = doc.Get(FieldName.Size);
+                string size = _doc.Get(FieldName.Size);
                 return string.IsNullOrEmpty(size) ? "" : PackedSizeConverter.FromSortableStringToString(size);
             }
         }
 
         public string Author
         {
-            get { return doc.Get(FieldName.Author); }
+            get { return _doc.Get(FieldName.Author); }
         }
 
         public string LastModification
         {
-            get { return doc.Get(FieldName.Timestamp); }
+            get { return _doc.Get(FieldName.Timestamp); }
         }
 
         public string Summary

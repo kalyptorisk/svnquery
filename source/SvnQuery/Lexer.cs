@@ -24,15 +24,15 @@ namespace SvnQuery
 {
     public class Lexer
     {
-        readonly string input;
-        readonly StringBuilder text;
-        int offset;
+        readonly string _input;
+        readonly StringBuilder _text;
+        int _offset;
 
         public Lexer(string s)
         {
-            input = s;
-            offset = 0;
-            text = new StringBuilder();
+            _input = s;
+            _offset = 0;
+            _text = new StringBuilder();
         }
 
         public class Token
@@ -61,13 +61,13 @@ namespace SvnQuery
 
         public Token NextToken()
         {
-            text.Length = 0;
+            _text.Length = 0;
             bool escaping = false;
-            while (offset < input.Length)
+            while (_offset < _input.Length)
             {
-                char c = input[offset++];
+                char c = _input[_offset++];
 
-                if (text.Length == 0 && !escaping)
+                if (_text.Length == 0 && !escaping)
                 {
                     if (char.IsWhiteSpace(c)) continue;
                     if (c == '+') return new OperatorToken {Clause = BooleanClause.Occur.MUST};
@@ -78,7 +78,7 @@ namespace SvnQuery
                     if (c == '"')
                         escaping = true;
                     else
-                        text.Append(c);
+                        _text.Append(c);
                 }
                 else
                 {
@@ -97,21 +97,21 @@ namespace SvnQuery
                             escaping = true;
                             continue;
                         }
-                        Debug.Assert(text.Length > 0);
+                        Debug.Assert(_text.Length > 0);
                         if (c == ':')
                         {
-                            return new FieldToken {Text = text.ToString()};
+                            return new FieldToken {Text = _text.ToString()};
                         }
                         if (char.IsWhiteSpace(c) || "()+#-".IndexOf(c) >= 0)
                         {
-                            --offset;
+                            --_offset;
                             break;
                         }
                     }
-                    text.Append(c);
+                    _text.Append(c);
                 }
             }
-            return text.Length == 0 ? null : new TermToken {Text = text.ToString()};
+            return _text.Length == 0 ? null : new TermToken {Text = _text.ToString()};
         }
     }
 }

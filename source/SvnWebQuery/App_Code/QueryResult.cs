@@ -32,15 +32,13 @@ namespace App_Code
         readonly int _searchTime;
         readonly int _indexRevision;
         readonly int _searchCcount;
-        readonly string uri; 
 
-        public QueryResult(Stopwatch sw, int indexRevision, int searchCount, Hits hits, string repositoryUri)
+        public QueryResult(Stopwatch sw, int indexRevision, int searchCount, Hits hits)
         {
             _searchTime = (int) sw.ElapsedMilliseconds + 1;
             _indexRevision = indexRevision;
             _searchCcount = searchCount;
             _luceneHits = hits;
-            uri = repositoryUri;
         }
 
         public int SearchCount

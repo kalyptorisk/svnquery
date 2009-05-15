@@ -32,40 +32,40 @@ namespace SvnQuery
     /// </summary>
     public class Indexer
     {
-        readonly IndexerArgs args;
-        readonly Directory indexDirectory;
-        readonly ISvnApi svn;
+        readonly IndexerArgs _args;
+        readonly Directory _indexDirectory;
+        readonly ISvnApi _svn;
         
-        readonly PendingJobs pendingAnalyzeJobs = new PendingJobs();
-        readonly PendingJobs pendingFetchJobs = new PendingJobs();
-        readonly Dictionary<string, IndexJob> headJobs = new Dictionary<string, IndexJob>();
-        readonly HighestRevision highestRevision = new HighestRevision();
+        readonly PendingJobs _pendingAnalyzeJobs = new PendingJobs();
+        readonly PendingJobs _pendingFetchJobs = new PendingJobs();
+        readonly Dictionary<string, IndexJobData> _headJobs = new Dictionary<string, IndexJobData>();
+        readonly HighestRevision _highestRevision = new HighestRevision();
 
-        readonly ManualResetEvent stopIndexThread = new ManualResetEvent(false);
-        readonly Semaphore indexQueueLimit;
-        readonly Queue<IndexJob> indexQueue = new Queue<IndexJob>();
-        readonly EventWaitHandle indexQueueHasData = new ManualResetEvent(false);
-        readonly EventWaitHandle indexQueueIsEmpty = new ManualResetEvent(true);
-        int indexedDocuments;
-        IndexWriter indexWriter;
+        readonly ManualResetEvent _stopIndexThread = new ManualResetEvent(false);
+        readonly Semaphore _indexQueueLimit;
+        readonly Queue<IndexJobData> _indexQueue = new Queue<IndexJobData>();
+        readonly EventWaitHandle _indexQueueHasData = new ManualResetEvent(false);
+        readonly EventWaitHandle _indexQueueIsEmpty = new ManualResetEvent(true);
+        int _indexedDocuments;
+        IndexWriter _indexWriter;
 
         // reused objects for faster indexing
-        readonly Term idTerm = new Term(FieldName.Id, "");
-        readonly Field idField = new Field(FieldName.Id, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field revFirstField = new Field(FieldName.RevisionFirst, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field revLastField = new Field(FieldName.RevisionLast, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field sizeField = new Field(FieldName.Size, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field timestampField = new Field(FieldName.Timestamp, "", Field.Store.YES, Field.Index.NO);
-        readonly Field authorField = new Field(FieldName.Author, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
-        readonly Field typeField = new Field(FieldName.MimeType, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
-        readonly Field messageField;
-        readonly Field pathField;
-        readonly Field contentField;
-        readonly Field externalsField;
-        readonly SimpleTokenStream pathTokenStream = new PathTokenStream();
-        readonly SimpleTokenStream contentTokenStream = new SimpleTokenStream();
-        readonly SimpleTokenStream externalsTokenStream = new PathTokenStream();
-        readonly SimpleTokenStream messageTokenStream = new SimpleTokenStream();
+        readonly Term _idTerm = new Term(FieldName.Id, "");
+        readonly Field _idField = new Field(FieldName.Id, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field _revFirstField = new Field(FieldName.RevisionFirst, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field _revLastField = new Field(FieldName.RevisionLast, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field _sizeField = new Field(FieldName.Size, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field _timestampField = new Field(FieldName.Timestamp, "", Field.Store.YES, Field.Index.NO);
+        readonly Field _authorField = new Field(FieldName.Author, "", Field.Store.YES, Field.Index.UN_TOKENIZED);
+        readonly Field _typeField = new Field(FieldName.MimeType, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
+        readonly Field _messageField;
+        readonly Field _pathField;
+        readonly Field _contentField;
+        readonly Field _externalsField;
+        readonly SimpleTokenStream _pathTokenStream = new PathTokenStream();
+        readonly SimpleTokenStream _contentTokenStream = new SimpleTokenStream();
+        readonly SimpleTokenStream _externalsTokenStream = new PathTokenStream();
+        readonly SimpleTokenStream _messageTokenStream = new SimpleTokenStream();
 
         public enum Command
         {
@@ -74,13 +74,13 @@ namespace SvnQuery
             Check
         } ;
 
-        class AnalyzeJob
+        class AnalyzeJobData
         {
             public PathChange Change;
             public bool Recursive;
         }
 
-        public class IndexJob
+        public class IndexJobData
         {
             public string Path;
             public int RevisionFirst;
@@ -95,18 +95,18 @@ namespace SvnQuery
             WriteLogo();
             WriteArgs();
 
-            this.args = args;
-            indexDirectory = FSDirectory.GetDirectory(args.IndexPath);
-            indexQueueLimit = new Semaphore(args.MaxThreads * 4, args.MaxThreads * 4);
+            _args = args;
+            _indexDirectory = FSDirectory.GetDirectory(args.IndexPath);
+            _indexQueueLimit = new Semaphore(args.MaxThreads * 4, args.MaxThreads * 4);
             ThreadPool.SetMaxThreads(args.MaxThreads, 1000);
             ThreadPool.SetMinThreads(args.MaxThreads / 2, Environment.ProcessorCount);
 
-            contentField = new Field(FieldName.Content, contentTokenStream);
-            pathField = new Field(FieldName.Path, pathTokenStream);
-            externalsField = new Field(FieldName.Externals, externalsTokenStream);
-            messageField = new Field(FieldName.Message, messageTokenStream);
+            _contentField = new Field(FieldName.Content, _contentTokenStream);
+            _pathField = new Field(FieldName.Path, _pathTokenStream);
+            _externalsField = new Field(FieldName.Externals, _externalsTokenStream);
+            _messageField = new Field(FieldName.Message, _messageTokenStream);
 
-            svn = new SharpSvnApi(args.RepositoryLocalUri, args.User, args.Password);
+            _svn = new SharpSvnApi(args.RepositoryLocalUri, args.User, args.Password);
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace SvnQuery
         /// </summary>
         public Indexer(IndexerArgs args, Directory dir): this(args)
         {
-            indexDirectory = dir;
+            _indexDirectory = dir;
         }
 
         static void WriteLogo()
@@ -133,56 +133,56 @@ namespace SvnQuery
         {
             Console.WriteLine("Begin indexing ...");
             DateTime start = DateTime.UtcNow;
-            bool create = args.Command == Command.Create;
+            bool create = _args.Command == Command.Create;
             int startRevision = 1; 
-            int stopRevision = Math.Min(args.MaxRevision, svn.GetYoungestRevision());
+            int stopRevision = Math.Min(_args.MaxRevision, _svn.GetYoungestRevision());
 
             Thread indexThread = new Thread(ProcessIndexQueue);
             indexThread.Name = "IndexThread";
             indexThread.IsBackground = true;
             indexThread.Start();
 
-            indexedDocuments = 0;
+            _indexedDocuments = 0;
             if (!create) // update, important, must be run *before* creating the indexWriter
             {
-                IndexReader reader = IndexReader.Open(indexDirectory); // important: create reader before creating indexWriter!
-                highestRevision.Reader = reader;
+                IndexReader reader = IndexReader.Open(_indexDirectory); // important: create reader before creating indexWriter!
+                _highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
-                indexedDocuments = IndexProperty.GetDocumentCount(reader);                
+                _indexedDocuments = IndexProperty.GetDocumentCount(reader);                
             }
-            indexWriter = new IndexWriter(indexDirectory, false, null, create);
+            _indexWriter = new IndexWriter(_indexDirectory, false, null, create);
             if (create)
             {
-                args.RepositoryExternalUri = args.RepositoryExternalUri ?? args.RepositoryLocalUri;
-                args.RepositoryName = args.RepositoryName ?? args.RepositoryExternalUri.Split('/').Last();
+                _args.RepositoryExternalUri = _args.RepositoryExternalUri ?? _args.RepositoryLocalUri;
+                _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
 
-                QueueAnalyze(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+                QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
             }
-            IndexProperty.SetRepositoryLocalUri(indexWriter, args.RepositoryLocalUri);
-            if (args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(indexWriter, args.RepositoryExternalUri);
-            if (args.RepositoryName != null) IndexProperty.SetRepositoryName(indexWriter, args.RepositoryName);
+            IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
+            if (_args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
+            if (_args.RepositoryName != null) IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
 
-            bool optimize = create || stopRevision % args.Optimize == 0 || stopRevision - startRevision > args.Optimize;
+            bool optimize = create || stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             while (startRevision <= stopRevision) 
             {
-                IndexRevisionRange(startRevision, Math.Min(startRevision + args.CommitInterval - 1, stopRevision));
-                startRevision += args.CommitInterval;
+                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));
+                startRevision += _args.CommitInterval;
 
                 if (startRevision <= stopRevision)
                 {
-                    if (highestRevision.Reader != null) highestRevision.Reader.Close();
+                    if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
                     CommitIndex();
-                    highestRevision.Reader = IndexReader.Open(indexDirectory);
-                    indexWriter = new IndexWriter(indexDirectory, false, null, false);
+                    _highestRevision.Reader = IndexReader.Open(_indexDirectory);
+                    _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
                 }
             }
-            stopIndexThread.Set();
-            if (highestRevision.Reader != null) highestRevision.Reader.Close();
-            highestRevision.Reader = null;
+            _stopIndexThread.Set();
+            if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
+            _highestRevision.Reader = null;
             if (optimize)
             {
                 Console.WriteLine("Optimizing index ...");
-                indexWriter.Optimize();
+                _indexWriter.Optimize();
             }
             CommitIndex();
             TimeSpan time = DateTime.UtcNow - start;            
@@ -192,66 +192,67 @@ namespace SvnQuery
         void CommitIndex()
         {
             Console.WriteLine("Commit index");
-            indexWriter.Close();
+            _indexWriter.Close();
         }
 
         void IndexRevisionRange(int start, int stop)
         {
-            foreach (var data in svn.GetRevisionData(start, stop))
+            foreach (var data in _svn.GetRevisionData(start, stop))
             {
-                IndexJob job = new IndexJob();
-                job.Path = "$Revision " + data.Revision;
-                job.RevisionFirst = data.Revision;
-                job.RevisionLast = data.Revision;
-                job.Info = new PathInfo();
-                job.Info.Author = data.Author;
-                job.Info.Timestamp = data.Timestamp;
-                QueueIndexJob(job);
-                data.Changes.ForEach(QueueAnalyzeRecursive);
-                pendingAnalyzeJobs.Wait();
+                IndexJobData jobData = new IndexJobData();
+                jobData.Path = "$Revision " + data.Revision;
+                jobData.RevisionFirst = data.Revision;
+                jobData.RevisionLast = data.Revision;
+                jobData.Info = new PathInfo();
+                jobData.Info.Author = data.Author;
+                jobData.Info.Timestamp = data.Timestamp;
+                QueueIndexJob(jobData);
+                data.Changes.ForEach(QueueAnalyzeJobRecursive);
+                _pendingAnalyzeJobs.Wait();
             }
 
-            foreach (var job in headJobs.Values) // no lock necessary because no analyzeJobs are running
+            foreach (var job in _headJobs.Values) // no lock necessary because no analyzeJobs are running
             {
-                QueueFetch(job);
+                QueueFetchJob(job);
             }
-            headJobs.Clear();
+            _headJobs.Clear();
 
-            pendingFetchJobs.Wait();
-            indexQueueIsEmpty.WaitOne();
+            _pendingFetchJobs.Wait();
+            _indexQueueIsEmpty.WaitOne();
 
-            IndexProperty.SetRevision(indexWriter, stop);
-            IndexProperty.SetDocumentCount(indexWriter, indexedDocuments);
+            IndexProperty.SetRevision(_indexWriter, stop);
+            IndexProperty.SetDocumentCount(_indexWriter, _indexedDocuments);
             Console.WriteLine("Index revision is now " + stop);
         }
 
-        void QueueAnalyzeRecursive(PathChange change)
+        void QueueAnalyzeJobRecursive(PathChange change)
         {
             if (IgnorePath(change.Path)) return;
-            QueueAnalyze(new AnalyzeJob { Change = change, Recursive = true });
+            QueueAnalyzeJob(new AnalyzeJobData { Change = change, Recursive = true });
         }
 
-        void QueueAnalyze(PathChange change)
+        void QueueAnalyzeJob(PathChange change)
         {
             if (IgnorePath(change.Path)) return;
-            QueueAnalyze(new AnalyzeJob { Change = change, Recursive = false });
+            QueueAnalyzeJob(new AnalyzeJobData { Change = change, Recursive = false });
         }
 
         bool IgnorePath(string path)
         {
-            return args.Filter != null && args.Filter.IsMatch(path);
+            return _args.Filter != null && _args.Filter.IsMatch(path);
         }
 
-        void QueueAnalyze(AnalyzeJob job)
+        void QueueAnalyzeJob(AnalyzeJobData jobData)
         {
-            pendingAnalyzeJobs.Increment();
-            ThreadPool.QueueUserWorkItem(Analyze, job);
+            _pendingAnalyzeJobs.Increment();
+            ThreadPool.QueueUserWorkItem(AnalyzeJob, jobData);
         }
 
-        void Analyze(object data)
+        void AnalyzeJob(object data)
         {
-            Analyze((AnalyzeJob) data);
-            pendingAnalyzeJobs.Decrement();
+            
+                AnalyzeJob((AnalyzeJobData) data);
+                _pendingAnalyzeJobs.Decrement();
 
 #warning "Need a better way to communicate errors";
 
@@ -262,117 +263,117 @@ namespace SvnQuery
 //            }
         }
 
-        void Analyze(AnalyzeJob job)
+        void AnalyzeJob(AnalyzeJobData jobData)
         {
-            string path = job.Change.Path;
-            int revision = job.Change.Revision;
+            string path = jobData.Change.Path;
+            int revision = jobData.Change.Revision;
          
-            if (args.Verbosity > 3)
-                Console.WriteLine("Analyze " + job.Change.Change.ToString().PadRight(7) + path + "   " + revision);
-            switch (job.Change.Change)
+            if (_args.Verbosity > 3)
+                Console.WriteLine("Analyze " + jobData.Change.Change.ToString().PadRight(7) + path + "   " + revision);
+            switch (jobData.Change.Change)
             {
                 case Change.Add:
-                    AddPath(path, revision, job.Recursive && job.Change.IsCopy);
+                    AddPath(path, revision, jobData.Recursive && jobData.Change.IsCopy);
                     break;
                 case Change.Replace:
-                    DeletePath(path, revision, job.Recursive);
-                    AddPath(path, revision, job.Recursive && job.Change.IsCopy);
+                    DeletePath(path, revision, jobData.Recursive);
+                    AddPath(path, revision, jobData.Recursive && jobData.Change.IsCopy);
                     break;                    
                 case Change.Modify:
                     DeletePath(path, revision, false);
                     AddPath(path, revision, false);
                     break;
                 case Change.Delete:
-                    DeletePath(path, revision, job.Recursive);
+                    DeletePath(path, revision, jobData.Recursive);
                     break;
             }
         }
 
         void AddPath(string path, int revision, bool recursive)
         {            
-            if (!highestRevision.Set(path, revision)) return;
+            if (!_highestRevision.Set(path, revision)) return;
 
-            IndexJob job = new IndexJob();
-            job.Path = path;
-            job.RevisionFirst = revision;
-            job.RevisionLast = RevisionFilter.Head;
-            job.Info = svn.GetPathInfo(path, revision);
-            if (job.Info == null) return; // workaround for issues with forbidden characters in local repository access
-            lock (headJobs) headJobs[path] = job;
+            IndexJobData jobData = new IndexJobData();
+            jobData.Path = path;
+            jobData.RevisionFirst = revision;
+            jobData.RevisionLast = RevisionFilter.Head;
+            jobData.Info = _svn.GetPathInfo(path, revision);
+            if (jobData.Info == null) return; // workaround for issues with forbidden characters in local repository access
+            lock (_headJobs) _headJobs[path] = jobData;
 
-            if (recursive && job.Info.IsDirectory)
+            if (recursive && jobData.Info.IsDirectory)
             {
-                svn.ForEachChild(path, revision, Change.Add, QueueAnalyze);
+                _svn.ForEachChild(path, revision, Change.Add, QueueAnalyzeJob);
             }            
         }
 
         void DeletePath(string path, int revision, bool recursive)
         {
-            IndexJob job;
-            lock (headJobs) headJobs.TryGetValue(path, out job);
-            if (job != null)
+            IndexJobData jobData;
+            lock (_headJobs) _headJobs.TryGetValue(path, out jobData);
+            if (jobData != null)
             {
-                lock (headJobs) headJobs.Remove(path);
+                lock (_headJobs) _headJobs.Remove(path);
             }
             else
             {
-                int highest = highestRevision.Get(path);
+                int highest = _highestRevision.Get(path);
                 if (highest == 0) return; // an atomic delete inside a copy operation
 
-                job = new IndexJob();
-                job.Path = path;
-                job.RevisionFirst = highest;
-                job.Info = svn.GetPathInfo(path, highest);
+                jobData = new IndexJobData();
+                jobData.Path = path;
+                jobData.RevisionFirst = highest;
+                jobData.Info = _svn.GetPathInfo(path, highest);
             }
-            job.RevisionLast = revision - 1;
-            highestRevision.Set(path, 0);
+            jobData.RevisionLast = revision - 1;
+            _highestRevision.Set(path, 0);
 
-            if (job.Info == null) return;  // workaround for issues with forbidden characters in local repository access
-            if (recursive && job.Info.IsDirectory)
+            if (jobData.Info == null) return;  // workaround for issues with forbidden characters in local repository access
+            if (recursive && jobData.Info.IsDirectory)
             {
-                svn.ForEachChild(path, revision, Change.Delete, QueueAnalyze);
+                _svn.ForEachChild(path, revision, Change.Delete, QueueAnalyzeJob);
             }
-            QueueFetch(job);
+            QueueFetchJob(jobData);
         }
 
-        void QueueFetch(IndexJob job)
+        void QueueFetchJob(IndexJobData jobData)
         {
-            pendingFetchJobs.Increment();
-            ThreadPool.QueueUserWorkItem(Fetch, job);
+            _pendingFetchJobs.Increment();
+            ThreadPool.QueueUserWorkItem(FetchJob, jobData);
         }
 
-        void Fetch(object data)
+        void FetchJob(object data)
         {
-            Fetch((IndexJob) data);
-            pendingFetchJobs.Decrement();
+            FetchJob((IndexJobData) data);
+            _pendingFetchJobs.Decrement();
 
 #warning "Need a better way to communicate thread pool errors";
         }
 
-        void Fetch(IndexJob job)
+        void FetchJob(IndexJobData jobData)
         {            
-            if (args.Verbosity > 1)
-                Console.WriteLine("Fetch          " + job.Path + "   " + job.RevisionFirst + ":" + job.RevisionLast);
+            if (_args.Verbosity > 1)
+                Console.WriteLine("Fetch          " + jobData.Path + "   " + jobData.RevisionFirst + ":" + jobData.RevisionLast);
           
-            job.Properties = svn.GetPathProperties(job.Path, job.RevisionFirst);           
+            jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);           
             string mime;
-            bool isText = !job.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");          
-            const int MaxFileSize = 2*1024*1024;
-            if (!job.Info.IsDirectory && isText && 0 < job.Info.Size && job.Info.Size < MaxFileSize)
+            bool isText = !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");          
+            const int maxFileSize = 2*1024*1024;
+            if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < maxFileSize)
             {
-                job.Content = svn.GetPathContent(job.Path, job.RevisionFirst, job.Info.Size);
+                jobData.Content = _svn.GetPathContent(jobData.Path, jobData.RevisionFirst, jobData.Info.Size);
             }
-            QueueIndexJob(job);
+            QueueIndexJob(jobData);
         }
 
-        void QueueIndexJob(IndexJob job)
+        void QueueIndexJob(IndexJobData jobData)
         {
-            indexQueueLimit.WaitOne();
-            lock (indexQueue)
+            _indexQueueLimit.WaitOne();
+            lock (_indexQueue)
             {
-                indexQueue.Enqueue(job);
-                indexQueueHasData.Set();
-                indexQueueIsEmpty.Reset();
+                _indexQueue.Enqueue(jobData);
+                _indexQueueHasData.Set();
+                _indexQueueIsEmpty.Reset();
             }
         }
 
@@ -381,65 +382,65 @@ namespace SvnQuery
         /// </summary>
         void ProcessIndexQueue()       
         {
-            WaitHandle[] wait = new WaitHandle[] {indexQueueHasData, stopIndexThread};
-            while (wait[WaitHandle.WaitAny(wait)] != stopIndexThread)
+            WaitHandle[] wait = new WaitHandle[] {_indexQueueHasData, _stopIndexThread};
+            while (wait[WaitHandle.WaitAny(wait)] != _stopIndexThread)
             {                
                 for (;;)
                 {
-                    IndexJob data;
-                    lock (indexQueue)
+                    IndexJobData data;
+                    lock (_indexQueue)
                     {
-                        if (indexQueue.Count == 0)
+                        if (_indexQueue.Count == 0)
                         {
-                            indexQueueHasData.Reset();
-                            indexQueueIsEmpty.Set();
+                            _indexQueueHasData.Reset();
+                            _indexQueueIsEmpty.Set();
                             break;
                         }
-                        data = indexQueue.Dequeue();
+                        data = _indexQueue.Dequeue();
                     }
-                    indexQueueLimit.Release();
+                    _indexQueueLimit.Release();
                     IndexDocument(data);
                 }
             }
         }
 
-        void IndexDocument(IndexJob data)
+        void IndexDocument(IndexJobData data)
         {
-            ++indexedDocuments;
-            if (args.Verbosity == 0 && data.Path[0] == '$')
+            ++_indexedDocuments;
+            if (_args.Verbosity == 0 && data.Path[0] == '$')
                 Console.WriteLine("Revision " + data.RevisionFirst);
             else 
-                Console.WriteLine("Index {0,8} {1}   {2}:{3}", indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
+                Console.WriteLine("Index {0,8} {1}   {2}:{3}", _indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
 
-            Term id = idTerm.CreateTerm(data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst);
-            indexWriter.DeleteDocuments(id);
+            Term id = _idTerm.CreateTerm(data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst);
+            _indexWriter.DeleteDocuments(id);
             Document doc = MakeDocument();
 
-            idField.SetValue(id.Text());
-            pathTokenStream.Text = data.Path;
-            revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
-            revLastField.SetValue(data.RevisionLast.ToString("d8"));
-            authorField.SetValue(data.Info.Author.ToLowerInvariant());
+            _idField.SetValue(id.Text());
+            _pathTokenStream.Text = data.Path;
+            _revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
+            _revLastField.SetValue(data.RevisionLast.ToString("d8"));
+            _authorField.SetValue(data.Info.Author.ToLowerInvariant());
             SetTimestampField(data.Info.Timestamp);
-            messageTokenStream.Text = svn.GetLogMessage(data.RevisionFirst);
+            _messageTokenStream.Text = _svn.GetLogMessage(data.RevisionFirst);
 
             if (!data.Info.IsDirectory)
             {
-                sizeField.SetValue(PackedSizeConverter.ToSortableString(data.Info.Size));
-                doc.Add(sizeField);
+                _sizeField.SetValue(PackedSizeConverter.ToSortableString(data.Info.Size));
+                doc.Add(_sizeField);
             }
 
-            contentTokenStream.Text = data.Content;
-            if (!contentTokenStream.IsEmpty) doc.Add(contentField);
+            _contentTokenStream.Text = data.Content;
+            if (!_contentTokenStream.IsEmpty) doc.Add(_contentField);
 
             IndexProperties(doc, data.Properties);
 
-            indexWriter.AddDocument(doc);
+            _indexWriter.AddDocument(doc);
         }
 
         void SetTimestampField(DateTime dt)
         {
-            timestampField.SetValue(dt.ToString("yyyy-MM-dd hh:mm"));
+            _timestampField.SetValue(dt.ToString("yyyy-MM-dd hh:mm"));
         }
 
         void IndexProperties(Document doc, IDictionary<string, string> properties)
@@ -449,13 +450,13 @@ namespace SvnQuery
             {
                 if (prop.Key == "svn:externals")
                 {
-                    doc.Add(externalsField);
-                    externalsTokenStream.Text = prop.Value;
+                    doc.Add(_externalsField);
+                    _externalsTokenStream.Text = prop.Value;
                 }
                 else if (prop.Key == "svn:mime-type")
                 {
-                    doc.Add(typeField);
-                    typeField.SetValue(prop.Value);
+                    doc.Add(_typeField);
+                    _typeField.SetValue(prop.Value);
                 }
                 else if (prop.Key == "svn:mergeinfo")
                 {
@@ -471,13 +472,13 @@ namespace SvnQuery
         Document MakeDocument()
         {
             var doc = new Document();
-            doc.Add(idField);
-            doc.Add(revFirstField);
-            doc.Add(revLastField);
-            doc.Add(timestampField);
-            doc.Add(authorField);
-            doc.Add(messageField);
-            doc.Add(pathField);
+            doc.Add(_idField);
+            doc.Add(_revFirstField);
+            doc.Add(_revLastField);
+            doc.Add(_timestampField);
+            doc.Add(_authorField);
+            doc.Add(_messageField);
+            doc.Add(_pathField);
             return doc;
         }
 

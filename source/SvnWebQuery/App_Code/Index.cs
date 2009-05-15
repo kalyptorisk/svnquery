@@ -29,29 +29,29 @@ namespace App_Code
 {
     public class Index
     {
-        readonly string index;
-        readonly Timer timer;
-        readonly Dictionary<string, CachedQueryResult> cache = new Dictionary<string, CachedQueryResult>();
-        readonly object sync = new object();
+        readonly string _index;
+        readonly Timer _timer;
+        readonly Dictionary<string, CachedQueryResult> _cache = new Dictionary<string, CachedQueryResult>();
+        readonly object _sync = new object();
 
-        IndexSearcher indexSearcher;
-        int repositoryRevision;
+        IndexSearcher _indexSearcher;
+        int _repositoryRevision;
 
         public Index(string index)
         {
-            this.index = index;
+            _index = index;
 
             UpdateIndexSearcher();
 
-            timer = new Timer(90000); // Check for index updates and cleaning caches
-            timer.Enabled = true;
-            timer.Elapsed += delegate { CleanupCache(); };
+            _timer = new Timer(90000); // Check for index updates and cleaning caches
+            _timer.Enabled = true;
+            _timer.Elapsed += delegate { CleanupCache(); };
         }
 
         ~Index()
         {
-            if (timer != null) timer.Dispose();
-            if (indexSearcher != null) indexSearcher.Close();
+            if (_timer != null) _timer.Dispose();
+            if (_indexSearcher != null) _indexSearcher.Close();
         }
 
         public string Name { get { return _name; } }
@@ -66,10 +66,10 @@ namespace App_Code
         // creates and warms up a new IndexSearcher if necessary
         bool UpdateIndexSearcher()
         {
-            if (indexSearcher != null && indexSearcher.Reader.IsCurrent())
+            if (_indexSearcher != null && _indexSearcher.Reader.IsCurrent())
                return false;
             
-            IndexSearcher searcher = new IndexSearcher(index);
+            IndexSearcher searcher = new IndexSearcher(_index);
             searcher.Search(new TermQuery(new Term("path", "warmup")));
 
             IndexReader reader = searcher.Reader;
@@ -78,11 +78,11 @@ namespace App_Code
             string externalUri = IndexProperty.GetRepositoryExternalUri(reader);
             string indexName = IndexProperty.GetRepositoryName(reader) ?? localUri.Split('/').Last();
 
-            lock (sync)
+            lock (_sync)
             {
-                if (indexSearcher != null) indexSearcher.Close();
-                indexSearcher = searcher;
-                repositoryRevision = indexRevision;
+                if (_indexSearcher != null) _indexSearcher.Close();
+                _indexSearcher = searcher;
+                _repositoryRevision = indexRevision;
                 _localUri = localUri;
                 _externalUri = externalUri;
                 _name = indexName;
@@ -94,11 +94,11 @@ namespace App_Code
         {
             CachedQueryResult result;
             string key = query + revFirst + revLast;
-            lock (cache) cache.TryGetValue(key, out result);
+            lock (_cache) _cache.TryGetValue(key, out result);
             if (result == null)
             {
                 result = new CachedQueryResult(ExecuteQuery(query, revFirst, revLast));
-                lock (cache) cache[key] = result;
+                lock (_cache) _cache[key] = result;
             }
             result.LastAccess = DateTime.Now;
             return result.Result;
@@ -106,7 +106,7 @@ namespace App_Code
 
         public Hit Query(string id)
         {
-            IndexSearcher s = indexSearcher;
+            IndexSearcher s = _indexSearcher;
             Hits h = s.Search(new TermQuery(new Term(FieldName.Id, id)));
             return h.Length() == 1 ? new Hit(h.Doc(0)) : null; 
         }
@@ -118,10 +118,10 @@ namespace App_Code
             IndexSearcher searcher;
             int revision;
 
-            lock (sync)
+            lock (_sync)
             {
-                searcher = indexSearcher;
-                revision = repositoryRevision;
+                searcher = _indexSearcher;
+                revision = _repositoryRevision;
             }
 
             Parser p = new Parser(searcher.Reader);
@@ -148,7 +148,7 @@ namespace App_Code
                 hits = searcher.Search(q, new RevisionFilter(int.Parse(revFirst), int.Parse(revLast)));
             }
 
-            return new QueryResult(sw, revision, searcher.MaxDoc(), hits, LocalUri);
+            return new QueryResult(sw, revision, searcher.MaxDoc(), hits);
         }
 
         class CachedQueryResult
@@ -167,22 +167,22 @@ namespace App_Code
         {
             if (UpdateIndexSearcher()) // true if index got updated
             {
-                cache.Clear();
+                _cache.Clear();
             }
             else
             {
                 DateTime now = DateTime.Now;
-                List<string> too_old_entries = new List<string>();
-                lock (cache)
+                List<string> tooOldEntries = new List<string>();
+                lock (_cache)
                 {
-                    foreach (var pair in cache)
+                    foreach (var pair in _cache)
                     {
                         if ((now - pair.Value.LastAccess).TotalMinutes > 10)
-                            too_old_entries.Add(pair.Key);
+                            tooOldEntries.Add(pair.Key);
                     }
-                    foreach (var s in too_old_entries)
+                    foreach (var s in tooOldEntries)
                     {
-                        cache.Remove(s);
+                        _cache.Remove(s);
                     }
                 }
             }

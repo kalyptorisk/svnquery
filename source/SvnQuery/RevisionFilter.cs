@@ -31,8 +31,8 @@ namespace SvnQuery
         public const int All = 0;
         public static readonly string AllString;
 
-        readonly int revLast;
-        readonly int revFirst;
+        readonly int _revLast;
+        readonly int _revFirst;
 
         static RevisionFilter()
         {
@@ -45,22 +45,22 @@ namespace SvnQuery
 
         public RevisionFilter(int first, int last)
         {
-            revFirst = first;
-            revLast = last;
+            _revFirst = first;
+            _revLast = last;
         }
 
         public override BitArray Bits(IndexReader reader)
         {
             // reader.GetVersion could be used to cache
             // Debug.WriteLine(reader.GetVersion()); // could be used to cache
-            // if (cached reader == reader && revFirst == 
+            // if (cached reader == reader && _revFirst == 
 
-            if (revFirst == All || revLast == All) // optimization
+            if (_revFirst == All || _revLast == All) // optimization
                 return new BitArray(reader.MaxDoc(), true);
 
             BitArray last_bits = new BitArray(reader.MaxDoc(), false);
 
-            TermEnum t = reader.Terms(new Term(FieldName.RevisionLast, revFirst.ToString(RevFormat)));
+            TermEnum t = reader.Terms(new Term(FieldName.RevisionLast, _revFirst.ToString(RevFormat)));
             TermDocs d = reader.TermDocs();
             //if (t.SkipTo((new Term(FieldName.RevisionLast, revision.ToString(RevFormat))))) // extremely slow
             if (t.Term() != null)
@@ -74,11 +74,11 @@ namespace SvnQuery
             }
 
             // optimization, skip if we just using the head revision
-            if (revLast == Head)
+            if (_revLast == Head)
                 return last_bits;
 
             BitArray first_bits = new BitArray(reader.MaxDoc(), true);
-            t = reader.Terms(new Term("rev_first", (revLast + 1).ToString(RevFormat)));
+            t = reader.Terms(new Term("rev_first", (_revLast + 1).ToString(RevFormat)));
             //if (t.SkipTo((new Term("rev_first", (revision + 1).ToString(RevFormat))))) // extremely slow
             if (t.Term() != null)
             {

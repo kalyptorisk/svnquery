@@ -28,7 +28,7 @@ namespace SvnQuery
     /// </summary>
     public class HighestRevision
     {
-        readonly Dictionary<string, int> highest = new Dictionary<string, int>();
+        readonly Dictionary<string, int> _highest = new Dictionary<string, int>();
 
         public IndexReader Reader
         {
@@ -36,7 +36,7 @@ namespace SvnQuery
             set
             {
                 _reader = value;
-                highest.Clear();
+                _highest.Clear();
             }
         }
         IndexReader _reader;
@@ -44,9 +44,9 @@ namespace SvnQuery
         public int Get(string path)
         {
             int revision;
-            lock (highest)
+            lock (_highest)
             {
-                if (highest.TryGetValue(path, out revision)) return revision;
+                if (_highest.TryGetValue(path, out revision)) return revision;
             }
 
             if (Reader == null) return 0;
@@ -79,12 +79,12 @@ namespace SvnQuery
         /// <returns></returns>
         public bool Set(string path, int revision)
         {
-            lock (highest)
+            lock (_highest)
             {
                 int existing;
-                if (highest.TryGetValue(path, out existing) && existing == revision) return false;
+                if (_highest.TryGetValue(path, out existing) && existing == revision) return false;
                 //if (revision < existing) throw new InvalidOperationException("revision order is badly wrong");
-                highest[path] = revision;
+                _highest[path] = revision;
                 return true;
             }
         }

@@ -28,10 +28,7 @@ namespace SvnQuery
 
         static void Main(string[] args)
         {
-#if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-#endif
-
             Mutex mutex = null;
             try
             {
@@ -78,6 +75,9 @@ namespace SvnQuery
                     Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
                     Environment.CommandLine + Environment.NewLine + x);
             }
+#if !DEBUG
+            Environment.Exit(-1);
+#endif
         }
     }
 }

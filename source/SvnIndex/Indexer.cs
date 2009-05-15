@@ -247,20 +247,13 @@ namespace SvnQuery
             _pendingAnalyzeJobs.Increment();
             ThreadPool.QueueUserWorkItem(AnalyzeJob, jobData);
         }
-
+        
+        // The ThreadPool entry point for an AnalyzeJob.
+        // ThreadPool Exceptions are catched by the AppDomain Unhandled Exception Handler
         void AnalyzeJob(object data)
         {
-            
-                AnalyzeJob((AnalyzeJobData) data);
-                _pendingAnalyzeJobs.Decrement();
-
-#warning "Need a better way to communicate errors";
-
-//            catch (Exception x)
-//            {
-//                Console.WriteLine("Exception in ThreadPool Thread: " + x);
-//                Environment.Exit(-100);
-//            }
+            AnalyzeJob((AnalyzeJobData) data);
+            _pendingAnalyzeJobs.Decrement();
         }
 
         void AnalyzeJob(AnalyzeJobData jobData)
@@ -342,12 +335,12 @@ namespace SvnQuery
             ThreadPool.QueueUserWorkItem(FetchJob, jobData);
         }
 
+        // The ThreadPool entry point for an AnalyzeJob.
+        // ThreadPool Exceptions are catched by the AppDomain Unhandled Exception Handler
         void FetchJob(object data)
         {
             FetchJob((IndexJobData) data);
             _pendingFetchJobs.Decrement();
-
-#warning "Need a better way to communicate thread pool errors";
         }
 
         void FetchJob(IndexJobData jobData)

@@ -28,13 +28,13 @@ namespace SvnQuery.Tests
     [TestFixture]
     public class SvnApiTest
     {
-        static readonly string repository;
-        readonly ISvnApi api = new SharpSvnApi(repository);
+        readonly ISvnApi api;
 
-        static SvnApiTest()
+        public SvnApiTest()
         {
             // works only if shadow copying in unit tests is disabled, because otherwise the relative path is wrong
-            repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+            string repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+            api = new SharpSvnApi(repository);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace SvnQuery.Tests
             const string path = "/trunk/packages/freebsd/subversion/files/patch-subversion::libsvn_ra_dav::session.c";
             const int revision = 1398;
 
-            // throws exception on local repository, but works on http: repositories
+            // throws exception on local Repository, but works on http: repositories
             svn.GetPathInfo(path, revision); 
         }
 

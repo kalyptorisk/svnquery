@@ -43,7 +43,7 @@ namespace SvnIndexTests
         RAMDirectory CreateIndex(int revision)
         {
             var dir = new RAMDirectory();
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-c3", "-n", "Test" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-c3", "-n", "Test", "-v4" }), dir);
             indexer.Run();
             return dir;
         }
@@ -51,14 +51,14 @@ namespace SvnIndexTests
         RAMDirectory CreateSingleRevisionIndex(int revision)
         {
             var dir = new RAMDirectory();
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-s" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
             indexer.Run();
             return dir;
         }
 
         void UpdateSingleRevisionIndex(int revision, RAMDirectory dir)
         {
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "update", "RAMDirectory", _repository, "-r", revision.ToString(), "-s" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "update", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
             indexer.Run();
         }
 
@@ -175,7 +175,7 @@ namespace SvnIndexTests
                                     "/Folder/import",
                                     "/Folder/text.txt"
                                 };
-
+            
             Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)));
             for (int i = 0; i < hits.Length(); ++i)
             {
@@ -183,7 +183,7 @@ namespace SvnIndexTests
                 Assert.That(headItems.Contains(id), id + " should be in head revision");
                 headItems.Remove(id);
             }
-            Assert.That(headItems, Has.Count(0));
+            Assert.AreEqual(0, headItems.Count);            
         }
 
         static void CheckIsHeadOnly(IndexSearcher searcher)
@@ -210,6 +210,8 @@ namespace SvnIndexTests
             var index = new IndexSearcher(CreateSingleRevisionIndex(21));
             CheckIsHeadOnly(index);
             CheckHeadRevision21(index);
+
+           // Assert.AreEqual(headItems.Count, IndexProperty.GetDocumentCount(searcher.Reader));
         }
 
         [Test]

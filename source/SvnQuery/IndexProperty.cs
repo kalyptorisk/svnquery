@@ -31,7 +31,6 @@ namespace SvnQuery
         const string RepositoryNameProperty = "RepositoryName";
         const string RepositoryLocalUriProperty = "RepositoryLocalUri";
         const string RepositoryExternalUriProperty = "RepositoryExternalUri";
-        const string DocumentCountProperty = "DocumentCount";
         const string SingleRevisionProperty = "SingleRevision";
         
         /// <summary>
@@ -95,16 +94,6 @@ namespace SvnQuery
         public static void SetRepositoryExternalUri(IndexWriter writer, string uri)
         {
             UpdateProperty(writer, RepositoryExternalUriProperty, uri);  
-        }
-
-        public static int GetDocumentCount(IndexReader reader)
-        {
-            return int.Parse(GetProperty(reader, DocumentCountProperty));
-        }
-
-        public static void SetDocumentCount(IndexWriter writer, int documents)
-        {
-           UpdateProperty(writer, DocumentCountProperty, documents.ToString());
         }
 
         public static bool GetSingleRevision(IndexReader reader)

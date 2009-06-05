@@ -33,15 +33,20 @@ SvnIndex action index_path repository_uri [Options]
   action := create | update
   Options:
   -r max revision to be included in the index
-  -u User
-  -p Password
   -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
+    
+  -n name of the index (for display in clients e.g. SvnWebQuery)
+  -x external visible repository uri (if different than repository_uri)
+  -v verbosity level (0..3, 0 is lowest, 1 is default)
+
+  -u User (only for login to remote repositories)
+  -p Password (only for login to remote repositories)
+
   -t max number of threads used to query the repository in parallel
   -c commit interval
-  -o optimize interval
-  -n name of the index (for display in clients e.g. SvnWebQuery)
-  -x external visible repository uri 
-  -v verbosity level (0..3, 0 is lowest, 1 is default)
+  -o optimize interval  
+
+  -s create a solid single revision index (-r will set this)
 ";
     }
 
@@ -60,7 +65,8 @@ SvnIndex action index_path repository_uri [Options]
                                 // as a general rule, the higher the latency the higher the number of threads should be
         public int Optimize = 25; // number of revisions that lead to optimization
         public int CommitInterval = 1000; // the interval between the index gets committed
-        public int Verbosity; // Output data about the
+        public int Verbosity; // Verbosity of the index process 
+        public bool SingleRevision;
 
         public IndexerArgs(string[] args)
         {
@@ -73,42 +79,48 @@ SvnIndex action index_path repository_uri [Options]
                 if (args[i][0] == '-')
                 {
                     if (args[i].Length < 2) throw new IndexerArgsException("Empty Option");
-                    char option = char.ToLowerInvariant(args[i][1]);
-                    string arg = (args[i].Length == 2) ? args[++i] : args[i].Substring(2);
-                    switch (option)
+                    try
                     {
-                        case 'r':
-                            MaxRevision = int.Parse(arg);
-                            break;
-                        case 'f':
-                            Filter = new Regex(arg, RegexOptions.Compiled);
-                            break;
-                        case 'u':
-                            User = arg;
-                            break;
-                        case 'p':
-                            Password = arg;
-                            break;
-                        case 't':
-                            MaxThreads = int.Parse(arg);
-                            break;
-                        case 'o':
-                            Optimize = int.Parse(arg);
-                            break;
-                        case 'c':
-                            CommitInterval = int.Parse(arg);
-                            break;
-                        case 'n':
-                            RepositoryName = arg;
-                            break;
-                        case 'x':
-                            RepositoryExternalUri = arg.Replace('\\', '/').TrimEnd('/');
-                            break;
-                        case 'v':
-                            Verbosity = int.Parse(arg);
-                            break;
-                        default:
-                            throw new IndexerArgsException("Unknown option -" + option);
+                        switch (char.ToLowerInvariant(args[i][1])) // normalize option
+                        {
+                            case 'r': MaxRevision = int.Parse(NextArg(args, ref i));
+                                break;
+                            case 'f': Filter = new Regex(NextArg(args, ref i), RegexOptions.Compiled);
+                                break;
+                            case 'u':
+                                User = NextArg(args, ref i);
+                                break;
+                            case 'p':
+                                Password = NextArg(args, ref i);
+                                break;
+                            case 't':
+                                MaxThreads = int.Parse(NextArg(args, ref i));
+                                break;
+                            case 'o':
+                                Optimize = int.Parse(NextArg(args, ref i));
+                                break;
+                            case 'c':
+                                CommitInterval = int.Parse(NextArg(args, ref i));
+                                break;
+                            case 'n':
+                                RepositoryName = NextArg(args, ref i);
+                                break;
+                            case 'x':
+                                RepositoryExternalUri = NextArg(args, ref i).Replace('\\', '/').TrimEnd('/');
+                                break;
+                            case 'v':
+                                Verbosity = int.Parse(NextArg(args, ref i));
+                                break;
+                            case 's':
+                                SingleRevision = true;
+                                break;
+                            default:
+                                throw new IndexerArgsException("Unknown option " + args[i]);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw new IndexerArgsException("Invalid or missing argument for option " + args[i]);
                     }
                 }
                 else
@@ -117,14 +129,7 @@ SvnIndex action index_path repository_uri [Options]
                     switch (iMandatory++)
                     {
                         case 0: // first argument is the command
-                            try
-                            {
-                                Command = (Indexer.Command) Enum.Parse(typeof (Indexer.Command), arg, true);
-                            }
-                            catch (ArgumentException)
-                            {
-                                throw new IndexerArgsException("Unknown command '" + arg + "'");
-                            }
+                            Command = ParseCommand(arg);
                             break;
                         case 1: // second comes the path to the index directory
                             IndexPath = Path.GetFullPath(arg);
@@ -140,10 +145,27 @@ SvnIndex action index_path repository_uri [Options]
             if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
         }
 
+        static string NextArg(string[] args, ref int pos)
+        {
+            return (args[pos].Length == 2) ? args[++pos] : args[pos].Substring(2);   
+        }
+
+        static Indexer.Command ParseCommand(string command)
+        {
+            try
+            {
+                return (Indexer.Command)Enum.Parse(typeof(Indexer.Command), command, true);
+            }
+            catch (ArgumentException)
+            {
+                throw new IndexerArgsException("Unknown command '" + command + "'");
+            } 
+        }
+
         static int GetMaxThreadsFromUri(string uri)
         {
             uri = uri.ToLowerInvariant();
-            if (uri.StartsWith("http")) return 16;
+            if (uri.StartsWith("http")) return 16; // includes https
             if (uri.StartsWith("svn")) return 8;
             if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 4; // local file repository            
             return 4; // unknown protocol

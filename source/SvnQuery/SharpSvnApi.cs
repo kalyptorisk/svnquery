@@ -191,7 +191,8 @@ namespace SvnQuery
                     if (string.IsNullOrEmpty(e.Path)) return;
                     // to be compatible with the log output (which has no trailing '/' for directories)
                     // we need to remove trailing '/' 
-                    action(new PathChange {Change = change, Revision = revision, Path = e.BasePath + "/" + e.Path.TrimEnd('/')});
+                    string basePath = e.BasePath.EndsWith("/") ? e.BasePath : e.BasePath + "/";
+                    action(new PathChange {Change = change, Revision = revision, Path = basePath + e.Path.TrimEnd('/')});
                 });
             }
             finally

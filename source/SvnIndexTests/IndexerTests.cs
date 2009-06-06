@@ -33,11 +33,15 @@ namespace SvnIndexTests
     public class IndexerTests
     {
         readonly string _repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
-        readonly IndexSearcher _revision21;
+        IndexSearcher _revision21;
 
-        public IndexerTests()
-        {       
-            _revision21 = new IndexSearcher(CreateIndex(21));
+        IndexSearcher Revision21
+        {
+            get
+            {
+                if (_revision21 == null) _revision21 = new IndexSearcher(CreateIndex(21));
+                return _revision21;
+            }
         }
 
         RAMDirectory CreateIndex(int revision)
@@ -201,7 +205,7 @@ namespace SvnIndexTests
         [Test]
         public void Index_HeadRevision21()
         {
-            CheckHeadRevision21(_revision21);
+            CheckHeadRevision21(Revision21);
         }
 
         [Test]
@@ -210,8 +214,6 @@ namespace SvnIndexTests
             var index = new IndexSearcher(CreateSingleRevisionIndex(21));
             CheckIsHeadOnly(index);
             CheckHeadRevision21(index);
-
-           // Assert.AreEqual(headItems.Count, IndexProperty.GetDocumentCount(searcher.Reader));
         }
 
         [Test]
@@ -228,7 +230,7 @@ namespace SvnIndexTests
         public void Index_FolderSecondSecondTxt_ContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Second/second.txt", _revision21), 
+                RevisionOrder("/Folder/Second/second.txt", Revision21), 
                 Is.EquivalentTo(RevisionOrder(3, 8, 18, -1)));
         }
 
@@ -236,10 +238,10 @@ namespace SvnIndexTests
         public void Index_CopiedAndRenamed_RevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed", _revision21),
+                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed", Revision21),
                 Is.EquivalentTo(RevisionOrder(6, 19)));
             Assert.That(
-               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt", _revision21),
+               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt", Revision21),
                Is.EquivalentTo(RevisionOrder(6, 9, 19)));
         }
 
@@ -247,15 +249,15 @@ namespace SvnIndexTests
         public void Index_FolderTextTxt_NonContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/text.txt", _revision21),
+                RevisionOrder("/Folder/text.txt", Revision21),
                 Is.EquivalentTo(RevisionOrder(3, 11, 0, 21, -1)));
         }
 
         [Test]
         public void Index_MessageContainsBinary_ExpectedResults()
         {
-            Parser p = new Parser(_revision21.Reader);
-            Hits h = _revision21.Search(p.Parse("m:binary"));
+            Parser p = new Parser(Revision21.Reader);
+            Hits h = Revision21.Search(p.Parse("m:binary"));
             Assert.That(h.Length(), Is.EqualTo(4));
             var expected = new HashSet<string>
                            {

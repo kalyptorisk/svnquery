@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
@@ -151,13 +150,6 @@ namespace SvnQuery
                 _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
 
                 QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
-
-                if (_args.SingleRevision)
-                {
-                    _svn.ForEachChild("/", stopRevision, Change.Add, QueueAnalyzeJob);
-                    IndexRevision(stopRevision);
-                    startRevision = stopRevision + 1;
-                }
             }
             else // Command.Update
             {
@@ -203,13 +195,13 @@ namespace SvnQuery
             _indexWriter.Close();
         }
 
-        void IndexRevisionRange(int start, int stop)
+        void IndexRevisionRange(int startRevision, int stopRevision)
         {
-            foreach (var data in _svn.GetRevisionData(start, stop))
+            foreach (var data in _svn.GetRevisionData(startRevision, stopRevision))
             {
+                IndexJobData jobData = new IndexJobData();
                 if (!_args.SingleRevision)
                 {
-                    IndexJobData jobData = new IndexJobData();
                     jobData.Path = "$Revision " + data.Revision;
                     jobData.RevisionFirst = data.Revision;
                     jobData.RevisionLast = data.Revision;
@@ -221,16 +213,7 @@ namespace SvnQuery
                 data.Changes.ForEach(QueueAnalyzeJobRecursive);
                 _pendingAnalyzeJobs.Wait();
             }
-            IndexRevision(stop);
-        }
 
-        /// <summary>
-        /// Waits for Analyze to finish, then queue index jobs that are in the head jobs, and wait for them to finish
-        /// </summary>
-        /// <param name="revision"></param>
-        void IndexRevision(int revision)
-        {
-            _pendingAnalyzeJobs.Wait();
             foreach (var job in _headJobs.Values) // no lock necessary because no analyzeJobs are running
             {
                 QueueFetchJob(job);
@@ -240,8 +223,8 @@ namespace SvnQuery
             _pendingFetchJobs.Wait();
             _indexQueueIsEmpty.WaitOne();
 
-            IndexProperty.SetRevision(_indexWriter, revision);
-            Console.WriteLine("Index revision is now " + revision);
+            IndexProperty.SetRevision(_indexWriter, stopRevision);
+            Console.WriteLine("Index revision is now " + stopRevision);
         }
 
         void QueueAnalyzeJobRecursive(PathChange change)
@@ -433,14 +416,15 @@ namespace SvnQuery
             else
                 Console.WriteLine("Index {0,8} {1}   {2}:{3}", _indexDocumentCounter, data.Path, data.RevisionFirst, data.RevisionLast);
 
-            Term id = _idTerm.CreateTerm(data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst);
+            string idText = data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst;
+            Term id = _idTerm.CreateTerm(idText);
             _indexWriter.DeleteDocuments(id);
-
+            
             if (_args.SingleRevision && data.RevisionLast != RevisionFilter.Head)
                 return;
 
             Document doc = MakeDocument();
-            _idField.SetValue(id.Text());
+            _idField.SetValue(idText);
             _pathTokenStream.Text = data.Path;
             _revFirstField.SetValue(data.RevisionFirst.ToString(RevisionFilter.RevFormat));
             _revLastField.SetValue(data.RevisionLast.ToString(RevisionFilter.RevFormat));

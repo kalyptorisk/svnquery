@@ -51,7 +51,6 @@
                     <asp:RadioButton ID="_optAll" runat="server" Text="All&nbsp;&nbsp;" Font-Size="8pt" GroupName="revisionGroup" ToolTip="Search in all revisions" />
                 </span>
                 </asp:Panel>
-            
             </td>
             <td>
             </td>

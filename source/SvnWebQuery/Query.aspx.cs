@@ -30,17 +30,25 @@ public partial class Query : Page
     {
         base.OnPreRender(e);
         inputQuery.Text = query.Value;
-        if (textRevision.Text == "$hidden$")
+
+        if (QueryApplicationIndex.IsSingleRevision)
         {
-            textRevision.Style[HtmlTextWriterStyle.Display] = "none";
-            optGroup.Style[HtmlTextWriterStyle.Display] = "";
+            _revisionUi.Visible = false;
         }
         else
         {
-            textRevision.Style[HtmlTextWriterStyle.Display] = "";
-            optGroup.Style[HtmlTextWriterStyle.Display] = "none";
+            if (_textRevision.Text == "$hidden$")
+            {
+                _textRevision.Style[HtmlTextWriterStyle.Display] = "none";
+                _optGroup.Style[HtmlTextWriterStyle.Display] = "";
+            }
+            else
+            {
+                _textRevision.Style[HtmlTextWriterStyle.Display] = "";
+                _optGroup.Style[HtmlTextWriterStyle.Display] = "none";
+            }            
         }
-        RepositoryLabel.Text = QueryApplicationIndex.Name;
+        _repositoryLabel.Text = QueryApplicationIndex.Name;
         SvnQueryVersionLabel.Text = IndexProperty.SvnQueryVersion;
         Title = QueryApplicationIndex.Name + " Search";
     }
@@ -82,12 +90,12 @@ public partial class Query : Page
 
     Pair GetRevisionRange()
     {
-        string text = textRevision.Text.ToLowerInvariant();
+        string text = _textRevision.Text.ToLowerInvariant();
         if (text == "$hidden$")
         {
             return new Pair
                    {
-                       First = (optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
+                       First = (_optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
                        Second = RevisionFilter.Head
                    };
         }
@@ -104,7 +112,7 @@ public partial class Query : Page
         if (text.Contains("all"))
         {
             first = last = RevisionFilter.All;
-            textRevision.Text = "all";
+            _textRevision.Text = "all";
         }
         else if (text.Contains("head") || first < 0)
         {
@@ -112,11 +120,11 @@ public partial class Query : Page
             if (first < 0)
             {
                 first = last;
-                textRevision.Text = "head";
+                _textRevision.Text = "head";
             }
             else
             {
-                textRevision.Text = first + " : head";
+                _textRevision.Text = first + " : head";
             }
         }
         else if (first > 0)
@@ -127,8 +135,8 @@ public partial class Query : Page
                 first = last;
                 last = swap;
             }
-            textRevision.Text = first.ToString();
-            if (last > 0) textRevision.Text += " : " + last;
+            _textRevision.Text = first.ToString();
+            if (last > 0) _textRevision.Text += " : " + last;
         }
         return new Pair(first, last > 0 ? last : first);
     }

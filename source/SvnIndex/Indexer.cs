@@ -46,7 +46,6 @@ namespace SvnQuery
         readonly Queue<IndexJobData> _indexQueue = new Queue<IndexJobData>();
         readonly EventWaitHandle _indexQueueHasData = new ManualResetEvent(false);
         readonly EventWaitHandle _indexQueueIsEmpty = new ManualResetEvent(true);
-        int _indexedDocuments;
         IndexWriter _indexWriter;
 
         // reused objects for faster indexing
@@ -133,39 +132,40 @@ namespace SvnQuery
         {
             Console.WriteLine("Begin indexing ...");
             DateTime start = DateTime.UtcNow;
-            bool create = _args.Command == Command.Create;
             int startRevision = 1; 
             int stopRevision = Math.Min(_args.MaxRevision, _svn.GetYoungestRevision());
+            bool optimize; 
 
             Thread indexThread = new Thread(ProcessIndexQueue);
             indexThread.Name = "IndexThread";
             indexThread.IsBackground = true;
             indexThread.Start();
 
-            _indexedDocuments = 0;
-            if (!create) // update, important, must be run *before* creating the indexWriter
+            if (Command.Create == _args.Command)
+            {
+                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);
+                IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
+                _args.RepositoryExternalUri = _args.RepositoryExternalUri ?? _args.RepositoryLocalUri;
+                _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
+                QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+                optimize = true;
+            }
+            else // Command.Update
             {
                 IndexReader reader = IndexReader.Open(_indexDirectory); // important: create reader before creating indexWriter!
                 _highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
-                _indexedDocuments = IndexProperty.GetDocumentCount(reader);                
-            }
-            _indexWriter = new IndexWriter(_indexDirectory, false, null, create);
-            if (create)
-            {
-                _args.RepositoryExternalUri = _args.RepositoryExternalUri ?? _args.RepositoryLocalUri;
-                _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
-
-                QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+                _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
+                _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
+                optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             }
             IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
             if (_args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
             if (_args.RepositoryName != null) IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
 
-            bool optimize = create || stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             while (startRevision <= stopRevision) 
             {
-                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));
+                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));                
                 startRevision += _args.CommitInterval;
 
                 if (startRevision <= stopRevision)
@@ -195,18 +195,21 @@ namespace SvnQuery
             _indexWriter.Close();
         }
 
-        void IndexRevisionRange(int start, int stop)
+        void IndexRevisionRange(int startRevision, int stopRevision)
         {
-            foreach (var data in _svn.GetRevisionData(start, stop))
+            foreach (var data in _svn.GetRevisionData(startRevision, stopRevision))
             {
                 IndexJobData jobData = new IndexJobData();
-                jobData.Path = "$Revision " + data.Revision;
-                jobData.RevisionFirst = data.Revision;
-                jobData.RevisionLast = data.Revision;
-                jobData.Info = new PathInfo();
-                jobData.Info.Author = data.Author;
-                jobData.Info.Timestamp = data.Timestamp;
-                QueueIndexJob(jobData);
+                if (!_args.SingleRevision)
+                {
+                    jobData.Path = "$Revision " + data.Revision;
+                    jobData.RevisionFirst = data.Revision;
+                    jobData.RevisionLast = data.Revision;
+                    jobData.Info = new PathInfo();
+                    jobData.Info.Author = data.Author;
+                    jobData.Info.Timestamp = data.Timestamp;
+                    QueueIndexJob(jobData);
+                }
                 data.Changes.ForEach(QueueAnalyzeJobRecursive);
                 _pendingAnalyzeJobs.Wait();
             }
@@ -220,9 +223,8 @@ namespace SvnQuery
             _pendingFetchJobs.Wait();
             _indexQueueIsEmpty.WaitOne();
 
-            IndexProperty.SetRevision(_indexWriter, stop);
-            IndexProperty.SetDocumentCount(_indexWriter, _indexedDocuments);
-            Console.WriteLine("Index revision is now " + stop);
+            IndexProperty.SetRevision(_indexWriter, stopRevision);
+            Console.WriteLine("Index revision is now " + stopRevision);
         }
 
         void QueueAnalyzeJobRecursive(PathChange change)
@@ -311,7 +313,7 @@ namespace SvnQuery
             else
             {
                 int highest = _highestRevision.Get(path);
-                if (highest == 0) return; // an atomic delete inside a copy operation
+                if (highest == 0) return; // an atomic delete inside a svn copy operation
 
                 jobData = new IndexJobData();
                 jobData.Path = path;
@@ -343,18 +345,25 @@ namespace SvnQuery
             _pendingFetchJobs.Decrement();
         }
 
+        /// <summary>
+        /// Fetches some more information from the repository for an item
+        /// </summary>
+        /// <param name="jobData"></param>
         void FetchJob(IndexJobData jobData)
-        {            
-            if (_args.Verbosity > 1)
-                Console.WriteLine("Fetch          " + jobData.Path + "   " + jobData.RevisionFirst + ":" + jobData.RevisionLast);
-          
-            jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);           
-            string mime;
-            bool isText = !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");          
-            const int maxFileSize = 2*1024*1024;
-            if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < maxFileSize)
+        {
+            if (!_args.SingleRevision || jobData.RevisionLast == RevisionFilter.Head) // don't fetch if this data would be deleted anyway
             {
-                jobData.Content = _svn.GetPathContent(jobData.Path, jobData.RevisionFirst, jobData.Info.Size);
+                if (_args.Verbosity > 1)
+                    Console.WriteLine("Fetch          " + jobData.Path + "   " + jobData.RevisionFirst + ":" + jobData.RevisionLast);
+
+                jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);
+                string mime;
+                bool isText = !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");
+                const int maxFileSize = 2 * 1024 * 1024;
+                if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < maxFileSize)
+                {
+                    jobData.Content = _svn.GetPathContent(jobData.Path, jobData.RevisionFirst, jobData.Info.Size);
+                }
             }
             QueueIndexJob(jobData);
         }
@@ -397,22 +406,28 @@ namespace SvnQuery
             }
         }
 
+        int _indexDocumentCounter;
+
         void IndexDocument(IndexJobData data)
         {
-            ++_indexedDocuments;
+            ++_indexDocumentCounter;
             if (_args.Verbosity == 0 && data.Path[0] == '$')
                 Console.WriteLine("Revision " + data.RevisionFirst);
-            else 
-                Console.WriteLine("Index {0,8} {1}   {2}:{3}", _indexedDocuments, data.Path, data.RevisionFirst, data.RevisionLast);
+            else
+                Console.WriteLine("Index {0,8} {1}   {2}:{3}", _indexDocumentCounter, data.Path, data.RevisionFirst, data.RevisionLast);
 
-            Term id = _idTerm.CreateTerm(data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst);
+            string idText = data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst;
+            Term id = _idTerm.CreateTerm(idText);
             _indexWriter.DeleteDocuments(id);
-            Document doc = MakeDocument();
+            
+            if (_args.SingleRevision && data.RevisionLast != RevisionFilter.Head)
+                return;
 
-            _idField.SetValue(id.Text());
+            Document doc = MakeDocument();
+            _idField.SetValue(idText);
             _pathTokenStream.Text = data.Path;
-            _revFirstField.SetValue(data.RevisionFirst.ToString("d8"));
-            _revLastField.SetValue(data.RevisionLast.ToString("d8"));
+            _revFirstField.SetValue(data.RevisionFirst.ToString(RevisionFilter.RevFormat));
+            _revLastField.SetValue(data.RevisionLast.ToString(RevisionFilter.RevFormat));
             _authorField.SetValue(data.Info.Author.ToLowerInvariant());
             SetTimestampField(data.Info.Timestamp);
             _messageTokenStream.Text = _svn.GetLogMessage(data.RevisionFirst);

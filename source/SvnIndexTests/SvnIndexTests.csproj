@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IndexerArgsTests.cs" />
     <Compile Include="IndexerTests.cs" />
     <Compile Include="MiscTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -33,23 +33,24 @@
 
 </head>
 <body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
-    <form id="form1" runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">  
+    <form runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">  
     <table width="100%">
     <tr>
     <td>
     <table style="margin-left: -3px; padding: 0px">
         <tr style="margin-bottom: 0px; padding-bottom: 0px">
             <td style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic;">
-                <asp:Label ID="RepositoryLabel" runat="server">Repository</asp:Label>&nbsp;Search</td>
-            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px" 
-                nowrap="nowrap">
+                <asp:Label ID="_repositoryLabel" runat="server">Repository</asp:Label>&nbsp;Search</td>
+            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px" nowrap="nowrap">
+                <asp:Panel ID="_revisionUi" runat="server">
                 <input type="text" style="visibility: hidden; width: 10px;" />
                 <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision</a>
-                <asp:TextBox ID="textRevision" runat="server" Text="$hidden$" Font-Size="8pt" ToolTip="Enter a revision or a revision range" Width="83px" />
-                <span id="optGroup" runat="server" style="text-align: right">
-                    <asp:RadioButton ID="optHead" runat="server" Text="Head" Font-Size="8pt" GroupName="revisionGroup" Checked="True" ToolTip="Search only in head revision" />
-                    <asp:RadioButton ID="optAll" runat="server" Text="All&nbsp;&nbsp;" Font-Size="8pt" GroupName="revisionGroup" ToolTip="Search in all revisions" />
+                <asp:TextBox ID="_textRevision" runat="server" Text="$hidden$" Font-Size="8pt" ToolTip="Enter a revision or a revision range" Width="83px" />
+                <span id="_optGroup" runat="server" style="text-align: right">
+                    <asp:RadioButton ID="_optHead" runat="server" Text="Head" Font-Size="8pt" GroupName="revisionGroup" Checked="True" ToolTip="Search only in head revision" />
+                    <asp:RadioButton ID="_optAll" runat="server" Text="All&nbsp;&nbsp;" Font-Size="8pt" GroupName="revisionGroup" ToolTip="Search in all revisions" />
                 </span>
+                </asp:Panel>
             </td>
             <td>
             </td>

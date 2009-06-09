@@ -32,56 +32,77 @@ namespace SvnIndexTests
     [TestFixture]
     public class IndexerTests
     {
-        readonly string repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
-        readonly IndexSearcher searcher;
+        readonly string _repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+        IndexSearcher _revision21;
 
-        public IndexerTests()
+        IndexSearcher Revision21
+        {
+            get
+            {
+                if (_revision21 == null) _revision21 = new IndexSearcher(CreateIndex(21));
+                return _revision21;
+            }
+        }
+
+        RAMDirectory CreateIndex(int revision)
         {
             var dir = new RAMDirectory();
-            //var dir = FSDirectory.GetDirectory(Path.Combine(Path.GetTempPath(), "DummyIndex")); 
-            //var dir = FSDirectory.GetDirectory(@"d:\testindex");
-            Indexer indexer = new Indexer(new IndexerArgs(new[] {"create", "DummyIndex", repository, "-r21", "-c3", "-n", "Test"}), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-c3", "-n", "Test", "-v4" }), dir);
             indexer.Run();
-            searcher = new IndexSearcher(dir);
+            return dir;
+        }
+
+        RAMDirectory CreateSingleRevisionIndex(int revision)
+        {
+            var dir = new RAMDirectory();
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
+            indexer.Run();
+            return dir;
+        }
+
+        void UpdateSingleRevisionIndex(int revision, RAMDirectory dir)
+        {
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "update", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
+            indexer.Run();
         }
 
         class Range : IComparable<Range>
         {
-            public readonly int First;
-            public readonly int Last;
+            readonly int _first;
+            readonly int _last;
 
             public Range(int first, int last)
             {
-                First = first;
-                Last = last;
+                _first = first;
+                _last = last;
             }
 
             public override bool Equals(object obj)
             {
                 Range other = obj as Range;
-                return other != null && First == other.First && Last == other.Last;
+                return other != null && _first == other._first && _last == other._last;
             }
 
             public override int GetHashCode()
             {
-                return First ^ Last;
+                return _first ^ _last;
             }
 
             public int CompareTo(Range other)
             {
-                return ((IComparable<int>) First).CompareTo(other.First);
+                return ((IComparable<int>) _first).CompareTo(other._first);
             }
 
             public override string ToString()
             {
-                return First + ":" + Last;
+                return _first + ":" + _last;
             }
         }
 
-        List<Range> RevisionOrder(string path)
+        static List<Range> RevisionOrder(string path, IndexSearcher index)
         {
             List<Range> results = new List<Range>();
-            IndexReader r = searcher.Reader;
+            IndexReader r = index.Reader;
             path = path + "@";
 
             var t = r.Terms(new Term(FieldName.Id, path));            
@@ -134,30 +155,31 @@ namespace SvnIndexTests
             Assert.That(RevisionOrder(3, 5, 0, 7, 8), Is.EqualTo(new[] {new Range(3, 4), new Range(7, 7)}));
         }
 
-        [Test]
-        public void Index_HeadRevision20()
+        static void CheckHeadRevision21(IndexSearcher searcher)
         {
-            HashSet<string> headItems = new HashSet<string>();
-            headItems.Add("/");
-            headItems.Add("/CopyWithDeletedFolder");
-            headItems.Add("/CopyWithDeletedFolder/Second");
-            headItems.Add("/CopyWithDeletedFolder/Second/first.txt");
-            headItems.Add("/CopyWithDeletedFolder/Second/second.txt");
-            headItems.Add("/Folder");
-            headItems.Add("/Folder/C#");
-            headItems.Add("/Folder/Second");
-            headItems.Add("/Folder/Second/SvnQuery.dll");
-            headItems.Add("/Folder/Second/first.txt");
-            headItems.Add("/Folder/Second/second.txt");
-            headItems.Add("/Folder/Subfolder");
-            headItems.Add("/Folder/Subfolder/CopiedAndRenamed");
-            headItems.Add("/Folder/Subfolder/CopiedAndRenamed/second.txt");
-            headItems.Add("/Folder/Subfolder/Second");
-            headItems.Add("/Folder/Subfolder/Second/first.txt");
-            headItems.Add("/Folder/Subfolder/Second/second.txt");
-            headItems.Add("/Folder/import");
-            headItems.Add("/Folder/text.txt");
-
+            var headItems = new HashSet<string>
+                                {
+                                    "/",
+                                    "/CopyWithDeletedFolder",
+                                    "/CopyWithDeletedFolder/Second",
+                                    "/CopyWithDeletedFolder/Second/first.txt",
+                                    "/CopyWithDeletedFolder/Second/second.txt",
+                                    "/Folder",
+                                    "/Folder/C#",
+                                    "/Folder/Second",
+                                    "/Folder/Second/SvnQuery.dll",
+                                    "/Folder/Second/first.txt",
+                                    "/Folder/Second/second.txt",
+                                    "/Folder/Subfolder",
+                                    "/Folder/Subfolder/CopiedAndRenamed",
+                                    "/Folder/Subfolder/CopiedAndRenamed/second.txt",
+                                    "/Folder/Subfolder/Second",
+                                    "/Folder/Subfolder/Second/first.txt",
+                                    "/Folder/Subfolder/Second/second.txt",
+                                    "/Folder/import",
+                                    "/Folder/text.txt"
+                                };
+            
             Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)));
             for (int i = 0; i < hits.Length(); ++i)
             {
@@ -165,14 +187,50 @@ namespace SvnIndexTests
                 Assert.That(headItems.Contains(id), id + " should be in head revision");
                 headItems.Remove(id);
             }
-            Assert.That(headItems, Has.Count(0));
+            Assert.AreEqual(0, headItems.Count);            
+        }
+
+        static void CheckIsHeadOnly(IndexSearcher searcher)
+        {
+            TermEnum t = searcher.Reader.Terms(new Term(FieldName.RevisionLast, "0"));
+            Assert.IsNotNull(t);
+            Assert.AreEqual(FieldName.RevisionLast, t.Term().Field());
+            while (t.Term().Field() == FieldName.RevisionLast)
+            {
+                Assert.AreEqual(RevisionFilter.HeadString, t.Term().Text());
+                if (t.Next()) continue;
+            }
+        }
+
+        [Test]
+        public void Index_HeadRevision21()
+        {
+            CheckHeadRevision21(Revision21);
+        }
+
+        [Test]
+        public void IndexSingleRevision_HeadRevision21()
+        {
+            var index = new IndexSearcher(CreateSingleRevisionIndex(21));
+            CheckIsHeadOnly(index);
+            CheckHeadRevision21(index);
+        }
+
+        [Test]
+        public void UpdateIndexSingleRevision_HeadRevision21()
+        {
+            RAMDirectory dir = CreateSingleRevisionIndex(7);
+            UpdateSingleRevisionIndex(21, dir);
+            var index = new IndexSearcher(dir);
+            CheckIsHeadOnly(index);
+            CheckHeadRevision21(index);
         }
 
         [Test]
         public void Index_FolderSecondSecondTxt_ContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Second/second.txt"), 
+                RevisionOrder("/Folder/Second/second.txt", Revision21), 
                 Is.EquivalentTo(RevisionOrder(3, 8, 18, -1)));
         }
 
@@ -180,10 +238,10 @@ namespace SvnIndexTests
         public void Index_CopiedAndRenamed_RevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed"),
+                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed", Revision21),
                 Is.EquivalentTo(RevisionOrder(6, 19)));
             Assert.That(
-               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt"),
+               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt", Revision21),
                Is.EquivalentTo(RevisionOrder(6, 9, 19)));
         }
 
@@ -191,21 +249,23 @@ namespace SvnIndexTests
         public void Index_FolderTextTxt_NonContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/text.txt"),
+                RevisionOrder("/Folder/text.txt", Revision21),
                 Is.EquivalentTo(RevisionOrder(3, 11, 0, 21, -1)));
         }
 
         [Test]
         public void Index_MessageContainsBinary_ExpectedResults()
         {
-            Parser p = new Parser(searcher.Reader);
-            Hits h = searcher.Search(p.Parse("m:binary"));
+            Parser p = new Parser(Revision21.Reader);
+            Hits h = Revision21.Search(p.Parse("m:binary"));
             Assert.That(h.Length(), Is.EqualTo(4));
-            var expected = new HashSet<string>();
-            expected.Add("$Revision 17");
-            expected.Add("/Folder/Second@17");
-            expected.Add("/Folder/import@17");
-            expected.Add("/Folder/Second/SvnQuery.dll@17");
+            var expected = new HashSet<string>
+                           {
+                               "$Revision 17",
+                               "/Folder/Second@17",
+                               "/Folder/import@17",
+                               "/Folder/Second/SvnQuery.dll@17"
+                           };
             for (int i = 0; i < h.Length(); i++)
             {
                 Assert.That(expected, Has.Member(h.Doc(i).Get(FieldName.Id)));

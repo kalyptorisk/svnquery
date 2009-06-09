@@ -26,9 +26,16 @@ namespace App_Code
     /// </summary>
     public static class QueryApplicationIndex
     {
+        static Index _index;
+
         static Index Index
         {
-            get { return (Index) HttpContext.Current.Application["Index"]; }
+            get
+            {
+                if (_index == null) 
+                    _index = (Index) HttpContext.Current.Application["Index"];
+                return _index;
+            }
         }
 
         public static string Name
@@ -42,6 +49,11 @@ namespace App_Code
         public static string LocalUri
         {
             get { return Index.LocalUri; }
+        }
+
+        public static bool IsSingleRevision
+        {
+            get { return Index.IsSingleRevision; }
         }
 
         /// <summary>

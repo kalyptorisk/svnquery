@@ -86,7 +86,11 @@ namespace SvnQuery
         public Change Change;
         public int Revision;
         public string Path;
-        public bool IsCopy; // for Add or Replace: Is this a copy from another path?        
+
+        /// <remarks>
+        ///  for Add or Replace: Is this a copy from another path?        
+        /// </remarks>
+        public bool IsCopy; 
 
         public override string ToString()
         {

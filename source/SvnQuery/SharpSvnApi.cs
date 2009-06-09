@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using SharpSvn;
@@ -159,7 +160,7 @@ namespace SvnQuery
                 data.Changes.Add(new PathChange
                                  {
                                      Change = ConvertActionToChange(item.Action),
-                                     Revision = data.Revision,
+                                     Revision = data.Revision,                                     
                                      Path = item.Path,
                                      IsCopy = item.CopyFromPath != null
                                  });
@@ -189,9 +190,16 @@ namespace SvnQuery
                 client.List(target, args, delegate(object s, SvnListEventArgs e)
                 {
                     if (string.IsNullOrEmpty(e.Path)) return;
-                    // to be compatible with the log output (which has no trailing '/' for directories)
-                    // we need to remove trailing '/' 
-                    action(new PathChange {Change = change, Revision = revision, Path = e.BasePath + "/" + e.Path.TrimEnd('/')});
+
+                    var pc = new PathChange();
+                    {
+                        pc.Change = change;
+                        pc.Revision = revision;
+                        // to be compatible with the log output (which has no trailing '/' for directories)
+                        // we need to remove trailing '/' 
+                        pc.Path = (e.BasePath.EndsWith("/") ? e.BasePath : e.BasePath + "/") + e.Path.TrimEnd('/');
+                    }
+                    action(pc);
                 });
             }
             finally

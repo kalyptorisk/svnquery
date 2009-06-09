@@ -33,6 +33,7 @@ namespace App_Code
         readonly Timer _timer;
         readonly Dictionary<string, CachedQueryResult> _cache = new Dictionary<string, CachedQueryResult>();
         readonly object _sync = new object();
+        readonly bool _isSingleRevision;
 
         IndexSearcher _indexSearcher;
         int _repositoryRevision;
@@ -42,6 +43,7 @@ namespace App_Code
             _index = index;
 
             UpdateIndexSearcher();
+            _isSingleRevision = IndexProperty.GetSingleRevision(_indexSearcher.Reader);
 
             _timer = new Timer(90000); // Check for index updates and cleaning caches
             _timer.Enabled = true;
@@ -62,6 +64,11 @@ namespace App_Code
 
         public string ExternalUri { get { return _externalUri; } }
         string _externalUri;
+
+        public bool IsSingleRevision
+        {
+            get {return _isSingleRevision;}
+        }
 
         // creates and warms up a new IndexSearcher if necessary
         bool UpdateIndexSearcher()
@@ -131,17 +138,17 @@ namespace App_Code
 
             Hits hits;
             Query q = p.Parse(query);
-            if (revFirst == RevisionFilter.HeadString) // Head Query
+            if (IsSingleRevision || revFirst == RevisionFilter.AllString) // All Query
+            {
+                hits = searcher.Search(q);
+            }
+            else if (revFirst == RevisionFilter.HeadString) // Head Query
             {
                 var headQuery = new BooleanQuery();
                 headQuery.Add(q, BooleanClause.Occur.MUST);
                 headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)),
                               BooleanClause.Occur.MUST);
                 hits = searcher.Search(headQuery /*, new Sort("id")*/); // if we need to sort
-            }
-            else if (revFirst == RevisionFilter.AllString) // All Query
-            {
-                hits = searcher.Search(q);
             }
             else // Revision Query
             {

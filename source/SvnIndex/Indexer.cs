@@ -156,6 +156,7 @@ namespace SvnQuery
                 _highestRevision.Reader = reader;
                 startRevision = IndexProperty.GetRevision(reader) + 1;
                 _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
+                if (_args.SingleRevision) Console.WriteLine("SingleRevision index");
                 _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
                 optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             }
@@ -406,15 +407,12 @@ namespace SvnQuery
             }
         }
 
-        int _indexDocumentCounter;
-
         void IndexDocument(IndexJobData data)
         {
-            ++_indexDocumentCounter;
             if (_args.Verbosity == 0 && data.Path[0] == '$')
                 Console.WriteLine("Revision " + data.RevisionFirst);
             else
-                Console.WriteLine("Index {0,8} {1}   {2}:{3}", _indexDocumentCounter, data.Path, data.RevisionFirst, data.RevisionLast);
+                Console.WriteLine("Index {0}   {1}:{2}", data.Path, data.RevisionFirst, data.RevisionLast);
 
             string idText = data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst;
             Term id = _idTerm.CreateTerm(idText);

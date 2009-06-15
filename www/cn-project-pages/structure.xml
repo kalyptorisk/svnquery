@@ -12,5 +12,11 @@
     <directory>Documentation</directory>
     <ordinal>2</ordinal>
   </page>
+  <page>
+    <id>qCaqRj</id>
+    <name>Release Notes</name>
+    <directory>Release Notes</directory>
+    <ordinal>3</ordinal>
+  </page>
 </structure>
 

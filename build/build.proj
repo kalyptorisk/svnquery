@@ -39,7 +39,6 @@
     </ItemGroup>    
     <NUnit Assemblies="@(Tests)" 
            DisableShadowCopy="true" 
-           OutputXmlFile="builds\nunit-results.xml"
            ToolPath="$(MSBuildProjectDirectory)\..\3rdParty\nunit" />
   </Target>
 
@@ -56,27 +55,30 @@
   </Target>
 
   <Target Name="GetPublishFolder" DependsOnTargets="GetVersion">
-    <CreateProperty Value="builds\SvnQuery_$(Version)">
+    <CreateProperty Value="SvnQuery_$(Version)">
       <Output PropertyName="PublishFolder" TaskParameter="Value" />
     </CreateProperty>
   </Target>
 
-  <Target Name="Publish" DependsOnTargets="SetVersion;Build;GetPublishFolder">
+  <Target Name="Publish" DependsOnTargets="GetVersion;SetVersion;Build;GetPublishFolder">
     <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
     <ItemGroup>
       <SvnIndex Include="..\source\SvnIndex\bin\$(Configuration)\*" 
                 Exclude="..\source\SvnIndex\bin\$(Configuration)\*.xml;
+                         ..\source\SvnIndex\bin\$(Configuration)\SharpSvn.pdb;
                          ..\source\SvnIndex\bin\$(Configuration)\*.vshost.exe;" />
     </ItemGroup>
     <RemoveDir Directories="$(PublishFolder)\SvnIndex"/>
     <Copy DestinationFolder="$(PublishFolder)\SvnIndex"         
           SourceFiles="@(SvnIndex);..\source\RunDetached\Release\RunDetached.exe" />
     <!-- SvnWebQuery is build in place, no need to copy it again -->
-
+    
     <ItemGroup>
-      <ZipFiles Include="$(PublishFolder)\**\*" Exclude="**\SharpSvn.pdb; **\*.xml" />
+      <Superfluous Include="$(PublishFolder)\**\bin\SharpSvn.pdb;$(PublishFolder)\**\bin\*.xml" />
     </ItemGroup>
-    <Zip Files="@(ZipFiles)" ZipFileName="..\www\svnquery.zip" ZipLevel="9"/>
+    <Delete Files="..\www\SvnQuery_$(Version).zip;@(Superfluous)" />
+    <Exec Command="..\3rdParty\7zip\7za.exe a ..\www\SvnQuery_$(Version).zip $(PublishFolder) -mx7"/> 
+    
   </Target>
 
 </Project>

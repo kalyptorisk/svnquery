@@ -137,7 +137,7 @@ namespace App_Code
             // don't use the revision filter for head queries or all queries
 
             Hits hits;
-            Query q = p.Parse(query);
+            Lucene.Net.Search.Query q = p.Parse(query);
             if (IsSingleRevision || revFirst == RevisionFilter.AllString) // All Query
             {
                 hits = searcher.Search(q);

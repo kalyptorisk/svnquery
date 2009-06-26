@@ -18,19 +18,13 @@
     <RemoveDir Directories="%(FilesToClean.RelativeDir)" />
     <RemoveDir Directories="$(PublishFolder)" />    
   </Target>
+
   
+
   <Target Name="Build" DependsOnTargets="SetVersion;GetPublishFolder">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
-    <ItemGroup>
-      <SvnQueryFiles Include="..\source\SvnQuery\bin\$(Configuration)\*"/>
-    </ItemGroup>
-    <Copy SourceFiles="@(SvnQueryFiles)" DestinationFolder="..\source\SvnWebQuery\bin"/>
-    <AspNetCompiler PhysicalPath="..\source\SvnWebQuery" 
-                    VirtualPath="/SvnWebQuery" 
-                    TargetPath="$(PublishFolder)\SvnWebQuery"                     
-                    Force="true" />
   </Target>
-
+  
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
 
   <Target Name="RunTests" DependsOnTargets="Build">
@@ -60,8 +54,23 @@
     </CreateProperty>
   </Target>
 
-  <Target Name="Publish" DependsOnTargets="GetVersion;SetVersion;Build;GetPublishFolder">
-    <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
+  <Target Name="PublishSvnWebQuery" DependsOnTargets="GetPublishFolder">
+    <AspNetCompiler PhysicalPath="..\source\SvnWebQuery"
+                VirtualPath="/SvnWebQuery"
+                TargetPath="$(PublishFolder)\SvnWebQuery"
+                Force="true" />
+    <ItemGroup>
+      <Superfluous Include="$(PublishFolder)\SvnWebQuery\*.csproj*" />
+    </ItemGroup>
+
+    <Delete Files="@(Superfluous)"/>
+    <RemoveDir Directories="$(PublishFolder)\SvnWebQuery\obj"/>
+    <RemoveDir Directories="$(PublishFolder)\SvnWebQuery\Properties"/>
+    <RemoveDir Directories="$(PublishFolder)\SvnWebQuery\Code"/>
+
+  </Target>
+  
+  <Target Name="PublishSvnIndex" DependsOnTargets="Build;GetPublishFolder">
     <ItemGroup>
       <SvnIndex Include="..\source\SvnIndex\bin\$(Configuration)\*" 
                 Exclude="..\source\SvnIndex\bin\$(Configuration)\*.xml;
@@ -69,16 +78,20 @@
                          ..\source\SvnIndex\bin\$(Configuration)\*.vshost.exe;" />
     </ItemGroup>
     <RemoveDir Directories="$(PublishFolder)\SvnIndex"/>
-    <Copy DestinationFolder="$(PublishFolder)\SvnIndex"         
-          SourceFiles="@(SvnIndex);..\source\RunDetached\Release\RunDetached.exe" />
-    <!-- SvnWebQuery is build in place, no need to copy it again -->
-    
+    <Copy SourceFiles="@(SvnIndex);..\source\RunDetached\Release\RunDetached.exe" 
+          DestinationFolder="$(PublishFolder)\SvnIndex"   />
+  </Target>
+
+  <Target Name="Publish" DependsOnTargets="GetVersion;SetVersion;PublishSvnIndex;PublishSvnWebQuery" >
+    <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
+
     <ItemGroup>
       <Superfluous Include="$(PublishFolder)\**\bin\SharpSvn.pdb;$(PublishFolder)\**\bin\*.xml" />
     </ItemGroup>
-    <Delete Files="..\www\SvnQuery_$(Version).zip;@(Superfluous)" />
-    <Exec Command="..\3rdParty\7zip\7za.exe a ..\www\SvnQuery_$(Version).zip $(PublishFolder) -mx7"/> 
+    <Delete Files="@(Superfluous);..\www\SvnQuery_$(Version).zip;" />
     
+    <Exec Command="..\3rdParty\7zip\7za.exe a ..\www\SvnQuery_$(Version).zip $(PublishFolder) -mx7"/>
+
   </Target>
 
 </Project>

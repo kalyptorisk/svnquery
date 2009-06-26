@@ -8,8 +8,9 @@
     void Application_Start(object sender, EventArgs e) 
     {
         string indexPath = WebConfigurationManager.AppSettings["IndexPath"];
-        Application["Index"] = new App_Code.Index(indexPath);
-        Application["SvnApi"] = new SvnQuery.SharpSvnApi(App_Code.QueryApplicationIndex.LocalUri);
+        if (Application["Index"] != null) Debugger.Break();
+        Application["Index"] = new Index(indexPath);
+        Application["SvnApi"] = new SvnQuery.SharpSvnApi(QueryApplicationIndex.LocalUri);
     }       
     
     void Application_End(object sender, EventArgs e) 

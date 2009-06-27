@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace SvnWebQuery
 {
     public partial class Query : Page
     {
+        static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         protected override void OnPreRender(EventArgs e)
         {
@@ -51,7 +53,7 @@ namespace SvnWebQuery
                 }            
             }
             _repositoryLabel.Text = QueryApplicationIndex.Name;
-            SvnQueryVersionLabel.Text = IndexProperty.SvnQueryVersion;
+            SvnQueryVersionLabel.Text = Version;
             Title = QueryApplicationIndex.Name + " Search";
         }
 

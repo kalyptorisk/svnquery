@@ -67,7 +67,6 @@
     <Compile Include="Code\Index.cs" />
     <Compile Include="Code\QueryApplicationIndex.cs" />
     <Compile Include="Code\QueryResult.cs" />
-    <Content Include="Global.asax" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.aspx.cs">
       <DependentUpon>Query.aspx</DependentUpon>

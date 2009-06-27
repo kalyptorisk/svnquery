@@ -106,10 +106,5 @@ namespace SvnQuery
             UpdateProperty(writer, SingleRevisionProperty, isSingleRevision.ToString());
         }
 
-        public static string SvnQueryVersion
-        {
-            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
-        }
-
     }
 }

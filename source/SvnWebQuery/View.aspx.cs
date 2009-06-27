@@ -28,6 +28,8 @@ namespace SvnWebQuery
 {
     public partial class View : Page
     {
+        static readonly ISvnApi Svn = new SharpSvnApi(QueryApplicationIndex.LocalUri);
+
         protected void Page_Load(object sender, EventArgs e)
         {
             Hit hit = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
@@ -44,13 +46,11 @@ namespace SvnWebQuery
             revisions.InnerText = hit.RevFirst + " - " + hit.RevLast;
 
             // getting properties from subversion
-            ISvnApi svn = (ISvnApi) Application["SvnApi"];
-
-            message.InnerText = svn.GetLogMessage(revision);
+            message.InnerText = Svn.GetLogMessage(revision);
 
             if (path[0] == '$') return; // Revision Log
 
-            bool binary = InitProperties(svn.GetPathProperties(path, revision));
+            bool binary = InitProperties(Svn.GetPathProperties(path, revision));
 
             if (hit.MaxSize > 512 * 1024)
             {
@@ -62,7 +62,7 @@ namespace SvnWebQuery
             }
             else if (hit.MaxSize > 0)
             {
-                content.InnerText = svn.GetPathContent(path, revision, hit.MaxSize);
+                content.InnerText = Svn.GetPathContent(path, revision, hit.MaxSize);
             }
         }
 

@@ -18,6 +18,7 @@
 
 using System.Collections.Generic;
 using System.Web;
+using System.Web.Configuration;
 
 namespace App_Code
 {
@@ -32,8 +33,10 @@ namespace App_Code
         {
             get
             {
-                if (_index == null) 
-                    _index = (Index) HttpContext.Current.Application["Index"];
+                if (_index == null)
+                {
+                    _index = new Index(WebConfigurationManager.AppSettings["IndexPath"]); 
+                }
                 return _index;
             }
         }

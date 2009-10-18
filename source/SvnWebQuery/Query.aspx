@@ -1,120 +1,73 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="SvnWebQuery.Query" ValidateRequest="false" Codebehind="Query.aspx.cs" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Search</title>
-
-    <script type="text/javascript">
-        function toggleRevisionRange() {
-            var textRevision = document.getElementById('textRevision');
-            var optAll = document.getElementById('optAll');
-            var optHead = document.getElementById('optHead');
-            var toggle = document.getElementById('toggle');     
-            if (textRevision.style.display == "none" ) {
-                textRevision.style.display = "";
-                optGroup.style.display = "none";
-                textRevision.value = "";
-            }
-            else {
-                textRevision.style.display = "none";
-                textRevision.value = "$hidden$";
-                optGroup.style.display = "";
-            }
-        }                    
-    </script>
-
-    <style type="text/css">
-        .style1
-        {
-            text-align: left;
-        }
-    </style>
-
+<title>Repository Search</title>
+<script type="text/javascript" src="Query.js"></script>
+<link href="styles.css" rel="stylesheet" type="text/css" />
 </head>
-<body style="font-family: arial; font-size: 10pt; background-color: #F0F3FF;">
-    <form runat="server" defaultbutton="btnSearch" defaultfocus="txQuery">  
-    <table width="100%">
-    <tr>
-    <td>
-    <table style="margin-left: -3px; padding: 0px">
-        <tr style="margin-bottom: 0px; padding-bottom: 0px">
-            <td style="font-size: 18pt; font-weight: bold; color: #CC6600; font-style: italic;">
-                <asp:Label ID="_repositoryLabel" runat="server">Repository</asp:Label>&nbsp;Search</td>
-            <td style="font-size: 8pt; height: 20; text-align: right; padding-top: 10px" nowrap="nowrap">
-                <asp:Panel ID="_revisionUi" runat="server">
-                <input type="text" style="visibility: hidden; width: 10px;" />
-                <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision</a>
-                <asp:TextBox ID="_textRevision" runat="server" Text="$hidden$" Font-Size="8pt" ToolTip="Enter a revision or a revision range" Width="83px" />
-                <span id="_optGroup" runat="server" style="text-align: right">
-                    <asp:RadioButton ID="_optHead" runat="server" Text="Head" Font-Size="8pt" GroupName="revisionGroup" Checked="True" ToolTip="Search only in head revision" />
-                    <asp:RadioButton ID="_optAll" runat="server" Text="All&nbsp;&nbsp;" Font-Size="8pt" GroupName="revisionGroup" ToolTip="Search in all revisions" />
-                </span>
-                </asp:Panel>
-            </td>
-            <td>
-            </td>
-            <td>
-            </td>
-        </tr>
-        <tr style="margin-top: -4px;">
-            <td colspan="2">
-                <asp:TextBox ID="inputQuery" runat="server" Width="500px" />
-            </td>
-            <td>
-                <asp:Button ID="btnSearch" runat="server" OnClick="OnSearch" Text="Search" />
-            </td>
-            <td style="font-size: 9pt; padding-left: 12px; ">
-                <a href="Help.htm">Help</a>
-            </td>
-        </tr>
-    </table></td>
-    <td valign="top" >
-    <p style="position: relative; float: right; top: 0px; right: -5px; width: 100px; text-align: center; font-style: italic; color:#909090;">
-           <a href="http://svnquery.tigris.org" style="color:#909090"> 
-             <span style="font-size: xx-small;font-weight: bold; " >powered by</span><br/>
-             <span style="font-size: large; font-weight: bold;" >Svn Query</span></a><br />
-             <span style="font-size: xx-small; font-style: normal"><asp:Label ID="SvnQueryVersionLabel" runat="server">0.0.0.0</asp:Label></span> 
-</p>
-    </td>
-    </tr>
-    </table>  
-    <asp:Label ID="messsageLabel" runat="server" />
-    <asp:Panel ID="resultsPanel" runat="server" Visible="False">
-        <table width="100%" style="background-color: #FFCC99; border-top-width: 1px; margin-bottom: 8px; border-top-color: #CC6600; border-top-style: solid;">
-            <tr>
-                <td align="left">
+
+<body>
+    <form runat="server" defaultbutton="_btnSearch" defaultfocus="txQuery">  
+    <div id="headerContainer">
+	  <div id="title">	     
+       <asp:Label ID="_repositoryLabel" runat="server">Repository Search</asp:Label> 
+    </div> 
+	  <div id="queryContainer"> 
+	    <asp:TextBox ID="_inputQuery" runat="server" />
+  	  <asp:Button ID="_btnSearch" runat="server" OnClick="OnSearch" Text="Search" />
+  	  <a href="Help.htm">Help</a>
+	  </div>	  
+  	<div id="revisionContainer" runat="server">
+      <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision:</a>
+      <asp:TextBox id="_revision" runat="server" Text="$hidden$"  ToolTip="Enter a revision or a revision range" />
+      <span id="_optGroup" runat="server">
+        <asp:RadioButton ID="_optHead" runat="server" Text="Head" GroupName="revOptions" Checked="True" ToolTip="Search only in head revision" />
+        <asp:RadioButton ID="_optAll" runat="server" Text="All"  GroupName="revOptions" ToolTip="Search in all revisions" />
+      </span>
+	  </div>
+	</div>
+
+	<div id="poweredByContainer">	  
+	  <div id="powered">powered by</div>
+	  <div id="svnquery"><a href="http://svnquery.tigris.org" style="color:inherit">SvnQuery</a></div>
+	  <div id="version"><asp:Label ID="_version" runat="server">0.0.0.0</asp:Label></div>
+  </div>
+
+  <div id="content">
+    <asp:Label ID="_messsageLabel" runat="server" />
+    <asp:Panel ID="_resultsPanel" runat="server" Visible="False">
+        <div id="resultsSummary" >
+                <div style="float:left;">
                     <asp:Label ID="hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
-                </td>
-                <td align="right">
+                </div>
+                <div style="text-align:right;float:right;">
                     <asp:Label ID="statisticsLabel" runat="server" Text="<span style='color:#808080'>(23440 documents searched in 789ms)</span>" />
-                </td>
-            </tr>
-        </table>
+                </div>
+        </div>
         <asp:ListView ID="listView" runat="server" DataSourceID="dataSource">
             <LayoutTemplate>
                 <div id="itemPlaceholderContainer" runat="server">
-                    <span id="itemPlaceholder" runat="server"></span>
-                </div>
-                <div style="margin-top: 12px;">
-                </div>
+                   <div id="itemPlaceholder" runat="server"></div>
+                </div>               
             </LayoutTemplate>
             <EmptyDataTemplate>
                 -
             </EmptyDataTemplate>
             <ItemTemplate>
-                <div style="margin-top: 3px;">
-                    <a style="" href='<%# Eval("Link") %>'>
+                <p class="hit">
+                    <a href='<%# Eval("Link") %>'>
                         <%# Eval("Path") %></a>
                     <br />
-                    <span style="font-size: 8pt; color: #707060">
+                    <span class="summary">
                         <%# Eval("Summary") %>
                     </span>
-                </div>
+                </p>
             </ItemTemplate>
         </asp:ListView>
-        <p style="word-spacing: 3px" class="style1">
-            <asp:DataPager ID="dataPager" PagedControlID="listView" runat="server" PageSize="20">
+        <p>
+            <asp:DataPager ID="_dataPager" PagedControlID="listView" runat="server" PageSize="20">
                 <Fields>
                     <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
                     <asp:NumericPagerField />
@@ -135,6 +88,7 @@
     <asp:HiddenField ID="query" runat="server" />
     <asp:HiddenField ID="revFirst" runat="server" />
     <asp:HiddenField ID="revLast" runat="server" />
+    </div>
     </form>
 </body>
 </html>

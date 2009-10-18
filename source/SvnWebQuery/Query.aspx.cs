@@ -33,33 +33,33 @@ namespace SvnWebQuery
         protected override void OnPreRender(EventArgs e)
         {
             base.OnPreRender(e);
-            inputQuery.Text = query.Value;
+            _inputQuery.Text = query.Value;
 
             if (QueryApplicationIndex.IsSingleRevision)
             {
-                _revisionUi.Visible = false;
+                revisionContainer.Visible = false;
             }
             else
             {
-                if (_textRevision.Text == "$hidden$")
+                if (_revision.Text == "$hidden$")
                 {
-                    _textRevision.Style[HtmlTextWriterStyle.Display] = "none";
+                    _revision.Style[HtmlTextWriterStyle.Display] = "none";
                     _optGroup.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
                 {
-                    _textRevision.Style[HtmlTextWriterStyle.Display] = "";
+                    _revision.Style[HtmlTextWriterStyle.Display] = "";
                     _optGroup.Style[HtmlTextWriterStyle.Display] = "none";
                 }            
             }
             _repositoryLabel.Text = QueryApplicationIndex.Name;
-            SvnQueryVersionLabel.Text = Version;
+            _version.Text = Version;
             Title = QueryApplicationIndex.Name + " Search";
         }
 
         protected void OnSearch(object sender, EventArgs e)
         {
-            string queryText = inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
+            string queryText = _inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
             if (string.IsNullOrEmpty(queryText)) return;
             query.Value = queryText;
 
@@ -76,25 +76,25 @@ namespace SvnWebQuery
                     string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",
                                   r.SearchCount, r.SearchTime, r.IndexRevision);
 
-                dataPager.Visible = (dataPager.MaximumRows < r.HitCount);
+                _dataPager.Visible = (_dataPager.MaximumRows < r.HitCount);
                 // Reset to page 0
-                dataPager.SetPageProperties(0, dataPager.MaximumRows, true);
-                resultsPanel.Visible = true;
-                messsageLabel.Visible = false;
+                _dataPager.SetPageProperties(0, _dataPager.MaximumRows, true);
+                _resultsPanel.Visible = true;
+                _messsageLabel.Visible = false;
             }
             catch (Exception x)
             {
-                messsageLabel.Text =
+                _messsageLabel.Text =
                     "An error occured. Most probably your query has some wildcards that lead to too many results. Try narrowing down your query.</br></br><b>Details: </b>" +
                     "<pre>" + x + "</pre>";
-                resultsPanel.Visible = false;
-                messsageLabel.Visible = true;
+                _resultsPanel.Visible = false;
+                _messsageLabel.Visible = true;
             }
         }
 
         Pair GetRevisionRange()
         {
-            string text = _textRevision.Text.ToLowerInvariant();
+            string text = _revision.Text.ToLowerInvariant();
             if (text == "$hidden$")
             {
                 return new Pair
@@ -116,7 +116,7 @@ namespace SvnWebQuery
             if (text.Contains("all"))
             {
                 first = last = RevisionFilter.All;
-                _textRevision.Text = "all";
+                _revision.Text = "all";
             }
             else if (text.Contains("head") || first < 0)
             {
@@ -124,11 +124,11 @@ namespace SvnWebQuery
                 if (first < 0)
                 {
                     first = last;
-                    _textRevision.Text = "head";
+                    _revision.Text = "head";
                 }
                 else
                 {
-                    _textRevision.Text = first + " : head";
+                    _revision.Text = first + " : head";
                 }
             }
             else if (first > 0)
@@ -139,8 +139,8 @@ namespace SvnWebQuery
                     first = last;
                     last = swap;
                 }
-                _textRevision.Text = first.ToString();
-                if (last > 0) _textRevision.Text += " : " + last;
+                _revision.Text = first.ToString();
+                if (last > 0) _revision.Text += " : " + last;
             }
             return new Pair(first, last > 0 ? last : first);
         }

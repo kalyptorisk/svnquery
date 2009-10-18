@@ -59,6 +59,8 @@
   <ItemGroup>
     <Content Include="Help.htm" />
     <Content Include="Query.aspx" />
+    <Content Include="Query.js" />
+    <Content Include="styles.css" />
     <Content Include="View.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>

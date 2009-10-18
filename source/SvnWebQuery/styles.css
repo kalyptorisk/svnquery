@@ -1,0 +1,97 @@
+﻿body{
+  position:absolute;
+  min-width:45em;
+  top:10px;
+  left:10px;
+  right:10px;
+  margin:0px;
+  padding:0px;
+  font-family: arial; 
+  font-size: 10pt; 
+  background-color:#F0F3FF;  
+}
+
+#content {
+  margin:0px;
+  margin-top:10px;
+  padding:0px;
+  width:100%;
+}
+#_resultsPanel {
+  width:100%;
+  margin:0px;
+  padding:0px;
+}
+#headerContainer {  
+  margin:0px;
+  margin-right:10em;
+  width:auto;
+}
+#title {
+  font-size:18pt; font-weight:bold; color:#CC6600; font-style:italic;
+}
+#revisionContainer{
+  position: absolute;
+  top:1.45em;
+  left: 0px;
+  font-size:8pt;
+  text-align: right;
+  white-space: nowrap;
+  width:486px;
+}
+#_revision{
+  font-size:8pt;height:1.2em;width:7.2em;
+}
+#_optGroup
+{
+    margin-right:4px;
+}
+#queryContainer{
+  margin-top: 10px;  
+}
+#_inputQuery{
+  width:480px;
+}
+#_btnSearch{
+  margin-right:6px;
+}
+#poweredByContainer {
+  position:absolute;
+  right:0px;
+  top:0px;
+  width:auto;
+  margin:0px;
+  padding:0px;
+  color:#3333FF;
+  font-style: italic;
+  text-align: center;
+}
+#powered{
+  font-size:x-small; font-weight:bold;
+}
+#svnquery{
+  font-size: large; font-weight: bold;
+}
+#version {
+  margin-top:3px;
+  font-size: x-small; font-style: normal;
+}
+#resultsSummary {
+    width:100%;
+    padding: 2px 4px;
+    margin-bottom: 8px;
+    background-color: #FFCC99; 
+    border-top-width: 1px; 
+    overflow:auto; 
+    border-top-color: #CC6600; 
+    border-top-style: solid;
+}
+.hit 
+{
+  margin:3px auto;    
+}
+.summary {
+  font-size: 8pt; 
+  color: #707060;
+}
+

@@ -111,11 +111,11 @@ namespace App_Code
             get
             {
                 string summary = Author + ": &nbsp;" + LastModification;
-                summary += "&nbsp; - &nbsp" + RevFirst + ":" + RevLast;
+                summary += "&nbsp; - &nbsp;" + RevFirst + ":" + RevLast;
 
                 string size = Size;
                 if (!string.IsNullOrEmpty(size))
-                    summary += "&nbsp; - &nbsp" + size;
+                    summary += "&nbsp; - &nbsp;" + size;
 
                 return summary;
             }

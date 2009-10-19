@@ -1,8 +1,5 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />﻿ <style>    /* <![CDATA[ */   @import "http://www.tigris.org/branding/css/tigris.css";   @import "http://www.tigris.org/branding/css/inst.css";   /*  ]]> */   
-.style1 {
-	color: #0066CC;
-}
-</style><meta http-equiv="Content-Language" content="en-gb" /><meta name="keywords" content="Subversion, Fulltext, Full text search, Search, Query, Index, Lucene" /><meta name="description" content="SvnQuery, full text search for Subversion" /><p>SvnQuery is a fast full text search engine for subversion repositories. It searches every file in every revision. Not only the content of a file is indexed, but also its complete metadata like path, author, comments and properties. A simple, Google-like web frontend is provided, but it is hoped that the query library and indexing mechanism can be reused in other frontends, e.g. a web service or a Visual Studio Plug-In.</p><p>SvnQuery is implemented in C# 3.0 and ASP.NET is used for the web frontend. The full text search is done by Lucene.Net which delivers an astonishing search speed.</p><p>The interface to subversion is isolated so that the svn command line client or something like SharpSvn can be used as an implementation. Porting to Java using the original implementation of Lucene should be easy. </p><h3>Download Demo</h3><p>Download a self running demo of SvnWebQuery with an already created index. As a prerequisite you need the <a href="http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=333325fd-ae52-4e35-b531-508d977d32a6">.Net Framework 3.5</a>. Start SvnQueryDemo.exe to open the web ui for querying the index. If you want to recreate or update the index look into index_create.cmd and index_update.cmd. Note that because of their size the downloads are hosted on atombrenner.de. 
+																	   </style><meta http-equiv="Content-Language" content="en-gb" /><meta name="keywords" content="Subversion, Fulltext, Full text search, Search, Query, Index, Lucene" /><meta name="description" content="SvnQuery, full text search for Subversion" /><p>SvnQuery is a fast full text search engine for subversion repositories. It searches every file in every revision. Not only the content of a file is indexed, but also its complete metadata like path, author, comments and properties. A simple, Google-like web frontend is provided, but it is hoped that the query library and indexing mechanism can be reused in other frontends, e.g. a web service or a Visual Studio Plug-In.</p><p>SvnQuery is implemented in C# 3.0 and ASP.NET is used for the web frontend. The full text search is done by Lucene.Net which delivers an astonishing search speed.</p><p>The interface to subversion is isolated so that the svn command line client or something like SharpSvn can be used as an implementation. Porting to Java using the original implementation of Lucene should be easy. </p><h3>Download Demo</h3><p>Download a self running demo of SvnWebQuery with an already created index. As a prerequisite you need the <a href="http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=333325fd-ae52-4e35-b531-508d977d32a6">.Net Framework 3.5</a>. Start SvnQueryDemo.exe to open the web ui for querying the index. If you want to recreate or update the index look into index_create.cmd and index_update.cmd. Note that because of their size the downloads are hosted on atombrenner.de. 
 See the <a href="http://svnquery.tigris.org/servlets/ProjectProcess?pageID=g8GcCC">Demo Quickstart</a></p><ul><li><a href="http://www.atombrenner.de/downloads/SvnQueryDemo_Subversion.zip">SvnWebQuery with an index of 
 	the subversion repository up to revision 10000 (55MB)</a></li>
 	<li>
@@ -12,7 +9,7 @@ See the <a href="http://svnquery.tigris.org/servlets/ProjectProcess?pageID=g8GcC
 Download Release</h3>
 <p>You can download the latest stable release from here:</p>
 <ul>
-	<li><a href="http://svnquery.tigris.org/SvnQuery_0.7.0.0.zip">SvnQuery Version 0.7.0.0</a></li>
+	<li><a href="http://svnquery.tigris.org/SvnQuery_0.7.1.0.zip">SvnQuery Version 0.7.1.0</a></li>
 </ul>
 <p>The
 <a href="http://svnquery.tigris.org/servlets/ProjectProcess?pageID=o0dpdE">
@@ -24,9 +21,13 @@ found in the
 <p>Visit the <a href="http://svnquery.tigris.org/wiki/FrontPage">Wiki</a> if you 
 like to modify the source or contribute to the development.</p>
 <h3>Roadmap</h3>
-<p>The current version 0.7 is feature complete, well tested and working in a real life environment. 
-The only missing feature is some kind of syntax highlighting for common languages (at 
-least C, C++, C#, Java, Python, Xml). We are still searching for other open 
-source projects that could do the job, but theiy are either not capable of 
-highlighting big files (&gt;30KB) or are not usable in an ASP.NET environment.</p>
+<p>The current version 0.7.1.0 is feature complete, well tested and working in a real life environment. 
+</p>
+<ul>
+  <li><strong>0.8</strong>: optional browser based <a href="http://alexgorbatchev.com/wiki/SyntaxHighlighter/">syntax 
+  highlighting</a>&nbsp; </li>
+  <li><strong>1.0</strong>: encode the query inside the url so you can link/mail a search result</li>
+  <li><strong>2.0</strong>: rewrite the indexer so that copies can be stored native inside the index. This would allow 
+  cheap indexing of tags and branches.</li>
+</ul>
 <h3>Related resources</h3><ul><li><a href="http://subversion.tigris.org/">Subversion</a> - a great version control system</li><li><a href="http://incubator.apache.org/projects/lucene.net.html">Lucene.Net</a> - the full text search engine behind SVN Query </li><li><a href="http://sharpsvn.open.collab.net/">SharpSVN</a> - C# API for Subversion</li></ul>

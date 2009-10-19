@@ -1,4 +1,4 @@
-﻿body{
+﻿body {
   position:absolute;
   min-width:45em;
   top:10px;
@@ -10,7 +10,6 @@
   font-size: 10pt; 
   background-color:#F0F3FF;  
 }
-
 #content {
   margin:0px;
   margin-top:10px;
@@ -28,31 +27,49 @@
   width:auto;
 }
 #title {
-  font-size:18pt; font-weight:bold; color:#CC6600; font-style:italic;
+  font-size:18pt; 
+  font-weight:bold; 
+  color:#CC6600; 
+  font-style:italic;
 }
-#revisionContainer{
+#revisionContainer {
   position: absolute;
-  top:1.45em;
-  left: 0px;
+  top:17px;
+  left:0px;
+  width:485px;
+  height:19px;
+  font-size:8pt;  
+}
+#revisionToggle {
+  position:absolute;
+  right:8em;
+  top:4px;
+}
+#_revisionRange {
+  position:absolute;
+  right:0px;
   font-size:8pt;
-  text-align: right;
-  white-space: nowrap;
-  width:486px;
+  height:1.3em;
 }
-#_revision{
-  font-size:8pt;height:1.2em;width:7.2em;
+#_revision {
+  font-size:8pt;
+  height:1.3em;
+  width:7.2em; 
 }
-#_optGroup
-{
-    margin-right:4px;
+#_revisionOptions {
+  position :absolute;
+  right :4px;
+  font-size:8pt;   
+  height:1.3em;
+  width:7.5em;
 }
-#queryContainer{
+#queryContainer {
   margin-top: 10px;  
 }
-#_inputQuery{
+#_inputQuery {
   width:480px;
 }
-#_btnSearch{
+#_btnSearch {
   margin-right:6px;
 }
 #poweredByContainer {
@@ -66,15 +83,18 @@
   font-style: italic;
   text-align: center;
 }
-#powered{
-  font-size:x-small; font-weight:bold;
+#powered {
+  font-size:x-small; 
+  font-weight:bold;
 }
-#svnquery{
-  font-size: large; font-weight: bold;
+#svnquery {
+  font-size: large; 
+  font-weight: bold;
 }
 #version {
   margin-top:3px;
-  font-size: x-small; font-style: normal;
+  font-size: x-small; 
+  font-style: normal;
 }
 #resultsSummary {
     width:100%;
@@ -86,8 +106,7 @@
     border-top-color: #CC6600; 
     border-top-style: solid;
 }
-.hit 
-{
+.hit {
   margin:3px auto;    
 }
 .summary {

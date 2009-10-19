@@ -20,12 +20,16 @@
   	  <a href="Help.htm">Help</a>
 	  </div>	  
   	<div id="revisionContainer" runat="server">
-      <a id="toggle" href="#" onclick="toggleRevisionRange()">Revision:</a>
-      <asp:TextBox id="_revision" runat="server" Text="$hidden$"  ToolTip="Enter a revision or a revision range" />
-      <span id="_optGroup" runat="server">
-        <asp:RadioButton ID="_optHead" runat="server" Text="Head" GroupName="revOptions" Checked="True" ToolTip="Search only in head revision" />
-        <asp:RadioButton ID="_optAll" runat="server" Text="All"  GroupName="revOptions" ToolTip="Search in all revisions" />
-      </span>
+  	    <div id="revisionToggle"> 
+  	      <a href="javascript:toggleRevisionRange()" >Revision:</a>
+  	      </div>  	
+        <div id="_revisionRange">
+          <asp:TextBox id="_revision" runat="server" Text="$hidden$"  ToolTip="Enter a revision or a revision range" />
+          </div>
+        <div id="_revisionOptions" runat="server">
+          <asp:RadioButton ID="_optHead" runat="server" Text="Head" GroupName="revOptions" Checked="True" ToolTip="Search only in head revision" />
+          <asp:RadioButton ID="_optAll" runat="server" Text="All"  GroupName="revOptions" ToolTip="Search in all revisions" />
+        </div>
 	  </div>
 	</div>
 
@@ -42,8 +46,8 @@
                 <div style="float:left;">
                     <asp:Label ID="hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
                 </div>
-                <div style="text-align:right;float:right;">
-                    <asp:Label ID="statisticsLabel" runat="server" Text="<span style='color:#808080'>(23440 documents searched in 789ms)</span>" />
+                <div style="text-align:right;float:right;color:#808080">
+                    <asp:Label ID="statisticsLabel" runat="server" Text="(23440 documents searched in 789ms)" />
                 </div>
         </div>
         <asp:ListView ID="listView" runat="server" DataSourceID="dataSource">

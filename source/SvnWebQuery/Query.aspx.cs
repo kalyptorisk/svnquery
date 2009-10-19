@@ -44,17 +44,17 @@ namespace SvnWebQuery
                 if (_revision.Text == "$hidden$")
                 {
                     _revision.Style[HtmlTextWriterStyle.Display] = "none";
-                    _optGroup.Style[HtmlTextWriterStyle.Display] = "";
+                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
                 {
                     _revision.Style[HtmlTextWriterStyle.Display] = "";
-                    _optGroup.Style[HtmlTextWriterStyle.Display] = "none";
+                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "none";
                 }            
             }
-            _repositoryLabel.Text = QueryApplicationIndex.Name;
-            _version.Text = Version;
             Title = QueryApplicationIndex.Name + " Search";
+            _repositoryLabel.Text = Title;
+            _version.Text = Version;
         }
 
         protected void OnSearch(object sender, EventArgs e)

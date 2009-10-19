@@ -1,6 +1,6 @@
 ﻿function toggleRevisionRange() {
     var revision = document.getElementById('_revision');
-    var optGroup = document.getElementById('_optGroup');
+    var optGroup = document.getElementById('_revisionOptions');
     if (revision.style.display == "none") {
         revision.style.display = "";
         optGroup.style.display = "none";

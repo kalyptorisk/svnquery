@@ -57,6 +57,7 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="default.htm" />
     <Content Include="Help.htm" />
     <Content Include="Query.aspx" />
     <Content Include="Query.js" />

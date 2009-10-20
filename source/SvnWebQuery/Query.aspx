@@ -73,9 +73,9 @@
         <p>
             <asp:DataPager ID="_dataPager" PagedControlID="listView" runat="server" PageSize="20">
                 <Fields>
-                    <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
+                    <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" FirstPageText="First"  />
                     <asp:NumericPagerField />
-                    <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" RenderDisabledButtonsAsLabels="True" />
+                    <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" LastPageText="LastTTT"/>
                 </Fields>
             </asp:DataPager>                       
         </p>

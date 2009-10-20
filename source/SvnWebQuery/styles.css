@@ -11,19 +11,15 @@
   background-color:#F0F3FF;  
 }
 #content {
-  margin:0px;
-  margin-top:10px;
-  padding:0px;
   width:100%;
 }
-#_resultsPanel {
+#_resultsPanel {    
   width:100%;
-  margin:0px;
-  padding:0px;
 }
 #headerContainer {  
   margin:0px;
   margin-right:10em;
+  margin-bottom:10px;
   width:auto;
 }
 #title {
@@ -36,13 +32,13 @@
   position: absolute;
   top:17px;
   left:0px;
-  width:485px;
+  width:480px;
   height:19px;
   font-size:8pt;  
 }
 #revisionToggle {
   position:absolute;
-  right:8em;
+  right:94px;
   top:4px;
 }
 #_revisionRange {
@@ -50,18 +46,19 @@
   right:0px;
   font-size:8pt;
   height:1.3em;
+  width:90px;
 }
 #_revision {
   font-size:8pt;
   height:1.3em;
-  width:7.2em; 
+  width:90px; 
 }
 #_revisionOptions {
   position :absolute;
-  right :4px;
+  right:0px;
   font-size:8pt;   
   height:1.3em;
-  width:7.5em;
+  width:90px;
 }
 #queryContainer {
   margin-top: 10px;  
@@ -74,12 +71,13 @@
 }
 #poweredByContainer {
   position:absolute;
-  right:0px;
-  top:0px;
+  right:1px;
+  top:1px;
   width:auto;
+  overflow:hidden;
   margin:0px;
   padding:0px;
-  color:#3333FF;
+  color:#77E;
   font-style: italic;
   text-align: center;
 }
@@ -88,13 +86,14 @@
   font-weight:bold;
 }
 #svnquery {
-  font-size: large; 
-  font-weight: bold;
+  font-size:large; 
+  font-weight:bold;
 }
 #version {
   margin-top:3px;
-  font-size: x-small; 
-  font-style: normal;
+  font-size:x-small; 
+  font-style:normal;
+  font-weight:bold;
 }
 #resultsSummary {
     width:100%;

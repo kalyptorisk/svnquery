@@ -68,7 +68,7 @@ namespace SvnQuery
                 while (t.Term().Field() == FieldName.RevisionLast)
                 {
                     d.Seek(t);
-                    do last_bits[d.Doc()] = true; while (d.Next());
+                    while(d.Next()) last_bits[d.Doc()] = true;                     
                     if (!t.Next()) break;
                 }
             }
@@ -85,7 +85,7 @@ namespace SvnQuery
                 while (t.Term().Field() == "rev_first")
                 {
                     d.Seek(t);
-                    do first_bits[d.Doc()] = false; while (d.Next());
+                    while (d.Next()) first_bits[d.Doc()] = false; 
                     if (!t.Next()) break;
                 }
             }

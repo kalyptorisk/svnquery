@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 namespace SvnWebQuery
@@ -64,8 +65,11 @@ namespace SvnWebQuery
 
             for (int i = 0; i <= BrushToExtensions.GetUpperBound(0); ++i)
             {
-                if (Regex.IsMatch(ext, "^" + BrushToExtensions[i, 1] + "$", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(ext, "^(" + BrushToExtensions[i, 1] + ")$", RegexOptions.IgnoreCase))
+                {
                     _brush = BrushToExtensions[i, 0];
+                    break;
+                }
             }
         }
 

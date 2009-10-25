@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using App_Code;
@@ -30,18 +31,6 @@ namespace SvnWebQuery
     {
         static readonly ISvnApi Svn = new SharpSvnApi(QueryApplicationIndex.LocalUri);
 
-        public View()
-        {
-            ClientScript.RegisterClientScriptInclude("bla", "scripts/shBrushCSharp.js");
-            ClientScript.RegisterStartupScript(this.GetType(), "init",
-
-                  @"<script type='text/javascript'>
-		SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf'; 
-		SyntaxHighlighter.all();
-	</script>");
-        }
-
-     
         protected void Page_Load(object sender, EventArgs e)
         {
             Hit hit = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
@@ -96,9 +85,16 @@ namespace SvnWebQuery
 
         void AddStartupScript()
         {
+            StringBuilder code = new StringBuilder();
+            code.Append("SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';");
+            code.Append("SyntaxHighlighter.defaults['gutter'] = true;");
+            code.Append("SyntaxHighlighter.defaults['wrap-lines'] = false;");
+            code.Append("SyntaxHighlighter.defaults['auto-links'] = false;");
+            code.Append("SyntaxHighlighter.all();");
+
             var script = new HtmlGenericControl("script");
-            script.Attributes.Add("type", "text/javascript");
-            script.InnerHtml = "SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';SyntaxHighlighter.all();";            
+            script.Attributes.Add("type", "text/javascript");            
+            script.InnerHtml = code.ToString();            
             Header.Controls.Add(script);
         }
 

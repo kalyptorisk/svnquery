@@ -31,6 +31,8 @@
         </tr>
     </table>
     <p id="_contentWarning" runat="server" style="font-style:italic; color:Gray"></p>
-    <pre id="_content" runat="server"></pre>
+    
+    <pre id="_content" runat="server" style="font-family:Consolas,Courier New;"></pre>
+    
 </body>
 </html>

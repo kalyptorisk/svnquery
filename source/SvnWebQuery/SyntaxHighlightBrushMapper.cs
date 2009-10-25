@@ -30,11 +30,30 @@ namespace SvnWebQuery
         // script <- class <- extension 
         static readonly string[,] BrushToExtensions =
             {
+                {"AS3", "as3"},
+                //{"Bash", "bash"},
+                {"ColdFusion", "(cfm)|(cfml)"},
+                {"Cpp", "(c)|(h)|(hpp)|(cpp)|(inl)"},
                 {"CSharp", "cs"},
-                {"Cpp",   "(c)|(h)|(hpp)|(cpp)|(inl)" },
-                {"JScript",  "js"},
-                {"Python",  "py"},
-                {"Xml", "(.*ml)|(.*proj)|(targets)", },
+                {"Css", "css"},
+                {"Delphi", "pas"},
+                {"Diff", "(diff)|(patch)"},
+                {"Erlang", ".rl"},
+                {"Groovy", "groovy"},
+                {"Java", "java"},
+                {"JavaFX", "jvx"},
+                {"JScript", "js"},
+                {"Perl", "(perl)|(pl)"},
+                {"Php", "php"},
+                {"PowerShell", "ps1"},
+                {"Python", "py"},
+                {"Ruby", "(rb)|(ruby)"},
+                {"Scala", "(scl)|(scala)"},
+                {"Sql", "sql"},
+                {"Vb", "vb"},
+                {"Xml", "(.*ml)|(.*proj)|(targets)"}, // interpreting msbuild projects and targets as xml
+
+                {"Plain", ".*"}, // matches everything, must be the last in the list
             };
 
         readonly string _brush;
@@ -43,7 +62,7 @@ namespace SvnWebQuery
         {
             string ext = path.Substring(path.LastIndexOf('.') + 1);
 
-            for (int i = 0; i < BrushToExtensions.GetUpperBound(0); ++i)
+            for (int i = 0; i <= BrushToExtensions.GetUpperBound(0); ++i)
             {
                 if (Regex.IsMatch(ext, "^" + BrushToExtensions[i, 1] + "$", RegexOptions.IgnoreCase))
                     _brush = BrushToExtensions[i, 0];
@@ -75,6 +94,5 @@ namespace SvnWebQuery
             if (_brush == null) return "";
             return "shBrush" + _brush + ".js";
         }
-
     }
 }

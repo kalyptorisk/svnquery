@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using App_Code;
@@ -36,17 +37,17 @@ namespace SvnWebQuery
             string path = hit.Path;
             int revision = hit.Revision;
 
-            // getting properties from the index
+            // getting _properties from the index
             Title = path.Substring(path.LastIndexOf('/') + 1);
-            header.InnerText = path;
-            author.InnerText = hit.Author;
-            modified.InnerText = hit.LastModification;
-            if (hit.MaxSize > 0) size.InnerText = hit.Size;
-            else sizeRow.Visible = false;
-            revisions.InnerText = hit.RevFirst + " - " + hit.RevLast;
+            _header.InnerText = path;
+            _author.InnerText = hit.Author;
+            _modified.InnerText = hit.LastModification;
+            if (hit.MaxSize > 0) _size.InnerText = hit.Size;
+            else _sizeRow.Visible = false;
+            _revisions.InnerText = hit.RevFirst + " - " + hit.RevLast;
 
-            // getting properties from subversion
-            message.InnerText = Svn.GetLogMessage(revision);
+            // getting _properties from subversion
+            _message.InnerText = Svn.GetLogMessage(revision);
 
             if (path[0] == '$') return; // Revision Log
 
@@ -54,18 +55,48 @@ namespace SvnWebQuery
 
             if (hit.MaxSize > 512 * 1024)
             {
-                contentWarning.InnerText = "Content size is too big to display";
+                _contentWarning.InnerText = "Content size is too big to display";
             }
             else if (binary)
             {
-                contentWarning.InnerText = "Content type is binary";
+                _contentWarning.InnerText = "Content type is binary";
             }
             else if (hit.MaxSize > 0)
             {
-                content.InnerText = Svn.GetPathContent(path, revision, hit.MaxSize);
+                _content.InnerText = Svn.GetPathContent(path, revision, hit.MaxSize);
+
+                var syntaxHighlighter = new SyntaxHighlightBrushMapper(path);
+                if (syntaxHighlighter.IsAvailable)
+                {
+                    AddScriptInclude(syntaxHighlighter.GetScript());
+                    AddStartupScript();
+                   _content.Attributes.Add("class", syntaxHighlighter.GetClass());
+                }
             }
         }
 
+        void AddScriptInclude(string src)
+        {
+            var script = new HtmlGenericControl("script");
+            script.Attributes.Add("type", "text/javascript");
+            script.Attributes.Add("src", "scripts/" + src);
+            Header.Controls.Add(script);
+        }
+
+        void AddStartupScript()
+        {
+            StringBuilder code = new StringBuilder();
+            code.Append("SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';");
+            code.Append("SyntaxHighlighter.defaults['gutter'] = true;");
+            code.Append("SyntaxHighlighter.defaults['wrap-lines'] = false;");
+            code.Append("SyntaxHighlighter.defaults['auto-links'] = false;");
+            code.Append("SyntaxHighlighter.all();");
+
+            var script = new HtmlGenericControl("script");
+            script.Attributes.Add("type", "text/javascript");            
+            script.InnerHtml = code.ToString();            
+            Header.Controls.Add(script);
+        }
 
         /// <summary>
         /// returns true if the mime type is not binary
@@ -88,7 +119,7 @@ namespace SvnWebQuery
                 row.Cells.Add(key);
                 row.Cells.Add(value);
 
-                properties.Rows.Add(row);
+                _properties.Rows.Add(row);
 
                 if (item.Key == "svn:mime-type" && !item.Value.StartsWith("text"))
                     binary = true;

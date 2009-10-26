@@ -113,22 +113,22 @@ namespace SvnWebQuery {
         protected global::System.Web.UI.WebControls.Panel _resultsPanel;
         
         /// <summary>
-        /// hitsLabel control.
+        /// _hitsLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label hitsLabel;
+        protected global::System.Web.UI.WebControls.Label _hitsLabel;
         
         /// <summary>
-        /// statisticsLabel control.
+        /// _statisticsLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label statisticsLabel;
+        protected global::System.Web.UI.WebControls.Label _statisticsLabel;
         
         /// <summary>
         /// listView control.
@@ -176,30 +176,30 @@ namespace SvnWebQuery {
         protected global::System.Web.UI.WebControls.ObjectDataSource dataSource;
         
         /// <summary>
-        /// query control.
+        /// _query control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField query;
+        protected global::System.Web.UI.WebControls.HiddenField _query;
         
         /// <summary>
-        /// revFirst control.
+        /// _revFirst control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField revFirst;
+        protected global::System.Web.UI.WebControls.HiddenField _revFirst;
         
         /// <summary>
-        /// revLast control.
+        /// _revLast control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField revLast;
+        protected global::System.Web.UI.WebControls.HiddenField _revLast;
     }
 }

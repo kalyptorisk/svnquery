@@ -33,7 +33,7 @@ namespace SvnWebQuery
         protected override void OnPreRender(EventArgs e)
         {
             base.OnPreRender(e);
-            _inputQuery.Text = query.Value;
+            _inputQuery.Text = _query.Value;
 
             if (QueryApplicationIndex.IsSingleRevision)
             {
@@ -61,18 +61,18 @@ namespace SvnWebQuery
         {
             string queryText = _inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
             if (string.IsNullOrEmpty(queryText)) return;
-            query.Value = queryText;
+            _query.Value = queryText;
 
             try
             {
                 Pair p = GetRevisionRange();
-                revFirst.Value = p.First.ToString();
-                revLast.Value = p.Second.ToString();
+                _revFirst.Value = p.First.ToString();
+                _revLast.Value = p.Second.ToString();
 
-                QueryResult r = QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value);
-                string htmlQuery = Server.HtmlEncode(query.Value);
-                hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
-                statisticsLabel.Text =
+                QueryResult r = QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
+                string htmlQuery = Server.HtmlEncode(_query.Value);
+                _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
+                _statisticsLabel.Text =
                     string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",
                                   r.SearchCount, r.SearchTime, r.IndexRevision);
 
@@ -85,7 +85,7 @@ namespace SvnWebQuery
             catch (Exception x)
             {
                 _messsageLabel.Text =
-                    "An error occured. Most probably your query has some wildcards that lead to too many results. Try narrowing down your query.</br></br><b>Details: </b>" +
+                    "An error occured. Most probably your _query has some wildcards that lead to too many results. Try narrowing down your _query.</br></br><b>Details: </b>" +
                     "<pre>" + x + "</pre>";
                 _resultsPanel.Visible = false;
                 _messsageLabel.Visible = true;
@@ -152,7 +152,7 @@ namespace SvnWebQuery
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
-            foreach (Hit hit in QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value))
+            foreach (Hit hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
             }        
@@ -170,7 +170,7 @@ namespace SvnWebQuery
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
 
-            foreach (Hit hit in QueryApplicationIndex.Query(query.Value, revFirst.Value, revLast.Value))
+            foreach (Hit hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(QueryApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
             }

@@ -44,17 +44,18 @@
     <asp:Panel ID="_resultsPanel" runat="server" Visible="False">
         <div id="resultsSummary" >
                 <div style="float:left;">
-                    <asp:Label ID="hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
+                    <asp:Label ID="_hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
                 </div>
                 <div style="text-align:right;float:right;color:#808080">
-                    <asp:Label ID="statisticsLabel" runat="server" Text="(23440 documents searched in 789ms)" />
+                    <asp:Label ID="_statisticsLabel" runat="server" Text="(23440 documents searched in 789ms)" />
                 </div>
         </div>
         <asp:ListView ID="listView" runat="server" DataSourceID="dataSource">
             <LayoutTemplate>
+                <!-- don't resharp these names, they are used by ASP.NET  -->
                 <div id="itemPlaceholderContainer" runat="server">
                    <div id="itemPlaceholder" runat="server"></div>
-                </div>               
+                </div>
             </LayoutTemplate>
             <EmptyDataTemplate>
                 -
@@ -75,7 +76,7 @@
                 <Fields>
                     <asp:NextPreviousPagerField ShowFirstPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" FirstPageText="First"  />
                     <asp:NumericPagerField />
-                    <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" LastPageText="LastTTT"/>
+                    <asp:NextPreviousPagerField ShowLastPageButton="True" ShowNextPageButton="False" ShowPreviousPageButton="False" LastPageText="Last"/>
                 </Fields>
             </asp:DataPager>                       
         </p>
@@ -84,14 +85,14 @@
     </asp:Panel>
     <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="App_Code.QueryApplicationIndex">
         <SelectParameters>
-            <asp:ControlParameter Name="query" ControlID="query" PropertyName="Value" />
-            <asp:ControlParameter Name="revFirst" ControlID="revFirst" PropertyName="Value" />
-            <asp:ControlParameter Name="revLast" ControlID="revLast" PropertyName="Value" />
+            <asp:ControlParameter Name="query" ControlID="_query" PropertyName="Value" />
+            <asp:ControlParameter Name="revFirst" ControlID="_revFirst" PropertyName="Value" />
+            <asp:ControlParameter Name="revLast" ControlID="_revLast" PropertyName="Value" />
         </SelectParameters>
     </asp:ObjectDataSource>
-    <asp:HiddenField ID="query" runat="server" />
-    <asp:HiddenField ID="revFirst" runat="server" />
-    <asp:HiddenField ID="revLast" runat="server" />
+    <asp:HiddenField ID="_query" runat="server" />
+    <asp:HiddenField ID="_revFirst" runat="server" />
+    <asp:HiddenField ID="_revLast" runat="server" />
     </div>
     </form>
 </body>

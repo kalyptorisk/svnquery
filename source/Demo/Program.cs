@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace SvnQueryDemo
@@ -44,21 +45,22 @@ namespace SvnQueryDemo
             n.Attributes["value"].Value = Path.Combine(currentDir, "IndexData");
             xml.Save(webconfig);
 
-            int port = 9000 + currentDir.GetHashCode() % 1000;
 
-            if (!IsWebServerRunning())
+            if (IsWebServerRunning())
             {
-                string webserverPath = Path.Combine(webserverFolder, webserver + ".exe");
-                Process p = Process.Start(webserverPath, "/port:" + port + " /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"');
-                if (p != null)
-                {
-                    p.WaitForInputIdle();
-                    if (p.HasExited) return;
-                }
+                MessageBox.Show("ASP.NET Development Server already started. Please stop it and try again.", "SvnQueryDemo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            int port = 9000 + currentDir.GetHashCode() % 1000;
+            string webserverPath = Path.Combine(webserverFolder, webserver + ".exe");
+            Process p = Process.Start(webserverPath, "/port:" + port + " /path:\"" + Path.Combine(currentDir, "SvnWebQuery") + '"');
+            if (p != null)
+            {
+                p.WaitForInputIdle();
             }
             Thread.Sleep(500); // give the web server a chance to finish startup phase
-            if (IsWebServerRunning())
-               Process.Start("http://localhost:" + port + "/Query.aspx");
+            Process.Start("http://localhost:" + port + "/Query.aspx");
         }
 
         static bool IsWebServerRunning()

@@ -16,11 +16,12 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
-using System.Web;
+using System.Linq;
 using System.Web.Configuration;
 
-namespace App_Code
+namespace SvnWebQuery.Code
 {
     /// <summary>
     /// This class provides the select methods needed by an ObjectDataSource to implement databinding
@@ -35,7 +36,7 @@ namespace App_Code
             {
                 if (_index == null)
                 {
-                    _index = new Index(WebConfigurationManager.AppSettings["IndexPath"]); 
+                    _index = new Index(WebConfigurationManager.AppSettings["IndexPath"]);
                 }
                 return _index;
             }
@@ -76,7 +77,7 @@ namespace App_Code
         {
             return Index.Query(id);
         }
-        
+
         public static IEnumerable<Hit> Select(string query, string revFirst, string revLast, int maximumRows,
                                               int startRowIndex)
         {
@@ -91,6 +92,5 @@ namespace App_Code
         {
             return Query(query, revFirst, revLast).HitCount;
         }
-
     }
 }

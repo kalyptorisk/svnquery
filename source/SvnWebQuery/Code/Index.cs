@@ -25,7 +25,7 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using SvnQuery;
 
-namespace App_Code
+namespace SvnWebQuery.Code
 {
     public class Index
     {
@@ -74,7 +74,7 @@ namespace App_Code
         bool UpdateIndexSearcher()
         {
             if (_indexSearcher != null && _indexSearcher.Reader.IsCurrent())
-               return false;
+                return false;
             
             IndexSearcher searcher = new IndexSearcher(_index);
             searcher.Search(new TermQuery(new Term("path", "warmup")));

@@ -21,8 +21,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Linq;
-using App_Code;
 using SvnQuery;
+using SvnWebQuery.Code;
 
 namespace SvnWebQuery
 {

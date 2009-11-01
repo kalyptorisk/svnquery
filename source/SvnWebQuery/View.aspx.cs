@@ -22,8 +22,8 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using App_Code;
 using SvnQuery;
+using SvnWebQuery.Code;
 
 namespace SvnWebQuery
 {

@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Lucene.Net.Search;
 
-namespace App_Code
+namespace SvnWebQuery.Code
 {
     /// <summary>
     /// Summary description for QueryResult

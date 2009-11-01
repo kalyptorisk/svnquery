@@ -20,7 +20,7 @@ using System;
 using Lucene.Net.Documents;
 using SvnQuery;
 
-namespace App_Code
+namespace SvnWebQuery.Code
 {
     public class Hit
     {

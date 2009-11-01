@@ -83,7 +83,7 @@
         <asp:Button ID="DownloadResults" runat="server" Text="Download Results" onclick="DownloadResults_Click" />
         <asp:Button ID="DownloadTargets" runat="server" Text="Download Targets" onclick="DownloadTargets_Click" />
     </asp:Panel>
-    <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="App_Code.QueryApplicationIndex">
+    <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="SvnWebQuery.Code.QueryApplicationIndex">
         <SelectParameters>
             <asp:ControlParameter Name="query" ControlID="_query" PropertyName="Value" />
             <asp:ControlParameter Name="revFirst" ControlID="_revFirst" PropertyName="Value" />

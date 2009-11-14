@@ -71,12 +71,17 @@ namespace SvnWebQuery
             _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
             _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
 
-            if (_revLast.Value == RevisionFilter.HeadString 
-                && (_revFirst.Value == RevisionFilter.HeadString || _revFirst.Value == "0"))
+            _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
+            _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
+                
+            if (_optAll.Checked || _optHead.Checked)
             {
                 _revision.Style[HtmlTextWriterStyle.Display] = "none";
                 _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
                 _revision.Text = "$hidden$";
+
+                _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
+                _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
             }
             else
             {

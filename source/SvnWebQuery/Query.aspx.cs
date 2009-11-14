@@ -18,7 +18,9 @@
 
 using System;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.UI;
 using System.Linq;
 using SvnQuery;
@@ -30,45 +32,13 @@ namespace SvnWebQuery
     {
         static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        protected override void OnPreRender(EventArgs e)
+        protected override void OnInit(EventArgs e)
         {
-            base.OnPreRender(e);
-            _inputQuery.Text = _query.Value;
+            base.OnInit(e);
 
-            if (QueryApplicationIndex.IsSingleRevision)
-            {
-                revisionContainer.Visible = false;
-            }
-            else
-            {
-                if (_revision.Text == "$hidden$")
-                {
-                    _revision.Style[HtmlTextWriterStyle.Display] = "none";
-                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
-                }
-                else
-                {
-                    _revision.Style[HtmlTextWriterStyle.Display] = "";
-                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "none";
-                }            
-            }
-            Title = QueryApplicationIndex.Name + " Search";
-            _repositoryLabel.Text = Title;
-            _version.Text = Version;
-        }
-
-        protected void OnSearch(object sender, EventArgs e)
-        {
-            string queryText = _inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
-            if (string.IsNullOrEmpty(queryText)) return;
-            _query.Value = queryText;
-
+            ProcessQueryParameters();
             try
             {
-                Pair p = GetRevisionRange();
-                _revFirst.Value = p.First.ToString();
-                _revLast.Value = p.Second.ToString();
-
                 QueryResult r = QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
                 string htmlQuery = Server.HtmlEncode(_query.Value);
                 _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
@@ -92,15 +62,91 @@ namespace SvnWebQuery
             }
         }
 
-        Pair GetRevisionRange()
+        void ProcessQueryParameters()
+        {
+            string query = Context.Request.QueryString["q"] ?? "";
+            query = query.ToLowerInvariant().Replace('\\', '/');
+            _inputQuery.Text = query;
+            _query.Value = query;
+            _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
+            _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
+
+            if (_revLast.Value == RevisionFilter.HeadString 
+                && (_revFirst.Value == RevisionFilter.HeadString || _revFirst.Value == "0"))
+            {
+                _revision.Style[HtmlTextWriterStyle.Display] = "none";
+                _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
+                _revision.Text = "$hidden$";
+            }
+            else
+            {
+                _revision.Style[HtmlTextWriterStyle.Display] = "";
+                _revisionOptions.Style[HtmlTextWriterStyle.Display] = "none";
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(GetNormalizedRevision(_revFirst.Value));
+                if (_revLast.Value != _revFirst.Value)
+                {
+                    sb.Append(" : ");
+                    sb.Append(GetNormalizedRevision(_revLast.Value));                    
+                }
+                _revision.Text = sb.ToString();
+            }
+        }
+
+        static string GetNormalizedRevision(string revision)
+        {
+            return revision == RevisionFilter.HeadString ? "head" : revision;
+        }
+
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+
+            revisionContainer.Visible = !QueryApplicationIndex.IsSingleRevision;
+            Title = QueryApplicationIndex.Name + " Search";
+            _repositoryLabel.Text = Title;
+            _version.Text = Version;
+        }
+
+        protected void OnSearch(object sender, EventArgs e)
+        {
+            string queryText = _inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
+            if (string.IsNullOrEmpty(queryText)) return;
+
+            RevisionRange rr = GetRevisionRange();
+            StringBuilder redirect = new StringBuilder();
+            redirect.Append("Query.aspx");
+            redirect.Append("?q=");
+            redirect.Append(HttpUtility.UrlEncode(queryText));
+            if (rr.First != RevisionFilter.Head)
+            {
+                redirect.Append("&f=");
+                redirect.Append(rr.First);
+            }
+            if (rr.Last != RevisionFilter.Head)
+            {
+                redirect.Append("&l=");
+                redirect.Append(rr.Last);
+            }
+            Context.Response.Redirect(redirect.ToString());
+        }
+
+        struct RevisionRange
+        {
+            public int First;
+            public int Last;
+        }
+
+        RevisionRange GetRevisionRange()
         {
             string text = _revision.Text.ToLowerInvariant();
             if (text == "$hidden$")
             {
-                return new Pair
+                return new RevisionRange
                        {
                            First = (_optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
-                           Second = RevisionFilter.Head
+                           Last = RevisionFilter.Head
                        };
             }
 
@@ -142,7 +188,7 @@ namespace SvnWebQuery
                 _revision.Text = first.ToString();
                 if (last > 0) _revision.Text += " : " + last;
             }
-            return new Pair(first, last > 0 ? last : first);
+            return new RevisionRange{First = first, Last = last > 0 ? last : first};
         }
     
         protected void DownloadResults_Click(object sender, EventArgs e)

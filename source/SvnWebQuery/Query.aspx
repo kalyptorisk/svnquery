@@ -12,23 +12,23 @@
     <form runat="server" defaultbutton="_btnSearch" defaultfocus="txQuery">  
     <div id="headerContainer">
 	  <div id="title">	     
-       <asp:Label ID="_repositoryLabel" runat="server">Repository Search</asp:Label> 
+       <asp:Label ID="_repositoryLabel" runat="server" EnableViewState="false">Repository Search</asp:Label> 
     </div> 
 	  <div id="queryContainer"> 
 	    <asp:TextBox ID="_inputQuery" runat="server" />
-  	  <asp:Button ID="_btnSearch" runat="server" OnClick="OnSearch" Text="Search" />
+  	  <asp:Button ID="_btnSearch" runat="server" OnClick="OnSearch" Text="Search" EnableViewState="false"/>
   	  <a href="Help.htm">Help</a>
 	  </div>	  
-  	<div id="revisionContainer" runat="server">
+  	<div id="revisionContainer" runat="server" EnableViewState="false"> 
   	    <div id="revisionToggle"> 
   	      <a href="javascript:toggleRevisionRange()" >Revision:</a>
   	      </div>  	
         <div id="_revisionRange">
-          <asp:TextBox id="_revision" runat="server" Text="$hidden$"  ToolTip="Enter a revision or a revision range" />
+          <asp:TextBox id="_revision" runat="server" Text="$hidden$"  ToolTip="Enter a revision or a revision range" EnableViewState="false"/>
           </div>
         <div id="_revisionOptions" runat="server">
-          <asp:RadioButton ID="_optHead" runat="server" Text="Head" GroupName="revOptions" Checked="True" ToolTip="Search only in head revision" />
-          <asp:RadioButton ID="_optAll" runat="server" Text="All"  GroupName="revOptions" ToolTip="Search in all revisions" />
+          <asp:RadioButton ID="_optHead" runat="server" Text="Head" GroupName="revOptions" Checked="True" ToolTip="Search only in head revision" EnableViewState="false"/>
+          <asp:RadioButton ID="_optAll" runat="server" Text="All"  GroupName="revOptions" ToolTip="Search in all revisions" EnableViewState="false"/>
         </div>
 	  </div>
 	</div>
@@ -36,18 +36,18 @@
 	<div id="poweredByContainer">	  
 	  <div id="powered">powered by</div>
 	  <div id="svnquery"><a href="http://svnquery.tigris.org" style="color:inherit">SvnQuery</a></div>
-	  <div id="version"><asp:Label ID="_version" runat="server">0.0.0.0</asp:Label></div>
+	  <div id="version"><asp:Label ID="_version" runat="server" EnableViewState="false">0.0.0.0</asp:Label></div>
   </div>
 
   <div id="content">
-    <asp:Label ID="_messsageLabel" runat="server" />
-    <asp:Panel ID="_resultsPanel" runat="server" Visible="False">
+    <asp:Label ID="_messsageLabel" runat="server" EnableViewState="false" />
+    <asp:Panel ID="_resultsPanel" runat="server" Visible="False" EnableViewState="false">
         <div id="resultsSummary" >
                 <div style="float:left;">
-                    <asp:Label ID="_hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub"/>
+                    <asp:Label ID="_hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub" EnableViewState="false"/>
                 </div>
                 <div style="text-align:right;float:right;color:#808080">
-                    <asp:Label ID="_statisticsLabel" runat="server" Text="(23440 documents searched in 789ms)" />
+                    <asp:Label ID="_statisticsLabel" runat="server" Text="(23440 documents searched in 789ms)" EnableViewState="false"/>
                 </div>
         </div>
         <asp:ListView ID="listView" runat="server" DataSourceID="dataSource">
@@ -80,8 +80,8 @@
                 </Fields>
             </asp:DataPager>                       
         </p>
-        <asp:Button ID="DownloadResults" runat="server" Text="Download Results" onclick="DownloadResults_Click" />
-        <asp:Button ID="DownloadTargets" runat="server" Text="Download Targets" onclick="DownloadTargets_Click" />
+        <asp:Button ID="DownloadResults" runat="server" Text="Download Results" onclick="DownloadResults_Click" EnableViewState="false"/>
+        <asp:Button ID="DownloadTargets" runat="server" Text="Download Targets" onclick="DownloadTargets_Click" EnableViewState="false"/>
     </asp:Panel>
     <asp:ObjectDataSource ID="dataSource" runat="server" EnablePaging="True" SelectCountMethod="SelectCount" SelectMethod="Select" TypeName="SvnWebQuery.Code.QueryApplicationIndex">
         <SelectParameters>

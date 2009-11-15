@@ -32,11 +32,80 @@ namespace SvnWebQuery
     {
         static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        protected override void OnInit(EventArgs e)
+        protected override void OnPreRender(EventArgs e)
         {
-            base.OnInit(e);
+            base.OnPreRender(e);
 
-            ProcessQueryParameters();
+            // overriding OnPreRender instead of OnInit or OnLoad because
+            // the OnSearchButton postback will redirect always, 
+            // discarding any work done in OnInit or OnLoad
+
+            InitPageDescription();
+            ExtractQueryParameters();
+            InitQueryUserInterface();
+            DisplayQueryResults();
+        }
+
+        /// <summary>
+        /// Sets title and version information.
+        /// </summary>
+        void InitPageDescription()
+        {
+            Title = QueryApplicationIndex.Name + " Search";
+            _repositoryLabel.Text = Title;
+            _version.Text = Version;
+        }
+
+        /// <summary>
+        /// Extracts query, first and last revision from url query parameters to hidden fields.
+        /// </summary>
+        void ExtractQueryParameters()
+        {
+            _query.Value = NormalizeQuery(Context.Request.QueryString["q"] ?? ""); 
+            _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
+            _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
+        }
+
+        /// <summary>
+        /// Initializes the query control elements (querytext and revisionrange).
+        /// </summary>
+        void InitQueryUserInterface()
+        {            
+            _inputQuery.Text = _query.Value;
+            if (QueryApplicationIndex.IsSingleRevision)
+            {
+                revisionContainer.Visible = false;
+            }
+            else
+            {
+                _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
+                _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
+
+                if (_optAll.Checked || _optHead.Checked)
+                {
+                    _revision.Style[HtmlTextWriterStyle.Display] = "none";
+                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
+                    _revision.Text = "$hidden$";
+                }
+                else
+                {
+                    _optHead.Checked = true; // default, if the user switches back from explicit revision range to simple revision range
+                    _revision.Style[HtmlTextWriterStyle.Display] = "";
+                    _revisionOptions.Style[HtmlTextWriterStyle.Display] = "none";
+                    _revision.Text = NormalizeRevision(_revFirst.Value);
+                    if (_revLast.Value != _revFirst.Value)
+                    {
+                        _revision.Text += " : " + NormalizeRevision(_revLast.Value);
+                    }
+                }
+            }
+        }
+
+        void DisplayQueryResults()
+        {
+            if (string.IsNullOrEmpty(_query.Value))            
+                return;            
+                
             try
             {
                 QueryResult r = QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
@@ -50,80 +119,27 @@ namespace SvnWebQuery
                 // Reset to page 0
                 _dataPager.SetPageProperties(0, _dataPager.MaximumRows, true);
                 _resultsPanel.Visible = true;
-                _messsageLabel.Visible = false;
             }
             catch (Exception x)
             {
                 _messsageLabel.Text =
-                    "An error occured. Most probably your _query has some wildcards that lead to too many results. Try narrowing down your _query.</br></br><b>Details: </b>" +
+                    "An error occured. Most probably your query has some wildcards that lead to too many results. Try narrowing down your query.</br></br><b>Details: </b>" +
                     "<pre>" + x + "</pre>";
-                _resultsPanel.Visible = false;
                 _messsageLabel.Visible = true;
             }
         }
 
-        void ProcessQueryParameters()
-        {
-            string query = Context.Request.QueryString["q"] ?? "";
-            query = query.ToLowerInvariant().Replace('\\', '/');
-            _inputQuery.Text = query;
-            _query.Value = query;
-            _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
-            _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
-
-            _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
-            _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
-                
-            if (_optAll.Checked || _optHead.Checked)
-            {
-                _revision.Style[HtmlTextWriterStyle.Display] = "none";
-                _revisionOptions.Style[HtmlTextWriterStyle.Display] = "";
-                _revision.Text = "$hidden$";
-
-                _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
-                _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
-            }
-            else
-            {
-                _revision.Style[HtmlTextWriterStyle.Display] = "";
-                _revisionOptions.Style[HtmlTextWriterStyle.Display] = "none";
-
-                StringBuilder sb = new StringBuilder();
-                sb.Append(GetNormalizedRevision(_revFirst.Value));
-                if (_revLast.Value != _revFirst.Value)
-                {
-                    sb.Append(" : ");
-                    sb.Append(GetNormalizedRevision(_revLast.Value));                    
-                }
-                _revision.Text = sb.ToString();
-            }
-        }
-
-        static string GetNormalizedRevision(string revision)
-        {
-            return revision == RevisionFilter.HeadString ? "head" : revision;
-        }
-
-        protected override void OnPreRender(EventArgs e)
-        {
-            base.OnPreRender(e);
-
-            revisionContainer.Visible = !QueryApplicationIndex.IsSingleRevision;
-            Title = QueryApplicationIndex.Name + " Search";
-            _repositoryLabel.Text = Title;
-            _version.Text = Version;
-        }
-
         protected void OnSearch(object sender, EventArgs e)
         {
-            string queryText = _inputQuery.Text.ToLowerInvariant().Replace('\\', '/');
-            if (string.IsNullOrEmpty(queryText)) return;
-
-            RevisionRange rr = GetRevisionRange();
             StringBuilder redirect = new StringBuilder();
+            string queryText = NormalizeQuery(_inputQuery.Text);
+            RevisionRange rr = GetRevisionRange();
             redirect.Append("Query.aspx");
-            redirect.Append("?q=");
-            redirect.Append(HttpUtility.UrlEncode(queryText));
+            if (!string.IsNullOrEmpty(queryText))
+            {
+                redirect.Append("?q=");
+                redirect.Append(HttpUtility.UrlEncode(queryText));
+            }
             if (rr.First != RevisionFilter.Head)
             {
                 redirect.Append("&f=");
@@ -195,7 +211,17 @@ namespace SvnWebQuery
             }
             return new RevisionRange{First = first, Last = last > 0 ? last : first};
         }
-    
+
+        static string NormalizeRevision(string revision)
+        {
+            return revision == RevisionFilter.HeadString ? "head" : revision;
+        }
+
+        static string NormalizeQuery(string query)
+        {
+            return query.Trim().ToLower().Replace('\\', '/');
+        }
+
         protected void DownloadResults_Click(object sender, EventArgs e)
         {
             Response.ContentType = "application/x-msdownload";

@@ -40,8 +40,8 @@
   </div>
 
   <div id="content">
-    <asp:Label ID="_messsageLabel" runat="server" EnableViewState="false" />
-    <asp:Panel ID="_resultsPanel" runat="server" Visible="False" EnableViewState="false">
+    <asp:Label ID="_messsageLabel" runat="server" Visible="false" EnableViewState="false" />
+    <asp:Panel ID="_resultsPanel" runat="server" Visible="false" EnableViewState="false">
         <div id="resultsSummary" >
                 <div style="float:left;">
                     <asp:Label ID="_hitsLabel" runat="server" Text="<b>123 hits</b> for bli bla blub" EnableViewState="false"/>
@@ -90,10 +90,10 @@
             <asp:ControlParameter Name="revLast" ControlID="_revLast" PropertyName="Value" />
         </SelectParameters>
     </asp:ObjectDataSource>
+    </div>
     <asp:HiddenField ID="_query" runat="server" />
     <asp:HiddenField ID="_revFirst" runat="server" />
     <asp:HiddenField ID="_revLast" runat="server" />
-    </div>
     </form>
 </body>
 </html>

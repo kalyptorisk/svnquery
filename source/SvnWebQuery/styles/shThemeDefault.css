@@ -35,7 +35,7 @@
 
 .syntaxhighlighter
 {
-	background-color: #fff8f0 !important;
+	background-color: #ffffff !important;
 }
 
 /* Highlighed line number */
@@ -72,13 +72,13 @@
 /* First line */
 .syntaxhighlighter .line.alt1
 {
-	background-color: #fff8f0 !important;
+   
 }
 
 /* Second line */
 .syntaxhighlighter .line.alt2
 {
-	background-color: #fff8f0 !important;
+
 }
 
 .syntaxhighlighter .toolbar

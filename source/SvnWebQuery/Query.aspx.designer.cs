@@ -131,13 +131,13 @@ namespace SvnWebQuery {
         protected global::System.Web.UI.WebControls.Label _statisticsLabel;
         
         /// <summary>
-        /// listView control.
+        /// _listView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ListView listView;
+        protected global::System.Web.UI.WebControls.ListView _listView;
         
         /// <summary>
         /// _dataPager control.
@@ -167,13 +167,13 @@ namespace SvnWebQuery {
         protected global::System.Web.UI.WebControls.Button DownloadTargets;
         
         /// <summary>
-        /// dataSource control.
+        /// _dataSource control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ObjectDataSource dataSource;
+        protected global::System.Web.UI.WebControls.ObjectDataSource _dataSource;
         
         /// <summary>
         /// _query control.

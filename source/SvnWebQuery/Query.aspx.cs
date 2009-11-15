@@ -17,12 +17,12 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
-using System.Linq;
 using SvnQuery;
 using SvnWebQuery.Code;
 
@@ -61,7 +61,8 @@ namespace SvnWebQuery
         /// </summary>
         void ExtractQueryParameters()
         {
-            _query.Value = NormalizeQuery(Context.Request.QueryString["q"] ?? ""); 
+            if (IsPostBack) return;
+            _query.Value = NormalizeQuery(Context.Request.QueryString["q"] ?? "");
             _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
             _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
         }
@@ -70,7 +71,7 @@ namespace SvnWebQuery
         /// Initializes the query control elements (querytext and revisionrange).
         /// </summary>
         void InitQueryUserInterface()
-        {            
+        {
             _inputQuery.Text = _query.Value;
             if (QueryApplicationIndex.IsSingleRevision)
             {
@@ -103,9 +104,9 @@ namespace SvnWebQuery
 
         void DisplayQueryResults()
         {
-            if (string.IsNullOrEmpty(_query.Value))            
-                return;            
-                
+            if (string.IsNullOrEmpty(_query.Value))
+                return;
+
             try
             {
                 QueryResult r = QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
@@ -117,7 +118,8 @@ namespace SvnWebQuery
 
                 _dataPager.Visible = (_dataPager.MaximumRows < r.HitCount);
                 // Reset to page 0
-                _dataPager.SetPageProperties(0, _dataPager.MaximumRows, true);
+                if (!IsPostBack)
+                    _dataPager.SetPageProperties(0, _dataPager.MaximumRows, true);
                 _resultsPanel.Visible = true;
             }
             catch (Exception x)
@@ -135,11 +137,8 @@ namespace SvnWebQuery
             string queryText = NormalizeQuery(_inputQuery.Text);
             RevisionRange rr = GetRevisionRange();
             redirect.Append("Query.aspx");
-            if (!string.IsNullOrEmpty(queryText))
-            {
-                redirect.Append("?q=");
-                redirect.Append(HttpUtility.UrlEncode(queryText));
-            }
+            redirect.Append("?q=");
+            redirect.Append(HttpUtility.UrlEncode(queryText));
             if (rr.First != RevisionFilter.Head)
             {
                 redirect.Append("&f=");
@@ -209,7 +208,7 @@ namespace SvnWebQuery
                 _revision.Text = first.ToString();
                 if (last > 0) _revision.Text += " : " + last;
             }
-            return new RevisionRange{First = first, Last = last > 0 ? last : first};
+            return new RevisionRange {First = first, Last = last > 0 ? last : first};
         }
 
         static string NormalizeRevision(string revision)
@@ -232,7 +231,7 @@ namespace SvnWebQuery
             foreach (Hit hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
-            }        
+            }
             Response.End();
         }
 
@@ -253,7 +252,5 @@ namespace SvnWebQuery
             }
             Response.End();
         }
-
-    
     }
 }

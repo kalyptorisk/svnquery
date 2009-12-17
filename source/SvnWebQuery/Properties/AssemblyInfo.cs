@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("SvnWebQuery")]
-[assembly: AssemblyDescription("ASP.NET Web Application for querying a subversion fulltext index")]
+[assembly: AssemblyDescription("ASP.NET Application for searching the fulltext index of a subversion repository")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SvnWebQuery")]
-[assembly: AssemblyCopyright("Copyright © 2008 by Christian Rodemeyer")]
+[assembly: AssemblyProduct("SvnQuery")]
+[assembly: AssemblyCopyright("Copyright © 2008-2010 by Christian Rodemeyer")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyFileVersion("1.0.0.1")]

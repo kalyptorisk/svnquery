@@ -33,14 +33,14 @@ namespace SvnIndexTests
     public class IndexerTests
     {
         readonly string _repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
-        IndexSearcher _revision21;
+        IndexSearcher _revision22;
 
-        IndexSearcher Revision21
+        IndexSearcher Revision22
         {
             get
             {
-                if (_revision21 == null) _revision21 = new IndexSearcher(CreateIndex(21));
-                return _revision21;
+                if (_revision22 == null) _revision22 = new IndexSearcher(CreateIndex(22));
+                return _revision22;
             }
         }
 
@@ -155,7 +155,7 @@ namespace SvnIndexTests
             Assert.That(RevisionOrder(3, 5, 0, 7, 8), Is.EqualTo(new[] {new Range(3, 4), new Range(7, 7)}));
         }
 
-        static void CheckHeadRevision21(IndexSearcher searcher)
+        static void CheckHeadRevision22(IndexSearcher searcher)
         {
             var headItems = new HashSet<string>
                                 {
@@ -177,14 +177,15 @@ namespace SvnIndexTests
                                     "/Folder/Subfolder/Second/first.txt",
                                     "/Folder/Subfolder/Second/second.txt",
                                     "/Folder/import",
-                                    "/Folder/text.txt"
+                                    "/Folder/text.txt",
+                                    "/tags",
                                 };
             
             Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)));
             for (int i = 0; i < hits.Length(); ++i)
             {
                 string id = hits.Doc(i).Get(FieldName.Id).Split('@')[0];
-                Assert.That(headItems.Contains(id), id + " should be in head revision");
+                Assert.That(headItems.Contains(id), id + " is in head revision but shouldn't");
                 headItems.Remove(id);
             }
             Assert.AreEqual(0, headItems.Count);            
@@ -203,34 +204,34 @@ namespace SvnIndexTests
         }
 
         [Test]
-        public void Index_HeadRevision21()
+        public void Index_HeadRevision22()
         {
-            CheckHeadRevision21(Revision21);
+            CheckHeadRevision22(Revision22);
         }
 
         [Test]
-        public void IndexSingleRevision_HeadRevision21()
+        public void IndexSingleRevision_HeadRevision22()
         {
-            var index = new IndexSearcher(CreateSingleRevisionIndex(21));
+            var index = new IndexSearcher(CreateSingleRevisionIndex(22));
             CheckIsHeadOnly(index);
-            CheckHeadRevision21(index);
+            CheckHeadRevision22(index);
         }
 
         [Test]
-        public void UpdateIndexSingleRevision_HeadRevision21()
+        public void UpdateIndexSingleRevision_HeadRevision22()
         {
             RAMDirectory dir = CreateSingleRevisionIndex(7);
-            UpdateSingleRevisionIndex(21, dir);
+            UpdateSingleRevisionIndex(22, dir);
             var index = new IndexSearcher(dir);
             CheckIsHeadOnly(index);
-            CheckHeadRevision21(index);
+            CheckHeadRevision22(index);
         }
 
         [Test]
         public void Index_FolderSecondSecondTxt_ContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Second/second.txt", Revision21), 
+                RevisionOrder("/Folder/Second/second.txt", Revision22), 
                 Is.EquivalentTo(RevisionOrder(3, 8, 18, -1)));
         }
 
@@ -238,10 +239,10 @@ namespace SvnIndexTests
         public void Index_CopiedAndRenamed_RevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed", Revision21),
+                RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed", Revision22),
                 Is.EquivalentTo(RevisionOrder(6, 19)));
             Assert.That(
-               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt", Revision21),
+               RevisionOrder("/Folder/Neuer Ordner/CopiedAndRenamed/second.txt", Revision22),
                Is.EquivalentTo(RevisionOrder(6, 9, 19)));
         }
 
@@ -249,15 +250,15 @@ namespace SvnIndexTests
         public void Index_FolderTextTxt_NonContinousRevisionOrder()
         {
             Assert.That(
-                RevisionOrder("/Folder/text.txt", Revision21),
+                RevisionOrder("/Folder/text.txt", Revision22),
                 Is.EquivalentTo(RevisionOrder(3, 11, 0, 21, -1)));
         }
 
         [Test]
         public void Index_MessageContainsBinary_ExpectedResults()
         {
-            Parser p = new Parser(Revision21.Reader);
-            Hits h = Revision21.Search(p.Parse("m:binary"));
+            Parser p = new Parser(Revision22.Reader);
+            Hits h = Revision22.Search(p.Parse("m:binary"));
             Assert.That(h.Length(), Is.EqualTo(4));
             var expected = new HashSet<string>
                            {

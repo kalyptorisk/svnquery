@@ -242,7 +242,7 @@ namespace SvnQuery
 
         bool IgnorePath(string path)
         {
-            return _args.Filter != null && _args.Filter.IsMatch(path);
+            return _args.Filter.IsMatch(path);
         }
 
         void QueueAnalyzeJob(AnalyzeJobData jobData)

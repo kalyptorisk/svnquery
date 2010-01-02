@@ -28,7 +28,7 @@ namespace SvnIndexTests
             Assert.That(list.First() == startRev);
             Assert.That(list.Last() == stopRev);
             Assert.That(list.Count / 2 == (int)Math.Ceiling((stopRev - startRev) / (double)interval));
-
         }
+
     }
 }

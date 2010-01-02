@@ -23,21 +23,22 @@ using System.Text.RegularExpressions;
 
 namespace SvnQuery
 {
-    public class IndexerArgsException: Exception
+    public class IndexerArgsException : Exception
     {
-         public IndexerArgsException(string msg): base(msg + Environment.NewLine + HelpMessage)
-         {}
+        public IndexerArgsException(string msg) : base(msg + Environment.NewLine + HelpMessage)
+        {}
 
-         const string HelpMessage = @"          
+        const string HelpMessage =
+            @"          
 SvnIndex action index_path repository_uri [Options] 
   action := create | update
   Options:
   -r max revision to be included in the index
-  -f regex filter for items that should be ignored, e.g. "".*/tags/.*""
+  -f regex filter for items that should be ignored, default is ""/tags/""
     
   -n name of the index (for display in clients e.g. SvnWebQuery)
   -x external visible repository uri (if different than repository_uri)
-  -v verbosity level (0..3, 0 is lowest, 1 is default)
+  -v verbosity level (0..3, 0 lowest is 0, default is 1)
 
   -u User (only for login to remote repositories)
   -p Password (only for login to remote repositories)
@@ -52,7 +53,7 @@ SvnIndex action index_path repository_uri [Options]
 
     public class IndexerArgs
     {
-        public Indexer.Command Command;        
+        public Indexer.Command Command;
         public string IndexPath;
         public string RepositoryLocalUri;
         public string RepositoryExternalUri;
@@ -62,7 +63,7 @@ SvnIndex action index_path repository_uri [Options]
         public Regex Filter; // pathes that match this regex are not indexed
         public int MaxRevision = 99999999;
         public int MaxThreads; // default is initialized depending on protocol (file:///, svn:// http://) 
-                                // as a general rule, the higher the latency the higher the number of threads should be
+        // as a general rule, the higher the latency the higher the number of threads should be
         public int Optimize = 25; // number of revisions that lead to optimization
         public int CommitInterval = 1000; // the interval between the index gets committed
         public int Verbosity; // Verbosity of the index process 
@@ -83,9 +84,11 @@ SvnIndex action index_path repository_uri [Options]
                     {
                         switch (char.ToLowerInvariant(args[i][1])) // normalize option
                         {
-                            case 'r': MaxRevision = int.Parse(NextArg(args, ref i));
+                            case 'r':
+                                MaxRevision = int.Parse(NextArg(args, ref i));
                                 break;
-                            case 'f': Filter = new Regex(NextArg(args, ref i), RegexOptions.Compiled);
+                            case 'f':
+                                Filter = new Regex(NextArg(args, ref i), RegexOptions.Compiled | RegexOptions.CultureInvariant);
                                 break;
                             case 'u':
                                 User = NextArg(args, ref i);
@@ -135,31 +138,32 @@ SvnIndex action index_path repository_uri [Options]
                             IndexPath = Path.GetFullPath(arg);
                             break;
                         case 2: // third is the uri used to index the repository
-                            RepositoryLocalUri = arg.Replace('\\', '/').TrimEnd('/');                            
+                            RepositoryLocalUri = arg.Replace('\\', '/').TrimEnd('/');
                             break;
                     }
                 }
             }
             if (iMandatory != 3) throw new IndexerArgsException("Not enough arguments");
-            
+
             if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
+            if (Filter == null) Filter = new Regex("/tags/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         }
 
         static string NextArg(string[] args, ref int pos)
         {
-            return (args[pos].Length == 2) ? args[++pos] : args[pos].Substring(2);   
+            return (args[pos].Length == 2) ? args[++pos] : args[pos].Substring(2);
         }
 
         static Indexer.Command ParseCommand(string command)
         {
             try
             {
-                return (Indexer.Command)Enum.Parse(typeof(Indexer.Command), command, true);
+                return (Indexer.Command) Enum.Parse(typeof (Indexer.Command), command, true);
             }
             catch (ArgumentException)
             {
                 throw new IndexerArgsException("Unknown command '" + command + "'");
-            } 
+            }
         }
 
         static int GetMaxThreadsFromUri(string uri)

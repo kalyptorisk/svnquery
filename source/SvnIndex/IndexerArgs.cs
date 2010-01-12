@@ -40,14 +40,14 @@ SvnIndex action index_path repository_uri [Options]
   -x external visible repository uri (if different than repository_uri)
   -v verbosity level (0..3, 0 lowest is 0, default is 1)
 
-  -u User (only for login to remote repositories)
-  -p Password (only for login to remote repositories)
+  -u User (only necessary for non local repositories)
+  -p Password (only necessary for non local repositories)
 
   -t max number of threads used to query the repository in parallel
   -c commit interval
   -o optimize interval  
 
-  -s create a solid single revision index (-r will set this)
+  -s create a solid single revision index (-r will set the revision)
 ";
     }
 
@@ -58,8 +58,7 @@ SvnIndex action index_path repository_uri [Options]
         public string RepositoryLocalUri;
         public string RepositoryExternalUri;
         public string RepositoryName;
-        public string User;
-        public string Password;
+        public Credentials Credentials = new Credentials();
         public Regex Filter; // pathes that match this regex are not indexed
         public int MaxRevision = 99999999;
         public int MaxThreads; // default is initialized depending on protocol (file:///, svn:// http://) 
@@ -91,10 +90,10 @@ SvnIndex action index_path repository_uri [Options]
                                 Filter = new Regex(NextArg(args, ref i), RegexOptions.Compiled | RegexOptions.CultureInvariant);
                                 break;
                             case 'u':
-                                User = NextArg(args, ref i);
+                                Credentials.User = NextArg(args, ref i);
                                 break;
                             case 'p':
-                                Password = NextArg(args, ref i);
+                                Credentials.Password = NextArg(args, ref i);
                                 break;
                             case 't':
                                 MaxThreads = int.Parse(NextArg(args, ref i));

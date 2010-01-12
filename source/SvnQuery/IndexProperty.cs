@@ -19,7 +19,6 @@
 using System;
 using Lucene.Net.Index;
 using Lucene.Net.Documents;
-using System.Reflection;
 
 namespace SvnQuery
 {
@@ -31,6 +30,7 @@ namespace SvnQuery
         const string RepositoryNameProperty = "RepositoryName";
         const string RepositoryLocalUriProperty = "RepositoryLocalUri";
         const string RepositoryExternalUriProperty = "RepositoryExternalUri";
+        const string RepositoryCredentials = "RepositoryCredentials";
         const string SingleRevisionProperty = "SingleRevision";
         
         /// <summary>
@@ -84,6 +84,16 @@ namespace SvnQuery
         public static void SetRepositoryLocalUri(IndexWriter writer, string uri)
         {
             UpdateProperty(writer, RepositoryLocalUriProperty, uri);
+        }
+
+        public static Credentials GetRepositoryCredentials(IndexReader reader)
+        {
+            return new Credentials(GetProperty(reader, RepositoryCredentials));
+        }
+
+        public static void SetRepositoryCredentials(IndexWriter writer, Credentials credentials)
+        {
+            UpdateProperty(writer, RepositoryCredentials, credentials.ToString());
         }
 
         public static string GetRepositoryExternalUri(IndexReader reader)

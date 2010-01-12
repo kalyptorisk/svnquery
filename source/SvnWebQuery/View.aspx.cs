@@ -1,6 +1,6 @@
 ﻿#region Apache License 2.0
 
-// Copyright 2008-2009 Christian Rodemeyer
+// Copyright 2008-2010 Christian Rodemeyer
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ namespace SvnWebQuery
 {
     public partial class View : Page
     {
-        static readonly ISvnApi Svn = new SharpSvnApi(QueryApplicationIndex.LocalUri);
+        static readonly ISvnApi Svn = new SharpSvnApi(QueryApplicationIndex.LocalUri,
+                                                      QueryApplicationIndex.User,
+                                                      QueryApplicationIndex.Password);
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -70,7 +72,7 @@ namespace SvnWebQuery
                 {
                     AddScriptInclude(syntaxHighlighter.GetScript());
                     AddStartupScript();
-                   _content.Attributes.Add("class", syntaxHighlighter.GetClass());
+                    _content.Attributes.Add("class", syntaxHighlighter.GetClass());
                 }
             }
         }
@@ -93,8 +95,8 @@ namespace SvnWebQuery
             code.Append("SyntaxHighlighter.all();");
 
             var script = new HtmlGenericControl("script");
-            script.Attributes.Add("type", "text/javascript");            
-            script.InnerHtml = code.ToString();            
+            script.Attributes.Add("type", "text/javascript");
+            script.InnerHtml = code.ToString();
             Header.Controls.Add(script);
         }
 

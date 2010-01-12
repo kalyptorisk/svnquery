@@ -45,9 +45,12 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContentTest.cs" />
+    <Compile Include="CredentialsTest.cs" />
     <Compile Include="ExternalsTest.cs" />
     <Compile Include="GapPhraseParserTest.cs" />
     <Compile Include="SpanQueryProblemsTest.cs" />

@@ -33,7 +33,6 @@ namespace SvnWebQuery.Code
         readonly Timer _timer;
         readonly Dictionary<string, CachedQueryResult> _cache = new Dictionary<string, CachedQueryResult>();
         readonly object _sync = new object();
-        readonly bool _isSingleRevision;
 
         IndexSearcher _indexSearcher;
         int _repositoryRevision;
@@ -43,7 +42,7 @@ namespace SvnWebQuery.Code
             _index = index;
 
             UpdateIndexSearcher();
-            _isSingleRevision = IndexProperty.GetSingleRevision(_indexSearcher.Reader);
+            IsSingleRevision = IndexProperty.GetSingleRevision(_indexSearcher.Reader);
 
             _timer = new Timer(90000); // Check for index updates and cleaning caches
             _timer.Enabled = true;
@@ -56,19 +55,15 @@ namespace SvnWebQuery.Code
             if (_indexSearcher != null) _indexSearcher.Close();
         }
 
-        public string Name { get { return _name; } }
-        string _name;
+        public string Name { get; private set; }
 
-        public string LocalUri { get { return _localUri; } }
-        string _localUri;
+        public string LocalUri { get; private set; }
 
-        public string ExternalUri { get { return _externalUri; } }
-        string _externalUri;
+        public string ExternalUri { get; private set; }
 
-        public bool IsSingleRevision
-        {
-            get {return _isSingleRevision;}
-        }
+        public Credentials Credentials { get; private set; }
+
+        public bool IsSingleRevision {get; private set;}
 
         // creates and warms up a new IndexSearcher if necessary
         bool UpdateIndexSearcher()
@@ -84,15 +79,17 @@ namespace SvnWebQuery.Code
             string localUri = IndexProperty.GetRepositoryLocalUri(reader);
             string externalUri = IndexProperty.GetRepositoryExternalUri(reader);
             string indexName = IndexProperty.GetRepositoryName(reader) ?? localUri.Split('/').Last();
+            Credentials credentials = IndexProperty.GetRepositoryCredentials(reader);
 
             lock (_sync)
             {
                 if (_indexSearcher != null) _indexSearcher.Close();
                 _indexSearcher = searcher;
                 _repositoryRevision = indexRevision;
-                _localUri = localUri;
-                _externalUri = externalUri;
-                _name = indexName;
+                Name = indexName;
+                LocalUri = localUri;
+                ExternalUri = externalUri;
+                Credentials = credentials; 
             }
             return true;
         }

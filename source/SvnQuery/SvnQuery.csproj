@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Credentials.cs" />
     <Compile Include="FieldName.cs" />
     <Compile Include="GapPhraseParser.cs" />
     <Compile Include="ISvnApi.cs" />

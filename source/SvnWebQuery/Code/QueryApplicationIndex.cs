@@ -47,14 +47,6 @@ namespace SvnWebQuery.Code
             get { return Index.Name; }
         }
 
-        /// <summary>
-        /// used to access the repository from this application
-        /// </summary>
-        public static string LocalUri
-        {
-            get { return Index.LocalUri; }
-        }
-
         public static bool IsSingleRevision
         {
             get { return Index.IsSingleRevision; }
@@ -63,9 +55,27 @@ namespace SvnWebQuery.Code
         /// <summary>
         /// used to access the repository from this application
         /// </summary>
+        public static string LocalUri
+        {
+            get { return Index.LocalUri; }
+        }
+
+        /// <summary>
+        /// used to access the repository from this application
+        /// </summary>
         public static string ExternalUri
         {
             get { return Index.ExternalUri; }
+        }
+
+        public static string User
+        {
+            get { return Index.Credentials.User; }
+        }
+
+        public static string Password
+        {
+            get { return Index.Credentials.Password; }
         }
 
         public static QueryResult Query(string query, string revFirst, string revLast)

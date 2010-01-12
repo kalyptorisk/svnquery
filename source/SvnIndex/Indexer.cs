@@ -105,7 +105,7 @@ namespace SvnQuery
             _externalsField = new Field(FieldName.Externals, _externalsTokenStream);
             _messageField = new Field(FieldName.Message, _messageTokenStream);
 
-            _svn = new SharpSvnApi(args.RepositoryLocalUri, args.User, args.Password);
+            _svn = new SharpSvnApi(args.RepositoryLocalUri, args.Credentials.User, args.Credentials.Password);
         }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace SvnQuery
 
             if (Command.Create == _args.Command)
             {
-                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);
+                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);                
                 IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
                 _args.RepositoryExternalUri = _args.RepositoryExternalUri ?? _args.RepositoryLocalUri;
                 _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
@@ -163,6 +163,7 @@ namespace SvnQuery
             IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
             if (_args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
             if (_args.RepositoryName != null) IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
+            IndexProperty.SetRepositoryCredentials(_indexWriter, _args.Credentials);
 
             while (startRevision <= stopRevision) 
             {

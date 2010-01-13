@@ -15,21 +15,28 @@ namespace SvnQuery
 
         public Credentials(string data)
         {
-            byte[] credentials = Convert.FromBase64String(data);
-            byte[] user = new byte[credentials[0] - 32];
-            byte[] password = new byte[credentials[2] - 32];
+            try
+            {
+                byte[] credentials = Convert.FromBase64String(data);
+                byte[] user = new byte[credentials[0] - 32];
+                byte[] password = new byte[credentials[2] - 32];
 
-            int i = 4;
-            for (int n = 0; n < user.Length; ++n, i += 2)
-            {
-                user[n] = (byte)(credentials[i] ^ credentials[i - 1]);
+                int i = 4;
+                for (int n = 0; n < user.Length; ++n, i += 2)
+                {
+                    user[n] = (byte) (credentials[i] ^ credentials[i - 1]);
+                }
+                User = Encoding.UTF8.GetString(user);
+                for (int n = 0; n < password.Length; ++n, i += 2)
+                {
+                    password[n] = (byte) (credentials[i] ^ credentials[i - 3]);
+                }
+                Password = Encoding.UTF8.GetString(password);
             }
-            User = Encoding.UTF8.GetString(user);
-            for (int n = 0; n < password.Length; ++n, i += 2)
+            catch
             {
-                password[n] = (byte)(credentials[i] ^ credentials[i - 3]);
+                User = Password = "";
             }
-            Password = Encoding.UTF8.GetString(password);
         }
 
         public string User = "";

@@ -1,4 +1,4 @@
-﻿#region Apache License 2.0
+#region Apache License 2.0
 
 // Copyright 2008-2010 Christian Rodemeyer
 // 
@@ -17,14 +17,15 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 
 namespace SvnFind
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {}
+    public class ResultViewModel
+    {
+
+        public IEnumerable<HitViewModel> Hits { get; set; }
+
+    }
 }

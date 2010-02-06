@@ -1,4 +1,4 @@
-﻿#region Apache License 2.0
+#region Apache License 2.0
 
 // Copyright 2008-2010 Christian Rodemeyer
 // 
@@ -18,13 +18,19 @@
 
 using System;
 using System.Linq;
-using System.Windows;
+using System.Windows.Input;
 
 namespace SvnFind
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {}
+    public class QueryViewModel
+    {
+        public string QueryText { get; set; }
+
+        public ICommand QueryCommand { get; private set; }
+
+        public ResultViewModel QueryResult
+        {
+            get { return null; }
+        }
+    }
 }

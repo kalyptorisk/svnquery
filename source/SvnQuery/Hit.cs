@@ -32,14 +32,18 @@ namespace SvnQuery
             _doc = doc;
         }
 
+        public string Id
+        {
+            get { return _doc.Get(FieldName.Id); }
+        }
+
         public string Path
         {
             get
             {
                 if (_path == null)
-                {
-                    string id = _doc.Get(FieldName.Id);
-                    _path = id.Split('@')[0];
+                {                    
+                    _path = Id.Split('@')[0];
                 }
                 return _path;
             }

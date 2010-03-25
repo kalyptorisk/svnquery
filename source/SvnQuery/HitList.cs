@@ -26,12 +26,19 @@ namespace SvnQuery
 {
     public class HitList : IEnumerable<Hit>
     {
+        readonly Hits _hits;
+
         internal HitList(Hits hits)
-        {}
+        {
+            _hits = hits;
+        }
 
         public IEnumerator<Hit> GetEnumerator()
         {
-            throw new NotImplementedException();
+           for (int i = 0; i < Count; ++i)
+           {
+                  yield return this[i];
+           }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -41,25 +48,13 @@ namespace SvnQuery
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return _hits.Length(); }
         }
 
         public Hit this[int index]
         {
-            get { throw new NotImplementedException(); }
+            get { return new Hit(_hits.Doc(index)); }
         }
     }
 
-    //public HitViewModel this[int i]
-    // {
-    //     get { return new HitViewModel(_luceneHits.Doc(i)); }
-    // }
-
-    // public IEnumerator<HitViewModel> GetEnumerator()
-    // {
-    //     for (int i = 0; i < HitCount; ++i)
-    //     {
-    //         yield return this[i];
-    //     }
-    // }
 }

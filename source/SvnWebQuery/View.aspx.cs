@@ -29,13 +29,11 @@ namespace SvnWebQuery
 {
     public partial class View : Page
     {
-        static readonly ISvnApi Svn = new SharpSvnApi(QueryApplicationIndex.LocalUri,
-                                                      QueryApplicationIndex.User,
-                                                      QueryApplicationIndex.Password);
+        static readonly ISvnApi Svn = ApplicationIndex.SvnApi;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            HitViewModel hitViewModel = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
+            HitViewModel hitViewModel = ApplicationIndex.GetHitById(Context.Request.QueryString["id"]);
             string path = hitViewModel.Path;
             int revision = hitViewModel.Revision;
 

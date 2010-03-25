@@ -51,7 +51,7 @@ namespace SvnWebQuery
         /// </summary>
         void InitPageDescription()
         {
-            Title = QueryApplicationIndex.Name + " Search";
+            Title = ApplicationIndex.Name + " Search";
             _repositoryLabel.Text = Title;
             _version.Text = Version;
         }
@@ -73,7 +73,7 @@ namespace SvnWebQuery
         void InitQueryUserInterface()
         {
             _inputQuery.Text = _query.Value;
-            if (QueryApplicationIndex.IsSingleRevision)
+            if (ApplicationIndex.IsSingleRevision)
             {
                 revisionContainer.Visible = false;
             }
@@ -109,7 +109,7 @@ namespace SvnWebQuery
 
             try
             {
-                QueryResult r = QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
+                QueryResult r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
                 string htmlQuery = Server.HtmlEncode(_query.Value);
                 _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
                 _statisticsLabel.Text =
@@ -228,7 +228,7 @@ namespace SvnWebQuery
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
-            foreach (HitViewModel hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            foreach (HitViewModel hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
             }
@@ -246,9 +246,9 @@ namespace SvnWebQuery
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
 
-            foreach (HitViewModel hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            foreach (HitViewModel hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
-                Response.Write(QueryApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
+                Response.Write(ApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
             }
             Response.End();
         }

@@ -1,6 +1,6 @@
 #region Apache License 2.0
 
-// Copyright 2008-2009 Christian Rodemeyer
+// Copyright 2008-2010 Christian Rodemeyer
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,13 +20,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Configuration;
+using SvnQuery.Svn;
 
 namespace SvnWebQuery.Code
 {
     /// <summary>
-    /// This class provides the select methods needed by an ObjectDataSource to implement databinding
+    /// Provides the select methods needed by an ObjectDataSource to implement databinding.
+    /// Implements caching of results.
     /// </summary>
-    public static class QueryApplicationIndex
+    public static class ApplicationIndex
     {
         static Index _index;
 
@@ -52,44 +54,42 @@ namespace SvnWebQuery.Code
             get { return Index.IsSingleRevision; }
         }
 
-        /// <summary>
-        /// used to access the repository from this application
-        /// </summary>
-        public static string LocalUri
-        {
-            get { return Index.LocalUri; }
-        }
 
         /// <summary>
         /// used to access the repository from this application
         /// </summary>
+        [Obsolete("should be accessible by hit result")]
         public static string ExternalUri
         {
             get { return Index.ExternalUri; }
         }
 
-        public static string User
+        public static ISvnApi SvnApi
         {
-            get { return Index.Credentials.User; }
+            get
+            {
+                if (_svn == null)
+                {
+                    _svn = new SharpSvnApi(Index.LocalUri, Index.Credentials.User, Index.Credentials.Password);
+                }
+                return _svn;
+            }
         }
-
-        public static string Password
-        {
-            get { return Index.Credentials.Password; }
-        }
+        static ISvnApi _svn;      
 
         public static QueryResult Query(string query, string revFirst, string revLast)
         {
             return Index.Query(query, revFirst, revLast);
         }
 
-        public static HitViewModel QueryId(string id)
+        public static HitViewModel GetHitById(string id)
         {
             return Index.Query(id);
         }
 
-        public static IEnumerable<HitViewModel> Select(string query, string revFirst, string revLast, int maximumRows,
-                                              int startRowIndex)
+        #region ASP.NET databinding
+
+        public static IEnumerable<HitViewModel> Select(string query, string revFirst, string revLast, int maximumRows, int startRowIndex)
         {
             QueryResult r = Query(query, revFirst, revLast);
             for (int i = startRowIndex; i < r.HitCount && i < startRowIndex + maximumRows; ++i)
@@ -102,5 +102,7 @@ namespace SvnWebQuery.Code
         {
             return Query(query, revFirst, revLast).HitCount;
         }
+
+        #endregion
     }
 }

@@ -49,18 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Credentials.cs" />
-    <Compile Include="FieldName.cs" />
-    <Compile Include="GapPhraseParser.cs" />
-    <Compile Include="ISvnApi.cs" />
-    <Compile Include="Lexer.cs" />
-    <Compile Include="PackedSizeConverter.cs" />
+    <Compile Include="Hit.cs" />
+    <Compile Include="HitList.cs" />
+    <Compile Include="Index.cs" />
+    <Compile Include="Result.cs" />
+    <Compile Include="Svn\Credentials.cs" />
+    <Compile Include="Lucene\FieldName.cs" />
+    <Compile Include="Lucene\GapPhraseParser.cs" />
+    <Compile Include="Svn\ISvnApi.cs" />
+    <Compile Include="Lucene\Lexer.cs" />
+    <Compile Include="Lucene\PackedSizeConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parser.cs" />
-    <Compile Include="IndexProperty.cs" />
-    <Compile Include="RevisionFilter.cs" />
-    <Compile Include="SharpSvnApi.cs" />
-    <Compile Include="SimpleTokenStream.cs" />
+    <Compile Include="Lucene\Parser.cs" />
+    <Compile Include="Lucene\IndexProperty.cs" />
+    <Compile Include="Lucene\RevisionFilter.cs" />
+    <Compile Include="Svn\SharpSvnApi.cs" />
+    <Compile Include="Lucene\SimpleTokenStream.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

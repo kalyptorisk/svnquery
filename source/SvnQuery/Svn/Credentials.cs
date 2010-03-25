@@ -20,7 +20,7 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace SvnQuery
+namespace SvnQuery.Svn
 {
     /// <summary>
     /// Simple credentials obfuscation.

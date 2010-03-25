@@ -20,8 +20,9 @@ using System;
 using NUnit.Framework;
 using Lucene.Net.Analysis;
 using NUnit.Framework.SyntaxHelpers;
+using SvnQuery.Lucene;
 
-namespace SvnQuery.Tests
+namespace SvnQuery.Tests.Lucene
 {
     [TestFixture]
     public class TokenStreamTest

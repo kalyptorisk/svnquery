@@ -18,6 +18,8 @@
 
 using System;
 using NUnit.Framework;
+using SvnQuery.Lucene;
+using SvnQuery.Tests.Lucene;
 
 namespace SvnQuery.Tests
 {

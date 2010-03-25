@@ -8,7 +8,7 @@
     <ProjectGuid>{7015FFBE-DFF9-4E6B-BC4C-8129EB1CDD2E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SvnQuery</RootNamespace>
+    <RootNamespace>SvnIndex</RootNamespace>
     <AssemblyName>SvnIndex</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

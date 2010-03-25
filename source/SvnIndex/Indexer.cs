@@ -24,8 +24,10 @@ using System.Threading;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
+using SvnQuery.Lucene;
+using SvnQuery.Svn;
 
-namespace SvnQuery
+namespace SvnIndex
 {
     /// <summary>
     /// Main class for creating and updating the repository index. 

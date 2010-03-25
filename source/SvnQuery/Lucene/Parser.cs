@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     public class Parser
     {

@@ -25,7 +25,7 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Search.Spans;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     public class GapPhraseParser
     {
@@ -51,7 +51,7 @@ namespace SvnQuery
             _stream = ts;
             _token = new Token();
             NextGap(); // Move _token to the next gap, ignore leading gaps
-            if (_token == null) return null;
+            if (_token == null) return null; // expression always false is an resharper bug
             return Parse(int.MaxValue);
         }
 

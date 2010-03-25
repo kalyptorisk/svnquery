@@ -20,8 +20,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SvnQuery.Svn;
 
-namespace SvnQuery
+namespace SvnIndex
 {
     public class IndexerArgsException : Exception
     {

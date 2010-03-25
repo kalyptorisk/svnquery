@@ -18,7 +18,7 @@
 
 using System.Threading;
 
-namespace SvnQuery
+namespace SvnIndex
 {
     class PendingJobs : EventWaitHandle
     {

@@ -49,21 +49,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContentTest.cs" />
-    <Compile Include="CredentialsTest.cs" />
-    <Compile Include="ExternalsTest.cs" />
-    <Compile Include="GapPhraseParserTest.cs" />
-    <Compile Include="SpanQueryProblemsTest.cs" />
-    <Compile Include="PackedSizeConverterTest.cs" />
-    <Compile Include="RevisionFilterTest.cs" />
-    <Compile Include="SvnApiAuthenticationTests.cs" />
-    <Compile Include="SvnApiTest.cs" />
-    <Compile Include="TestIndex.cs" />
-    <Compile Include="ParserTest.cs" />
-    <Compile Include="PathTest.cs" />
+    <Compile Include="Lucene\ContentTest.cs" />
+    <Compile Include="Svn\CredentialsTest.cs" />
+    <Compile Include="Lucene\ExternalsTest.cs" />
+    <Compile Include="Lucene\GapPhraseParserTest.cs" />
+    <Compile Include="Lucene\SpanQueryProblemsTest.cs" />
+    <Compile Include="Lucene\PackedSizeConverterTest.cs" />
+    <Compile Include="Lucene\RevisionFilterTest.cs" />
+    <Compile Include="Svn\SvnApiAuthenticationTests.cs" />
+    <Compile Include="Svn\SvnApiTest.cs" />
+    <Compile Include="Lucene\TestIndex.cs" />
+    <Compile Include="Lucene\ParserTest.cs" />
+    <Compile Include="Lucene\PathTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="LexerTest.cs" />
-    <Compile Include="TokenStreamTest.cs" />
+    <Compile Include="Lucene\LexerTest.cs" />
+    <Compile Include="Lucene\TokenStreamTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SvnQuery\SvnQuery.csproj">

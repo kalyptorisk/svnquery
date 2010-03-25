@@ -17,9 +17,9 @@
 #endregion
 
 using NUnit.Framework;
-using SvnQuery;
+using SvnQuery.Svn;
 
-namespace SvnIndexTests
+namespace SvnQuery.Tests.Svn
 {
     [TestFixture]
     public class SvnApiAuthenticationTests

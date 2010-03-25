@@ -10,22 +10,28 @@
 	</Window.Background>
     <Grid>
     	<Grid.RowDefinitions>
-    		<RowDefinition Height="86.856"/>
-    		<RowDefinition/>
+            <RowDefinition Height="Auto" MinHeight="21" />
+    		<RowDefinition Height="78.836"/>
+    		<RowDefinition Height="314.896*" />
     		<RowDefinition Height="47.268"/>
     	</Grid.RowDefinitions>
-    	<ListBox Grid.Row="1" Background="{x:Null}"/>
-    	<TextBox Margin="8,0,189,8" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23"/>
-    	<Button Margin="0,54.836,113,8.02" Content="Search" Height="24" HorizontalAlignment="Right" Width="72" VerticalAlignment="Bottom"/>
-    	<TextBlock HorizontalAlignment="Right" Margin="0,30.836,113,36.02" Width="47"  TextWrapping="Wrap" Height="20">
-		<Hyperlink>Options ...</Hyperlink>
-		</TextBlock>
-    	<TextBox Margin="0,12.532,198,0" VerticalAlignment="Top" Height="19.532" Text="TextBox" TextWrapping="Wrap" HorizontalAlignment="Right" Width="89"/>
-    	<TextBlock Margin="0,11.15,287,0" VerticalAlignment="Top" Height="22" Text="Revision Range" TextWrapping="Wrap" HorizontalAlignment="Right" Width="109"/>
-    	<Button HorizontalAlignment="Left" Margin="8,14.124,0,8" Width="79" Content="Save" Grid.Row="2" Height="24"/>
-    	<Button HorizontalAlignment="Left" Margin="91,14.696,0,8.572" Width="120" Content="Copy to Clipboard" Grid.Row="2" Height="24"/>
-    	<TextBlock HorizontalAlignment="Right" Margin="0,15,8,13.468" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by"/><LineBreak/><Run FontSize="16" FontWeight="Bold" Text="SvnQuery"/><LineBreak/><Run Text="1.0.2.0"/></TextBlock>
-    	<TextBlock HorizontalAlignment="Right" Margin="0,11.15,113,0" Width="47"  TextWrapping="Wrap" VerticalAlignment="Top" Height="20"><Hyperlink><Run Text="Help"/></Hyperlink></TextBlock>
+        <Menu HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
+            <MenuItem Header="SvnFind" />
+            <MenuItem Header="Options" />
+            <MenuItem Header="Help" />
+        </Menu>
         
+    	<ListBox Grid.Row="2" Background="{x:Null}" Margin="0,8.02,0,0" />
+    	<TextBox Grid.Row="1" Margin="6,0,191,16" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" />
+    	<Button Grid.Row="1" Margin="0,38.816,113,16.02" Content="Search" HorizontalAlignment="Right" Width="72" />
+
+        <TextBox Grid.Row="1" Margin="0,6,191,0" Text="TextBox" TextWrapping="Wrap" HorizontalAlignment="Right" Width="89" Height="18.836" VerticalAlignment="Top" />
+    	<TextBlock Grid.Row="1" Margin="0,6,294,0" VerticalAlignment="Top" Height="22" Text="Revision:" TextWrapping="Wrap" HorizontalAlignment="Right" Width="46.527" />
+    	<Button HorizontalAlignment="Left" Margin="8,14.124,0,8" Width="79" Content="Save" Grid.Row="3" Height="24"/>
+    	<Button HorizontalAlignment="Left" Margin="91,14.696,0,8.572" Width="120" Content="Copy to Clipboard" Grid.Row="3" Height="24"/>
+    	<TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="0,15,8,5.448" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by"/><LineBreak/><Hyperlink FontSize="16" FontWeight="Bold" FontStyle="Italic">SvnQuery</Hyperlink><LineBreak/><Run Text="1.0.2.0"/></TextBlock>
+        <Label Grid.Row="1" HorizontalAlignment="Left" Margin="8,6,0,0" Name="label1" Width="120" Height="27.856" VerticalAlignment="Top">Repository:</Label>
+        <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="81,6,0,0" Name="Repository" Width="218" Height="22.836" VerticalAlignment="Top" />
+
     </Grid>
 </Window>

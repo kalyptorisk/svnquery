@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using SvnQuery;
+using SvnQuery.Svn;
 using SvnWebQuery.Code;
 
 namespace SvnWebQuery

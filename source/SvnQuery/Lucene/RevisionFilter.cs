@@ -21,7 +21,7 @@ using System.Diagnostics;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     public class RevisionFilter : Filter
     {

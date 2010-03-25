@@ -19,8 +19,9 @@
 using System;
 using System.Collections.Generic;
 using Lucene.Net.Index;
+using SvnQuery.Lucene;
 
-namespace SvnQuery
+namespace SvnIndex
 {
     /// <summary>
     /// Threadsafe lookup and updates of highest active revision.

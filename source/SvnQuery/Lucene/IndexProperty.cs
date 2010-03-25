@@ -19,8 +19,9 @@
 using System;
 using Lucene.Net.Index;
 using Lucene.Net.Documents;
+using SvnQuery.Svn;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     public static class IndexProperty
     {

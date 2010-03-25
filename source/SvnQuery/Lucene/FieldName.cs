@@ -16,15 +16,13 @@
 
 #endregion
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     /// <summary>
     /// FieldNames for the Lucene Index
     /// </summary>
     public static class FieldName
     {
-        // fields are lexical sorted for easy reference when doing some low level term debugging
-
         public const string Author = "author";
         public const string Content = "content";
         public const string Externals = "externals";

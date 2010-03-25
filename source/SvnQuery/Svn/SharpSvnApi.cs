@@ -23,7 +23,7 @@ using System.IO;
 using System.Text;
 using SharpSvn;
 
-namespace SvnQuery
+namespace SvnQuery.Svn
 {
     public class SharpSvnApi : ISvnApi
     {

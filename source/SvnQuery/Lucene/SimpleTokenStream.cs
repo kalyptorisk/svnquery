@@ -19,7 +19,7 @@
 using System;
 using Lucene.Net.Analysis;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     /// <summary>
     /// Breaks text into tokens. A token is either a consecutive sequence of 
@@ -152,6 +152,4 @@ namespace SvnQuery
 
 
     }
-
-
 }

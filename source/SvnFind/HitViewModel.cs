@@ -19,7 +19,7 @@
 using System;
 using System.Linq;
 using Lucene.Net.Documents;
-using SvnQuery;
+using SvnQuery.Lucene;
 
 namespace SvnFind
 {

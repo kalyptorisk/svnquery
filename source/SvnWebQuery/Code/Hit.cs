@@ -18,7 +18,7 @@
 
 using System;
 using Lucene.Net.Documents;
-using SvnQuery;
+using SvnQuery.Lucene;
 
 namespace SvnWebQuery.Code
 {

@@ -19,8 +19,9 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using SvnQuery.Lucene;
 
-namespace SvnQuery.Tests
+namespace SvnQuery.Tests.Lucene
 {
     [TestFixture]
     public class GapPhraseParserTest

@@ -23,7 +23,8 @@ using System.Timers;
 using System.Linq;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using SvnQuery;
+using SvnQuery.Lucene;
+using SvnQuery.Svn;
 
 namespace SvnWebQuery.Code
 {

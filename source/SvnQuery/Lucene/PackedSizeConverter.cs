@@ -20,7 +20,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace SvnQuery
+namespace SvnQuery.Lucene
 {
     public static class PackedSizeConverter
     {

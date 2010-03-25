@@ -18,15 +18,14 @@
 
 using System;
 using System.Linq;
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
+using SvnQuery.Lucene;
 
-namespace SvnQuery.Tests
+namespace SvnQuery.Tests.Lucene
 {
     public static class TestIndex
     {

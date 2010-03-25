@@ -25,7 +25,8 @@ using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using SvnQuery;
+using SvnIndex;
+using SvnQuery.Lucene;
 
 namespace SvnIndexTests
 {

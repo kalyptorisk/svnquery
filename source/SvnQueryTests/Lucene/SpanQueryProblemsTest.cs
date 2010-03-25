@@ -21,8 +21,9 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using NUnit.Framework;
 using Lucene.Net.Search.Spans;
+using SvnQuery.Lucene;
 
-namespace SvnQuery.Tests
+namespace SvnQuery.Tests.Lucene
 {
     /// <summary>
     /// This test class documents some problems with the SpanQuery queries

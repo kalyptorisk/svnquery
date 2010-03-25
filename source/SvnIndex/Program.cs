@@ -21,7 +21,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 
-namespace SvnQuery
+namespace SvnIndex
 {
     static class Program
     {

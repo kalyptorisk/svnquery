@@ -1,6 +1,6 @@
 
 using NUnit.Framework;
-using SvnQuery;
+using SvnIndex;
 
 namespace SvnIndexTests
 {

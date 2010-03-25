@@ -23,7 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
-using SvnQuery;
+using SvnQuery.Lucene;
 using SvnWebQuery.Code;
 
 namespace SvnWebQuery

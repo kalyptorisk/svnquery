@@ -18,7 +18,7 @@
 
 using NUnit.Framework;
 
-namespace SvnQuery.Tests
+namespace SvnQuery.Tests.Lucene
 {
     [TestFixture]
     public class ContentTest

@@ -107,7 +107,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Code\Hit.cs" />
+    <Compile Include="Code\HitViewModel.cs" />
     <Compile Include="Code\Index.cs" />
     <Compile Include="Code\QueryApplicationIndex.cs" />
     <Compile Include="Code\QueryResult.cs" />

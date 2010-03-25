@@ -25,15 +25,17 @@ namespace SvnQuery.Lucene
 {
     public static class IndexProperty
     {
-        const string IdField = "$Property";
-        const string ValueField = "$Value";
         const string RevisionProperty = "Revision";
         const string RepositoryNameProperty = "RepositoryName";
         const string RepositoryLocalUriProperty = "RepositoryLocalUri";
         const string RepositoryExternalUriProperty = "RepositoryExternalUri";
-        const string RepositoryCredentials = "RepositoryCredentials";
+        const string RepositoryCredentialsProperty = "RepositoryCredentials";
         const string SingleRevisionProperty = "SingleRevision";
-        
+
+        // Lucene fields for property storage
+        const string IdField = "$Property";
+        const string ValueField = "$Value";
+
         /// <summary>
         /// returns a term that uniquely identifies a document containing an index property
         /// </summary>        
@@ -89,12 +91,12 @@ namespace SvnQuery.Lucene
 
         public static Credentials GetRepositoryCredentials(IndexReader reader)
         {
-            return new Credentials(GetProperty(reader, RepositoryCredentials));
+            return new Credentials(GetProperty(reader, RepositoryCredentialsProperty));
         }
 
         public static void SetRepositoryCredentials(IndexWriter writer, Credentials credentials)
         {
-            UpdateProperty(writer, RepositoryCredentials, credentials.ToString());
+            UpdateProperty(writer, RepositoryCredentialsProperty, credentials.ToString());
         }
 
         public static string GetRepositoryExternalUri(IndexReader reader)

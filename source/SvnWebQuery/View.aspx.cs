@@ -35,18 +35,18 @@ namespace SvnWebQuery
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            Hit hit = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
-            string path = hit.Path;
-            int revision = hit.Revision;
+            HitViewModel hitViewModel = QueryApplicationIndex.QueryId(Context.Request.QueryString["id"]);
+            string path = hitViewModel.Path;
+            int revision = hitViewModel.Revision;
 
             // getting _properties from the index
             Title = path.Substring(path.LastIndexOf('/') + 1);
             _header.InnerText = path;
-            _author.InnerText = hit.Author;
-            _modified.InnerText = hit.LastModification;
-            if (hit.MaxSize > 0) _size.InnerText = hit.Size;
+            _author.InnerText = hitViewModel.Author;
+            _modified.InnerText = hitViewModel.LastModification;
+            if (hitViewModel.MaxSize > 0) _size.InnerText = hitViewModel.Size;
             else _sizeRow.Visible = false;
-            _revisions.InnerText = hit.RevFirst + " - " + hit.RevLast;
+            _revisions.InnerText = hitViewModel.RevFirst + " - " + hitViewModel.RevLast;
 
             // getting _properties from subversion
             _message.InnerText = Svn.GetLogMessage(revision);
@@ -55,7 +55,7 @@ namespace SvnWebQuery
 
             bool binary = InitProperties(Svn.GetPathProperties(path, revision));
 
-            if (hit.MaxSize > 512 * 1024)
+            if (hitViewModel.MaxSize > 512 * 1024)
             {
                 _contentWarning.InnerText = "Content size is too big to display";
             }
@@ -63,9 +63,9 @@ namespace SvnWebQuery
             {
                 _contentWarning.InnerText = "Content type is binary";
             }
-            else if (hit.MaxSize > 0)
+            else if (hitViewModel.MaxSize > 0)
             {
-                _content.InnerText = Svn.GetPathContent(path, revision, hit.MaxSize);
+                _content.InnerText = Svn.GetPathContent(path, revision, hitViewModel.MaxSize);
 
                 var syntaxHighlighter = new SyntaxHighlightBrushMapper(path);
                 if (syntaxHighlighter.IsAvailable)

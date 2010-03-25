@@ -52,6 +52,7 @@
     <Compile Include="Hit.cs" />
     <Compile Include="HitList.cs" />
     <Compile Include="Index.cs" />
+    <Compile Include="IndexProperties.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="Svn\Credentials.cs" />
     <Compile Include="Lucene\FieldName.cs" />

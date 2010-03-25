@@ -22,13 +22,13 @@ using SvnQuery.Lucene;
 
 namespace SvnWebQuery.Code
 {
-    public class Hit
+    public class HitViewModel
     {
         readonly Document _doc;
         readonly string _path;
         readonly string _link;
 
-        public Hit(Document doc)
+        public HitViewModel(Document doc)
         {
             _doc = doc;
             string id = doc.Get(FieldName.Id);

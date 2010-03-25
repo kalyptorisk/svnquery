@@ -109,11 +109,11 @@ namespace SvnWebQuery.Code
             return result.Result;
         }
 
-        public Hit Query(string id)
+        public HitViewModel Query(string id)
         {
             IndexSearcher s = _indexSearcher;
             Hits h = s.Search(new TermQuery(new Term(FieldName.Id, id)));
-            return h.Length() == 1 ? new Hit(h.Doc(0)) : null; 
+            return h.Length() == 1 ? new HitViewModel(h.Doc(0)) : null; 
         }
 
         QueryResult ExecuteQuery(string query, string revFirst, string revLast)

@@ -83,12 +83,12 @@ namespace SvnWebQuery.Code
             return Index.Query(query, revFirst, revLast);
         }
 
-        public static Hit QueryId(string id)
+        public static HitViewModel QueryId(string id)
         {
             return Index.Query(id);
         }
 
-        public static IEnumerable<Hit> Select(string query, string revFirst, string revLast, int maximumRows,
+        public static IEnumerable<HitViewModel> Select(string query, string revFirst, string revLast, int maximumRows,
                                               int startRowIndex)
         {
             QueryResult r = Query(query, revFirst, revLast);

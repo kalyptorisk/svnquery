@@ -228,7 +228,7 @@ namespace SvnWebQuery
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
-            foreach (Hit hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            foreach (HitViewModel hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
             }
@@ -246,7 +246,7 @@ namespace SvnWebQuery
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
 
-            foreach (Hit hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            foreach (HitViewModel hit in QueryApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
             {
                 Response.Write(QueryApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
             }

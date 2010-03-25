@@ -26,7 +26,7 @@ namespace SvnWebQuery.Code
     /// <summary>
     /// Summary description for QueryResult
     /// </summary>
-    public class QueryResult: IEnumerable<Hit>
+    public class QueryResult: IEnumerable<HitViewModel>
     {
         readonly Hits _luceneHits;
         readonly int _searchTime;
@@ -61,12 +61,12 @@ namespace SvnWebQuery.Code
             get { return _indexRevision; }
         }
 
-        public Hit this[int i]
+        public HitViewModel this[int i]
         {
-            get { return new Hit(_luceneHits.Doc(i)); }
+            get { return new HitViewModel(_luceneHits.Doc(i)); }
         }
 
-        public IEnumerator<Hit> GetEnumerator()
+        public IEnumerator<HitViewModel> GetEnumerator()
         {
             for (int i = 0; i < HitCount; ++i)
             {

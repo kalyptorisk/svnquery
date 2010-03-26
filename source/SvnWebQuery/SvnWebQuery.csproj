@@ -32,10 +32,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lucene.Net, Version=2.3.1.3, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\3rdParty\Lucene.Net\Lucene.Net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core">
@@ -108,9 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Code\HitViewModel.cs" />
-    <Compile Include="Code\Index.cs" />
     <Compile Include="Code\ApplicationIndex.cs" />
-    <Compile Include="Code\QueryResult.cs" />
     <Compile Include="SyntaxHighlightBrushMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.aspx.cs">

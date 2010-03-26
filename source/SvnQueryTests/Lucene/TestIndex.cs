@@ -102,7 +102,7 @@ namespace SvnQuery.Tests.Lucene
 
         public static Hits SearchHeadRevision(Query q)
         {
-            return Search(q, RevisionFilter.Head, RevisionFilter.Head);
+            return Search(q, Revision.Head, Revision.Head);
         }
 
         public static void AssertQuery(Query q, params int[] expected)
@@ -112,7 +112,7 @@ namespace SvnQuery.Tests.Lucene
 
         public static void AssertQueryFromHeadRevision(string query, params int[] expected)
         {
-            AssertQueryFromRevisionRange(RevisionFilter.Head, RevisionFilter.Head, query, expected);
+            AssertQueryFromRevisionRange(Revision.Head, Revision.Head, query, expected);
         }
 
         public static void AssertQueryFromRevision(int revision, string query, params int[] expected)
@@ -196,7 +196,7 @@ namespace SvnQuery.Tests.Lucene
 
         static string HeadRevisionFieldValue()
         {
-            return RevisionFilter.HeadString;
+            return Revision.HeadString;
         }
 
 
@@ -222,7 +222,7 @@ namespace SvnQuery.Tests.Lucene
                 string id = data[i, 1];
                 field_id.SetValue(id);
                 pathTokenStream.Text = id;
-                int rev_first = RevisionFilter.Head;
+                int rev_first = Revision.Head;
                 if (id.StartsWith("/revisions"))
                 {
                     contentTokenStream.Text = "";

@@ -78,7 +78,7 @@ namespace SvnQuery
 
         static string NiceRevision(string rev)
         {
-            return rev == RevisionFilter.HeadString ? "head" : rev.TrimStart('0');
+            return rev == SvnQuery.Revision.HeadString ? "head" : rev.TrimStart('0');
         }
 
         /// <summary>

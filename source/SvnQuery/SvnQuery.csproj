@@ -54,6 +54,7 @@
     <Compile Include="Index.cs" />
     <Compile Include="IndexProperties.cs" />
     <Compile Include="Result.cs" />
+    <Compile Include="RevisionConstants.cs" />
     <Compile Include="Svn\Credentials.cs" />
     <Compile Include="Lucene\FieldName.cs" />
     <Compile Include="Lucene\GapPhraseParser.cs" />

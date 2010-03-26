@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Configuration;
+using SvnQuery;
 using SvnQuery.Svn;
 
 namespace SvnWebQuery.Code
@@ -30,77 +31,100 @@ namespace SvnWebQuery.Code
     /// </summary>
     public static class ApplicationIndex
     {
-        static Index _index;
+        static readonly Index Index;
+        static readonly Dictionary<string, CachedResult> Cache = new Dictionary<string, CachedResult>();
+        static readonly TimeSpan CacheCleanupIntervall = TimeSpan.FromSeconds(90);
+        static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+        static DateTime _lastCacheCleanup = DateTime.Now;
 
-        static Index Index
+        static ApplicationIndex()
         {
-            get
-            {
-                if (_index == null)
-                {
-                    _index = new Index(WebConfigurationManager.AppSettings["IndexPath"]);
-                }
-                return _index;
-            }
+            Index = new Index(WebConfigurationManager.AppSettings["IndexPath"]);
+            var props = Index.QueryProperties(); 
+            Name = props.RepositoryName;
+            IsSingleRevision = props.SingleRevision;
+            SvnApi = new SharpSvnApi(props.RepositoryLocalUri, props.RepositoryCredentials.User, props.RepositoryCredentials.Password);
         }
-
+        
         public static string Name
         {
-            get { return Index.Name; }
+            get; private set; 
         }
 
         public static bool IsSingleRevision
         {
-            get { return Index.IsSingleRevision; }
+            get; private set;
         }
-
-
-        /// <summary>
-        /// used to access the repository from this application
-        /// </summary>
-        [Obsolete("should be accessible by hit result")]
-        public static string ExternalUri
-        {
-            get { return Index.ExternalUri; }
-        }
-
+   
         public static ISvnApi SvnApi
         {
-            get
-            {
-                if (_svn == null)
-                {
-                    _svn = new SharpSvnApi(Index.LocalUri, Index.Credentials.User, Index.Credentials.Password);
-                }
-                return _svn;
-            }
-        }
-        static ISvnApi _svn;      
-
-        public static QueryResult Query(string query, string revFirst, string revLast)
-        {
-            return Index.Query(query, revFirst, revLast);
+            get; private set;
         }
 
         public static HitViewModel GetHitById(string id)
         {
-            return Index.Query(id);
+            return new HitViewModel(Index.GetHitById(id));
+        }
+
+        public static Result Query(string query, string revFirst, string revLast)
+        {
+            CleanupCache();
+            CachedResult result;
+            string key = query + revFirst + revLast;
+            lock (Cache) Cache.TryGetValue(key, out result);
+            if (result == null)
+            {
+                result = new CachedResult(Index.Query(query, revFirst, revLast));
+                lock (Cache) Cache[key] = result;
+            }
+            result.LastAccess = DateTime.Now;
+            return result.Result;
+        }
+
+        // removes too old entries from the cache
+        static void CleanupCache()
+        {
+            DateTime now = DateTime.Now;
+
+            if (now - _lastCacheCleanup < CacheCleanupIntervall)
+                return;
+
+            _lastCacheCleanup = now;
+            lock (Cache)
+            {
+                var tooOld = Cache.Where(p => now - p.Value.LastAccess > CacheDuration).Select(p => p.Key);
+                foreach (var s in new List<string>(tooOld))
+                {
+                    Cache.Remove(s);
+                }
+            }
+        }
+
+        class CachedResult
+        {
+            public CachedResult(Result result)
+            {
+                Result = result;
+            }
+
+            public readonly Result Result;
+            public DateTime LastAccess;
         }
 
         #region ASP.NET databinding
 
         public static IEnumerable<HitViewModel> Select(string query, string revFirst, string revLast, int maximumRows, int startRowIndex)
         {
-            QueryResult r = Query(query, revFirst, revLast);
-            for (int i = startRowIndex; i < r.HitCount && i < startRowIndex + maximumRows; ++i)
+            Result r = Query(query, revFirst, revLast);
+            for (int i = startRowIndex; i < r.Hits.Count && i < startRowIndex + maximumRows; ++i)
             {
-                yield return r[i];
+                yield return new HitViewModel(r.Hits[i]);
             }
         }
 
         public static int SelectCount(string query, string revFirst, string revLast)
         {
-            return Query(query, revFirst, revLast).HitCount;
+            return Query(query, revFirst, revLast).Hits.Count;
         }
 
         #endregion

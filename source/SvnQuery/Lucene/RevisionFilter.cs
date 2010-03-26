@@ -26,19 +26,11 @@ namespace SvnQuery.Lucene
     public class RevisionFilter : Filter
     {
         public const string RevFormat = "d8";
-        public const int Head = 99999999;
-        public static readonly string HeadString;
-        public const int All = 0;
-        public static readonly string AllString;
+        const int Head = Revision.Head;
+        const int All = Revision.All;
 
         readonly int _revLast;
         readonly int _revFirst;
-
-        static RevisionFilter()
-        {
-            HeadString = string.Intern(Head.ToString(RevFormat));
-            AllString = string.Intern(All.ToString(RevFormat));
-        }
 
         public RevisionFilter() : this(Head, Head)
         {}

@@ -44,9 +44,16 @@ namespace SvnQuery
             return new IndexProperties(GetSearcher().Reader);
         }
 
+        public Hit GetHitById(string id)
+        {
+            IndexSearcher s = GetSearcher();
+            Hits hits = s.Search(new TermQuery(new Term(FieldName.Id, id)));
+            return hits.Length() == 1 ? new Hit(hits.Doc(0)) : null; 
+        }
+
         public Result Query(string query)
         {
-            return Query(query, RevisionFilter.HeadString, RevisionFilter.HeadString);
+            return Query(query, Revision.HeadString, Revision.HeadString);
         }
 
         public Result Query(string query, string revFirst, string revLast)
@@ -58,15 +65,15 @@ namespace SvnQuery
             Query q = p.Parse(query);
 
             Hits hits;
-            if (IsSingleRevision || revFirst == RevisionFilter.AllString) // All Query
+            if (IsSingleRevision || revFirst == Revision.AllString) // All Query
             {
                 hits = searcher.Search(q);
             }
-            else if (revFirst == RevisionFilter.HeadString) // Head Query
+            else if (revFirst == Revision.HeadString) // Head Query
             {
                 var headQuery = new BooleanQuery();
                 headQuery.Add(q, BooleanClause.Occur.MUST);
-                headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)), BooleanClause.Occur.MUST);
+                headQuery.Add(new TermQuery(new Term(FieldName.RevisionLast, Revision.HeadString)), BooleanClause.Occur.MUST);
                 hits = searcher.Search(headQuery);
             }
             else // Revision Query
@@ -92,5 +99,6 @@ namespace SvnQuery
         }
 
         public bool IsSingleRevision { get; private set; }
+
     }
 }

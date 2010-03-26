@@ -26,6 +26,7 @@ using Lucene.Net.Store;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using SvnIndex;
+using SvnQuery;
 using SvnQuery.Lucene;
 
 namespace SvnIndexTests
@@ -136,7 +137,7 @@ namespace SvnIndexTests
                     continue;
                 }
                 int first = revisions[i - 1];
-                int last = revisions[i] == -1 ? RevisionFilter.Head : revisions[i] - 1;
+                int last = revisions[i] == -1 ? Revision.Head : revisions[i] - 1;
                 results.Add(new Range(first, last));
             }
             return results;
@@ -147,7 +148,7 @@ namespace SvnIndexTests
         {
             Assert.That(
                 RevisionOrder(1, 5, 6, -1), 
-                Is.EquivalentTo(new List<Range>{new Range(1, 4), new Range(5, 5), new Range(6, RevisionFilter.Head)}));
+                Is.EquivalentTo(new List<Range>{new Range(1, 4), new Range(5, 5), new Range(6, Revision.Head)}));
         }
 
         [Test]
@@ -182,7 +183,7 @@ namespace SvnIndexTests
                                     "/tags",
                                 };
             
-            Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, RevisionFilter.HeadString)));
+            Hits hits = searcher.Search(new TermQuery(new Term(FieldName.RevisionLast, Revision.HeadString)));
             for (int i = 0; i < hits.Length(); ++i)
             {
                 string id = hits.Doc(i).Get(FieldName.Id).Split('@')[0];
@@ -199,7 +200,7 @@ namespace SvnIndexTests
             Assert.AreEqual(FieldName.RevisionLast, t.Term().Field());
             while (t.Term().Field() == FieldName.RevisionLast)
             {
-                Assert.AreEqual(RevisionFilter.HeadString, t.Term().Text());
+                Assert.AreEqual(Revision.HeadString, t.Term().Text());
                 if (t.Next()) continue;
             }
         }

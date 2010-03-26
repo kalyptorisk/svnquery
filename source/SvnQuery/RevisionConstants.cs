@@ -20,10 +20,19 @@ using System;
 using System.Linq;
 using SvnQuery.Lucene;
 
-namespace SvnFind
+namespace SvnQuery
 {
-    public class HitViewModel
+    public static class Revision
     {
-       
+        public const int Head = 99999999;
+        public const int All = 0;
+        public static readonly string HeadString;
+        public static readonly string AllString;
+
+        static Revision()
+        {
+            HeadString = string.Intern(Head.ToString(RevisionFilter.RevFormat));
+            AllString = string.Intern(All.ToString(RevisionFilter.RevFormat));
+        }
     }
 }

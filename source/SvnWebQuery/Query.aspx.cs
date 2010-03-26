@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
+using SvnQuery;
 using SvnQuery.Lucene;
 using SvnWebQuery.Code;
 
@@ -63,8 +64,8 @@ namespace SvnWebQuery
         {
             if (IsPostBack) return;
             _query.Value = NormalizeQuery(Context.Request.QueryString["q"] ?? "");
-            _revFirst.Value = Context.Request.QueryString["f"] ?? RevisionFilter.HeadString;
-            _revLast.Value = Context.Request.QueryString["l"] ?? RevisionFilter.HeadString;
+            _revFirst.Value = Context.Request.QueryString["f"] ?? Revision.HeadString;
+            _revLast.Value = Context.Request.QueryString["l"] ?? Revision.HeadString;
         }
 
         /// <summary>
@@ -79,8 +80,8 @@ namespace SvnWebQuery
             }
             else
             {
-                _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == RevisionFilter.HeadString;
-                _optHead.Checked = _revFirst.Value == RevisionFilter.HeadString && _revLast.Value == RevisionFilter.HeadString;
+                _optAll.Checked = _revFirst.Value == "0" && _revLast.Value == Revision.HeadString;
+                _optHead.Checked = _revFirst.Value == Revision.HeadString && _revLast.Value == Revision.HeadString;
 
                 if (_optAll.Checked || _optHead.Checked)
                 {
@@ -109,14 +110,14 @@ namespace SvnWebQuery
 
             try
             {
-                QueryResult r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
+                Result r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
                 string htmlQuery = Server.HtmlEncode(_query.Value);
-                _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.HitCount, htmlQuery);
+                _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.Hits.Count, htmlQuery);
                 _statisticsLabel.Text =
                     string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",
-                                  r.SearchCount, r.SearchTime, r.IndexRevision);
+                                  r.Index.TotalCount, r.SearchTime, r.Index.Revision);
 
-                _dataPager.Visible = (_dataPager.MaximumRows < r.HitCount);
+                _dataPager.Visible = (_dataPager.MaximumRows < r.Hits.Count);
                 // Reset to page 0
                 if (!IsPostBack)
                     _dataPager.SetPageProperties(0, _dataPager.MaximumRows, true);
@@ -139,12 +140,12 @@ namespace SvnWebQuery
             redirect.Append("Query.aspx");
             redirect.Append("?q=");
             redirect.Append(HttpUtility.UrlEncode(queryText));
-            if (rr.First != RevisionFilter.Head)
+            if (rr.First != Revision.Head)
             {
                 redirect.Append("&f=");
                 redirect.Append(rr.First);
             }
-            if (rr.Last != RevisionFilter.Head)
+            if (rr.Last != Revision.Head)
             {
                 redirect.Append("&l=");
                 redirect.Append(rr.Last);
@@ -165,8 +166,8 @@ namespace SvnWebQuery
             {
                 return new RevisionRange
                        {
-                           First = (_optHead.Checked ? RevisionFilter.Head : RevisionFilter.All),
-                           Last = RevisionFilter.Head
+                           First = (_optHead.Checked ? Revision.Head : Revision.All),
+                           Last = Revision.Head
                        };
             }
 
@@ -181,12 +182,12 @@ namespace SvnWebQuery
             }
             if (text.Contains("all"))
             {
-                first = last = RevisionFilter.All;
+                first = last = Revision.All;
                 _revision.Text = "all";
             }
             else if (text.Contains("head") || first < 0)
             {
-                last = RevisionFilter.Head;
+                last = Revision.Head;
                 if (first < 0)
                 {
                     first = last;
@@ -213,7 +214,7 @@ namespace SvnWebQuery
 
         static string NormalizeRevision(string revision)
         {
-            return revision == RevisionFilter.HeadString ? "head" : revision;
+            return revision == Revision.HeadString ? "head" : revision;
         }
 
         static string NormalizeQuery(string query)
@@ -228,9 +229,9 @@ namespace SvnWebQuery
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
-            foreach (HitViewModel hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            foreach (Hit hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value).Hits)
             {
-                Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification, hit.RevFirst, hit.MaxSize.ToString()));
+                Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification.ToString("g"), hit.RevisionFirst, hit.SizeInBytes.ToString()));
             }
             Response.End();
         }
@@ -246,9 +247,10 @@ namespace SvnWebQuery
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
 
-            foreach (HitViewModel hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value))
+            var result = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
+            foreach (Hit hit in result.Hits)
             {
-                Response.Write(ApplicationIndex.ExternalUri + hit.Path + Environment.NewLine);
+                Response.Write(result.Index.RepositoryExternalUri + hit.Path + Environment.NewLine);
             }
             Response.End();
         }

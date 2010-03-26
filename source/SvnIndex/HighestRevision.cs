@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using Lucene.Net.Index;
+using SvnQuery;
 using SvnQuery.Lucene;
 
 namespace SvnIndex
@@ -67,7 +68,7 @@ namespace SvnIndex
                 t.Next();
             }              
             t.Close();
-            if (revision != 0 && Reader.Document(doc).Get(FieldName.RevisionLast) != RevisionFilter.HeadString)
+            if (revision != 0 && Reader.Document(doc).Get(FieldName.RevisionLast) != Revision.HeadString)
                 return 0;
             return revision;
         }

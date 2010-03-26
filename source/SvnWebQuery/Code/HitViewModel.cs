@@ -17,21 +17,20 @@
 #endregion
 
 using System;
-using Lucene.Net.Documents;
-using SvnQuery.Lucene;
+using SvnQuery;
 
 namespace SvnWebQuery.Code
 {
     public class HitViewModel
     {
-        readonly Document _doc;
+        readonly Hit _hit;
         readonly string _path;
         readonly string _link;
 
-        public HitViewModel(Document doc)
+        public HitViewModel(Hit hit)
         {
-            _doc = doc;
-            string id = doc.Get(FieldName.Id);
+            _hit = hit;
+            string id = hit.Id;
             _path = id.Split('@')[0];
             _link = "View.aspx?id=" +  Uri.EscapeDataString(id);            
         }
@@ -56,24 +55,19 @@ namespace SvnWebQuery.Code
             get { return _path.Substring(_path.LastIndexOf('/') + 1); }
         }
 
-        static string NiceRev(string rev)
-        {
-            return rev == RevisionFilter.HeadString ? "head" : rev.TrimStart('0');
-        }
-
         public string RevFirst
         {
-            get { return NiceRev(_doc.Get(FieldName.RevisionFirst)); }
+            get { return _hit.RevisionFirst; }
         }
 
         public string RevLast
         {
-            get { return NiceRev(_doc.Get(FieldName.RevisionLast)); }
+            get { return _hit.RevisionLast; }
         }
 
         public int Revision
         {
-            get { return int.Parse(_doc.Get(FieldName.RevisionFirst)); }
+            get { return _hit.Revision; }
         }
 
         /// <summary>
@@ -81,29 +75,22 @@ namespace SvnWebQuery.Code
         /// </summary>
         public int MaxSize
         {
-            get
-            {                
-                return PackedSizeConverter.FromSortableString(_doc.Get(FieldName.Size));
-            }
+            get { return _hit.SizeInBytes; }
         }
 
         public string Size
         {
-            get
-            {
-                string size = _doc.Get(FieldName.Size);
-                return string.IsNullOrEmpty(size) ? "" : PackedSizeConverter.FromSortableStringToString(size);
-            }
+            get { return _hit.Size; }
         }
 
         public string Author
         {
-            get { return _doc.Get(FieldName.Author); }
+            get { return _hit.Author; }
         }
 
         public string LastModification
         {
-            get { return _doc.Get(FieldName.Timestamp); }
+            get { return _hit.LastModification.ToString("g"); }
         }
 
         public string Summary

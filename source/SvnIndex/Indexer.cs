@@ -26,6 +26,7 @@ using Lucene.Net.Index;
 using Lucene.Net.Store;
 using SvnQuery.Lucene;
 using SvnQuery.Svn;
+using SvnQuery;
 
 namespace SvnIndex
 {
@@ -295,7 +296,7 @@ namespace SvnIndex
             IndexJobData jobData = new IndexJobData();
             jobData.Path = path;
             jobData.RevisionFirst = revision;
-            jobData.RevisionLast = RevisionFilter.Head;
+            jobData.RevisionLast = Revision.Head;
             jobData.Info = _svn.GetPathInfo(path, revision);
             if (jobData.Info == null) return; // workaround for issues with forbidden characters in local repository access
             lock (_headJobs) _headJobs[path] = jobData;
@@ -355,7 +356,7 @@ namespace SvnIndex
         /// <param name="jobData"></param>
         void FetchJob(IndexJobData jobData)
         {
-            if (!_args.SingleRevision || jobData.RevisionLast == RevisionFilter.Head) // don't fetch if this data would be deleted anyway
+            if (!_args.SingleRevision || jobData.RevisionLast == Revision.Head) // don't fetch if this data would be deleted anyway
             {
                 if (_args.Verbosity > 1)
                     Console.WriteLine("Fetch          " + jobData.Path + "   " + jobData.RevisionFirst + ":" + jobData.RevisionLast);
@@ -421,7 +422,7 @@ namespace SvnIndex
             Term id = _idTerm.CreateTerm(idText);
             _indexWriter.DeleteDocuments(id);
             
-            if (_args.SingleRevision && data.RevisionLast != RevisionFilter.Head)
+            if (_args.SingleRevision && data.RevisionLast != Revision.Head)
                 return;
 
             Document doc = MakeDocument();

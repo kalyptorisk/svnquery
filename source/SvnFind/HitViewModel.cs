@@ -19,11 +19,22 @@
 using System;
 using System.Linq;
 using SvnQuery.Lucene;
+using SvnQuery;
 
 namespace SvnFind
 {
     public class HitViewModel
     {
-       
+        Hit _hit;
+
+        public HitViewModel(Hit hit)
+        {
+            _hit = hit;
+        }
+
+        public override string ToString()
+        {
+            return _hit.ToString();
+        }
     }
 }

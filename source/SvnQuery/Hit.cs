@@ -107,5 +107,10 @@ namespace SvnQuery
         {
             get { return DateTime.Parse(_doc.Get(FieldName.Timestamp)); }
         }
+
+        public override string ToString()
+        {
+            return Path;
+        }
     }
 }

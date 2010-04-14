@@ -19,13 +19,36 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SvnQuery;
 
 namespace SvnFind
 {
     public class ResultViewModel
     {
+        readonly Result _result;
 
-        public IEnumerable<HitViewModel> Hits { get; set; }
+        public ResultViewModel(Result result)
+        {
+            _result = result;
+        }
+
+        public string Overview
+        {
+            get { return _result.Index.TotalCount + " files searched in " + _result.SearchTime.TotalMilliseconds + "ms"; }
+        }
+
+        public IEnumerable<HitViewModel> Hits
+        {
+            get
+            {
+                foreach (Hit hit in _result.Hits)
+                {
+                    yield return new HitViewModel(hit);
+                }
+
+            }            
+           
+        }
 
     }
 }

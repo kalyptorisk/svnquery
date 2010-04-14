@@ -19,17 +19,42 @@
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace SvnFind.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainView : Window
     {
-        public MainWindow()
+        public MainView()
         {
             InitializeComponent();
+
+            ViewModel = new MainViewModel();
         }
+
+        MainViewModel ViewModel
+        {
+            get { return (MainViewModel) DataContext;}
+            set { DataContext = value;}
+        }
+
+        private void Query_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Query();
+        }
+
+        private void QueryText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                QueryText.GetBindingExpression(TextBox.TextProperty).UpdateSource();
+                ViewModel.Query();
+            }
+        }
+
     }
 }

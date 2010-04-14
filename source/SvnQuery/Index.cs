@@ -37,7 +37,10 @@ namespace SvnQuery
         public Index(string pathToIndex)
         {
             _pathToIndex = pathToIndex;
+            Name = QueryProperties().RepositoryName;
         }
+
+        public string Name { get; private set; }
 
         public IndexProperties QueryProperties()
         {
@@ -100,5 +103,9 @@ namespace SvnQuery
 
         public bool IsSingleRevision { get; private set; }
 
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

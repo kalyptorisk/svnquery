@@ -24,11 +24,12 @@ namespace SvnQuery
 {
     public class Result
     {
-        internal Result(TimeSpan searchTime, IndexProperties indexProperties, Hits hits)
+        internal Result(string query, TimeSpan searchTime, IndexProperties indexProperties, Hits hits)
         {
             SearchTime = searchTime;
             Index = indexProperties;
             Hits = new HitList(hits);
+            Query = query;
         }
 
         public TimeSpan SearchTime { get; private set; }
@@ -36,5 +37,7 @@ namespace SvnQuery
         public IndexProperties Index { get; private set; }
 
         public HitList Hits { get; private set; }
+
+        public string Query { get; private set; }
     }
 }

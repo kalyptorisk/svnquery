@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Windows;
 
 namespace SvnFind
 {
@@ -79,4 +80,5 @@ namespace SvnFind
             return e.PropertyName == other.PropertyName;
         }
     }
+
 }

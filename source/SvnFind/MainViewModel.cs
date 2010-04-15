@@ -22,6 +22,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using SvnQuery;
+using System.Windows;
 
 namespace SvnFind
 {
@@ -45,9 +46,19 @@ namespace SvnFind
         public Index SelectedIndex
         {
             get { return _selectedIndex;} 
-            set { _selectedIndex = value; OnPropertyChanged(() => SelectedIndex); }
+            set 
+            { 
+                _selectedIndex = value; 
+                OnPropertyChanged(() => SelectedIndex); 
+                OnPropertyChanged(() => RevisionRangeVisibility);
+            }
         }
         Index _selectedIndex;
+
+        public Visibility RevisionRangeVisibility
+        {
+            get { return SelectedIndex.IsSingleRevision ? Visibility.Visible : Visibility.Hidden; }
+        }
 
         public ResultViewModel QueryResult
         {

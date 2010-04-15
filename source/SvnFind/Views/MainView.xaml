@@ -11,9 +11,10 @@
     <Grid>
     	<Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="21" />
-    		<RowDefinition Height="73.388"/>
-    		<RowDefinition Height="320.344*" />
-    		<RowDefinition Height="47.268"/>
+    		<RowDefinition Height="72"/>
+    		<RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="47"/>
     	</Grid.RowDefinitions>
         <Menu HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
             <MenuItem Header="SvnFind" />
@@ -21,20 +22,33 @@
             <MenuItem Header="Help" />
         </Menu>
         
-    	<TextBox Grid.Row="1" Margin="6,0,191,10.552" Text="{Binding QueryText}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" Name="QueryText" KeyDown="QueryText_KeyDown" />
+    	<TextBox x:Name="QueryText" Grid.Row="1" Margin="6,0,191,10.552" Text="{Binding QueryText}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" KeyDown="QueryText_KeyDown" />
     	<Button Grid.Row="1" Margin="0,0,113,10.572" Content="Search" HorizontalAlignment="Right" Width="72" Click="Query_Click" Name="Search" Height="24" VerticalAlignment="Bottom" />
 
         <TextBox Grid.Row="1" Margin="0,6,191,0" Text="TextBox" TextWrapping="Wrap" HorizontalAlignment="Right" Width="89" Height="18.836" VerticalAlignment="Top" />
     	<TextBlock Grid.Row="1" Margin="0,6,294,0" VerticalAlignment="Top" Height="22" Text="Revision:" TextWrapping="Wrap" HorizontalAlignment="Right" Width="46.527" />
-    	<Button HorizontalAlignment="Left" Margin="8,14.124,0,8" Width="79" Content="Save" Grid.Row="3" Height="24"/>
-    	<Button HorizontalAlignment="Left" Margin="91,14.696,0,8.572" Width="120" Content="Copy to Clipboard" Grid.Row="3" Height="24"/>
+    	<Button HorizontalAlignment="Left" Margin="8,14.124,0,8" Width="79" Content="Save" Grid.Row="4" Height="24"/>
+    	<Button HorizontalAlignment="Left" Margin="91,14.696,0,8.572" Width="120" Content="Copy to Clipboard" Grid.Row="4" Height="24"/>
     	<TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="0,15,8,0" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by"/><LineBreak/><Hyperlink FontSize="16" FontWeight="Bold" FontStyle="Italic">SvnQuery</Hyperlink><LineBreak/><Run Text="1.0.2.0"/></TextBlock>
         <Label Grid.Row="1" HorizontalAlignment="Left" Margin="8,6,0,0" Name="label1" Width="120" Height="27.856" VerticalAlignment="Top">Repository:</Label>
         <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="81,6,0,0" Name="Repository" Width="218" Height="22.836" VerticalAlignment="Top" 
                   ItemsSource="{Binding Indices}" SelectedItem="{Binding SelectedIndex}" />
 
-        <TextBlock x:Name="Overview" Grid.Row="2" Text="{Binding QueryResult.Overview}" />
-        <ListBox Grid.Row="2" Background="{x:Null}" ItemsSource="{Binding QueryResult.Hits}" Margin="0,35,0,0" Name="HitList" />
+        <Border Grid.Row="2" Background="#FFCC99" BorderBrush="#CC6600" BorderThickness="0,1,0,0" Margin="0,0,0,0"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="HitCount" Grid.Column="0" HorizontalAlignment="Left" Width="Auto" Margin="8,2,0,2" Padding="0,0,4,0">
+                <TextBlock Text="{Binding QueryResult.HitCount}" FontWeight="Bold" />
+                <TextBlock Text="{Binding QueryResult.HitsFor}" />
+                <TextBlock Text="{Binding QueryResult.Query}" FontWeight="Bold" />
+            </TextBlock>
+            <TextBlock x:Name="QueryStatistics" Grid.Column="1" Text="{Binding QueryResult.Statistics}" Foreground="#707060" HorizontalAlignment="Right" Margin="0,2,8,2" Width="Auto" Padding="4,0,0,0" />
+        </Grid>
+        
+        <ListBox Grid.Row="3" Background="{x:Null}" ItemsSource="{Binding QueryResult.Hits}" Margin="0" Name="HitList" />
 
     </Grid>
 </Window>

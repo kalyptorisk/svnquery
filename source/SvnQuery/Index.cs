@@ -85,7 +85,7 @@ namespace SvnQuery
             }
 
             var properties = new IndexProperties(searcher.Reader);
-            return new Result(sw.Elapsed, properties, hits);
+            return new Result(query, sw.Elapsed, properties, hits);
         }
 
         IndexSearcher GetSearcher()

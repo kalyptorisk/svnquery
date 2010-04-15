@@ -24,7 +24,6 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using SvnQuery;
-using SvnQuery.Lucene;
 using SvnWebQuery.Code;
 
 namespace SvnWebQuery
@@ -111,7 +110,7 @@ namespace SvnWebQuery
             try
             {
                 Result r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
-                string htmlQuery = Server.HtmlEncode(_query.Value);
+                string htmlQuery = Server.HtmlEncode(r.Query);
                 _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.Hits.Count, htmlQuery);
                 _statisticsLabel.Text =
                     string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",

@@ -32,9 +32,28 @@ namespace SvnFind
             _result = result;
         }
 
-        public string Overview
+        public string HitCount
         {
-            get { return _result.Index.TotalCount + " files searched in " + _result.SearchTime.TotalMilliseconds + "ms"; }
+            get { return _result.Hits.Count.ToString(); }
+        }
+
+        public string HitsFor
+        {
+            get { return _result.Hits.Count == 1 ? "hit for" : "hits for"; }
+        }
+
+        public string Query
+        {
+            get { return _result.Query; }
+        }
+
+        public string Statistics
+        {
+            get
+            {
+                const string fmt = "{0} files searched in {1}ms. Revision is {2}";
+                return string.Format(fmt, _result.Index.TotalCount, (int)_result.SearchTime.TotalMilliseconds, _result.Index.Revision);
+            }
         }
 
         public IEnumerable<HitViewModel> Hits
@@ -45,9 +64,7 @@ namespace SvnFind
                 {
                     yield return new HitViewModel(hit);
                 }
-
-            }            
-           
+            }                       
         }
 
     }

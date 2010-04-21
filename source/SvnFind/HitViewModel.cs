@@ -32,6 +32,31 @@ namespace SvnFind
             _hit = hit;
         }
 
+        public string Path
+        {
+            get { return _hit.Path; }
+        }
+
+        public string Author
+        {
+            get { return _hit.Author; }
+        }
+
+        public string LastModified
+        {
+            get { return _hit.LastModification.ToShortDateString() + " " + _hit.LastModification.ToShortTimeString(); }
+        }
+
+        public string Revision
+        {
+            get { return _hit.RevisionFirst + ":" + _hit.RevisionLast;}
+        }
+
+        public string Size
+        {
+            get { return _hit.Size; }
+        }
+
         public override string ToString()
         {
             return _hit.ToString();

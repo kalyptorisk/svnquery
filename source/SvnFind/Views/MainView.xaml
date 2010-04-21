@@ -12,10 +12,35 @@
         >
 	<Window.Background>
 		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-			<GradientStop Color="#FFB9CBFA" Offset="1"/>
-			<GradientStop Color="#FFE0E5FE"/>
+			<GradientStop Color="#FFCDDDFF" Offset="1"/>
+			<GradientStop Color="#FFEDF2FF"/>
 		</LinearGradientBrush>
 	</Window.Background>
+	<Window.Resources>
+
+        	<DataTemplate x:Key="HitDataTemplate">
+				
+        			<Grid Margin="4,2,0,1">
+        				<Grid.RowDefinitions>
+        					<RowDefinition Height="Auto"/>
+        					<RowDefinition Height="Auto"/>
+        				</Grid.RowDefinitions>
+						
+        				<TextBlock FontSize="13"><Hyperlink><TextBlock Text="{Binding Path}" /></Hyperlink></TextBlock>
+        				<TextBlock TextWrapping="Wrap" Grid.Row="1" FontSize="11.5">
+        					<TextBlock.Foreground>
+        						<SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GrayTextColorKey}}"/>
+        					</TextBlock.Foreground>
+							<TextBlock Text="{Binding Author}"/> -
+							<TextBlock Text="{Binding LastModified}"/> -
+							<TextBlock Text="{Binding Revision}"/> - 
+							<TextBlock Text="{Binding Size}"/>							
+						</TextBlock>
+        			</Grid>
+				
+        	</DataTemplate>
+        	
+	</Window.Resources>
     <Grid>
     	<Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -34,31 +59,33 @@
         <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="76,0,0,35" x:Name="Repository" Width="150" 
                   ItemsSource="{Binding Indices}" SelectedItem="{Binding SelectedIndex}" VerticalAlignment="Bottom" Height="22" />
 
+    	<Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,224,35.98" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Grid.Row="1" Click="Head_Click" />
+    	<Button x:Name="All" HorizontalAlignment="Right" Margin="0,0,182,35.98" Width="38" Content="All" Grid.Row="1" VerticalAlignment="Bottom" Height="22" Click="All_Click" />
+    	<TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center">
+		  <Hyperlink>Help</Hyperlink>
+		</TextBlock>
+
+        <!-- Summary -->
         <Border Grid.Row="2" Background="#FFCC99" BorderBrush="#CC6600" BorderThickness="0,1,0,0" Margin="0">
         	<Grid Margin="0,0,0,-1">
         		<Grid.ColumnDefinitions>
         			<ColumnDefinition Width="*"/>
         			<ColumnDefinition Width="Auto" />
         		</Grid.ColumnDefinitions>
-        		<TextBlock x:Name="HitCount" Grid.Column="0" HorizontalAlignment="Left" Width="Auto" Margin="8,2,0,2" Padding="0,0,4,0"><InlineUIContainer>
-        				<TextBlock Text="{Binding QueryResult.HitCount}" FontWeight="Bold" />
-        			</InlineUIContainer><Run Text=" "/><InlineUIContainer>
-        				<TextBlock Text="{Binding QueryResult.HitsFor}" />
-        			</InlineUIContainer><Run Text=" "/><InlineUIContainer>
-        				<TextBlock Text="{Binding QueryResult.Query}" FontWeight="Bold" />
-        			</InlineUIContainer></TextBlock>
+        		<TextBlock x:Name="HitCount" Grid.Column="0" HorizontalAlignment="Left" Width="Auto" Margin="8,2,0,2" Padding="0,0,4,0">
+        				<TextBlock Text="{Binding QueryResult.HitCount}" FontWeight="Bold" />        		
+        				<TextBlock Text="{Binding QueryResult.HitsFor}" />        			
+        				<TextBlock Text="{Binding QueryResult.Query}" FontWeight="Bold" />        			
+				</TextBlock>
         		<TextBlock x:Name="QueryStatistics" Grid.Column="1" Text="{Binding QueryResult.Statistics}" Foreground="#707060" HorizontalAlignment="Right" Margin="0,2,8,2" Width="Auto" Padding="4,0,0,0" />
-        	</Grid>
-        
+        	</Grid>        
         </Border>
         
-        <ListBox Grid.Row="3" Background="{x:Null}" ItemsSource="{Binding QueryResult.Hits}" x:Name="HitList" Margin="0" BorderThickness="0" />
-
-    	<Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,224,35.98" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Grid.Row="1"/>
-    	<Button x:Name="All" HorizontalAlignment="Right" Margin="0,0,182,35.98" Width="38" Content="All" Grid.Row="1" VerticalAlignment="Bottom" Height="22"/>
-    	<TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center">
-		  <Hyperlink>Help</Hyperlink>
-		</TextBlock>
+		<!-- Results -->
+        <ListBox  x:Name="HitList" Grid.Row="3" Background="{x:Null}" 
+			ItemsSource="{Binding QueryResult.Hits}" 
+			ItemTemplate="{DynamicResource HitDataTemplate}"
+			Margin="0" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectionChanged="HitList_SelectionChanged" />
 
     </Grid>
 </Window>

@@ -11,8 +11,10 @@ namespace SvnFind
         static DesignData()
         {
             MainViewModel = new MainViewModel();
+#if DEBUG
             MainViewModel.QueryText = "bla";
             MainViewModel.Query();
+#endif
         }
 
         public static MainViewModel MainViewModel { get; private set;}

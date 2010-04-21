@@ -44,7 +44,9 @@ namespace SvnFind.Views
 
         private void Query_Click(object sender, RoutedEventArgs e)
         {
+            Cursor = Cursors.Wait;
             ViewModel.Query();
+            Cursor = null;
         }
 
         private void QueryText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -54,6 +56,21 @@ namespace SvnFind.Views
                 QueryText.GetBindingExpression(TextBox.TextProperty).UpdateSource();
                 ViewModel.Query();
             }
+        }
+
+        private void HitList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            HitList.SelectedItem = null;
+        }
+
+        private void Head_Click(object sender, RoutedEventArgs e)
+        {            
+            Revision.Text = "Head";
+        }
+
+        private void All_Click(object sender, RoutedEventArgs e)
+        {
+            Revision.Text = "All";
         }
 
     }

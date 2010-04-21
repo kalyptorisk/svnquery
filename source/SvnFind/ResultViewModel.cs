@@ -27,6 +27,8 @@ namespace SvnFind
     {
         readonly Result _result;
 
+        const int MaxDisplayedEntries = 100000;
+
         public ResultViewModel(Result result)
         {
             _result = result;
@@ -60,8 +62,10 @@ namespace SvnFind
         {
             get
             {
+                int i = 0;
                 foreach (Hit hit in _result.Hits)
                 {
+                    if (++i == MaxDisplayedEntries) yield break;
                     yield return new HitViewModel(hit);
                 }
             }                       

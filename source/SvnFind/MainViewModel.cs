@@ -26,6 +26,7 @@ using System.Windows;
 
 namespace SvnFind
 {
+
     public class MainViewModel: ViewModelBase
     {
         public MainViewModel()
@@ -71,7 +72,7 @@ namespace SvnFind
         {            
             QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText));
         }
-
+        
 
     }
 }

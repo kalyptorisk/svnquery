@@ -26,14 +26,14 @@
         					<RowDefinition Height="Auto"/>
         				</Grid.RowDefinitions>
 						
-        				<TextBlock FontSize="13"><Hyperlink><TextBlock Text="{Binding Path}" /></Hyperlink></TextBlock>
+        				<TextBlock FontSize="13"><Hyperlink Name="HitItemLink" Click="HitItemLink_Click"><TextBlock Text="{Binding Path}" /></Hyperlink></TextBlock>
         				<TextBlock TextWrapping="Wrap" Grid.Row="1" FontSize="11.5">
         					<TextBlock.Foreground>
         						<SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GrayTextColorKey}}"/>
         					</TextBlock.Foreground>
 							<TextBlock Text="{Binding Author}"/> -
 							<TextBlock Text="{Binding LastModified}"/> -
-							<TextBlock Text="{Binding Revision}"/> - 
+							<TextBlock Text="{Binding RevisionRange}"/> - 
 							<TextBlock Text="{Binding Size}"/>							
 						</TextBlock>
         			</Grid>
@@ -48,21 +48,24 @@
     		<RowDefinition Height="Auto" MinHeight="22" />
     		<RowDefinition/>          
     	</Grid.RowDefinitions>
+
+        <Label Grid.Row="1" HorizontalAlignment="Left" Margin="8,0,0,37.552" x:Name="label1" VerticalAlignment="Bottom" Height="17.408" Content="Repository:" Padding="0" Width="64" />
+        <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="76,0,0,35" x:Name="Repository" Width="150" ItemsSource="{Binding Indices}" SelectedItem="{Binding SelectedIndex}" VerticalAlignment="Bottom" Height="22" />
+
+        <Grid x:Name="Revision" Margin="0,0,182,35" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1" Visibility="{Binding RevisionRangeVisibility}">
+    		<TextBlock Margin="0,0,184,3.04" Text="Revision:" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" HorizontalAlignment="Right" />
+    		<TextBox x:Name="RevisionRange" Margin="54,0,84,0" Text="{Binding RevisionRange}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" LostFocus="RevisionRange_LostFocus" GotFocus="RevisionRange_GotFocus" />
+    		<Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,42,0" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Click="Head_Click" />
+    		<Button x:Name="All" HorizontalAlignment="Right" Width="38" Content="All" VerticalAlignment="Bottom" Height="22" Click="All_Click" />
+    	</Grid>
+        <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="0,8,8,7" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by" /><LineBreak /><Hyperlink FontSize="16" FontWeight="Bold" FontStyle="Italic" Name="SvnQuery" Click="SvnQuery_Click"><Run Text="SvnQuery" /></Hyperlink><LineBreak /><Run Text="1.0.2.0" /></TextBlock>
+
+        <TextBox x:Name="QueryText" Grid.Row="1" Margin="6,0,182,8" Text="{Binding QueryText}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" KeyDown="QueryText_KeyDown" />
+        <Button Grid.Row="1" Margin="0,0,106,7" IsDefault="True" Content="Search" HorizontalAlignment="Right" Width="72" Click="Query_Click" x:Name="Search" Height="24" VerticalAlignment="Bottom" />
+
         
-    	<TextBox x:Name="QueryText" Grid.Row="1" Margin="6,0,182,8" Text="{Binding QueryText}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" KeyDown="QueryText_KeyDown" />
-    	<Button Grid.Row="1" Margin="0,0,106,7" Content="Search" HorizontalAlignment="Right" Width="72" Click="Query_Click" x:Name="Search" Height="24" VerticalAlignment="Bottom" />
-
-        <TextBox x:Name="Revision" Grid.Row="1" Margin="0,0,266,35.96" Text="100458-126788" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" HorizontalAlignment="Right" Width="96" />
-    	<TextBlock Grid.Row="1" Margin="0,0,366,39" Text="Revision:" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" HorizontalAlignment="Right" />
-    	<TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="0,8,8,7" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by"/><LineBreak/><Hyperlink FontSize="16" FontWeight="Bold" FontStyle="Italic"><Run Text="SvnQuery"/></Hyperlink><LineBreak/><Run Text="1.0.2.0"/></TextBlock>
-        <Label Grid.Row="1" HorizontalAlignment="Left" Margin="8,0,0,37.552" x:Name="label1" VerticalAlignment="Bottom" Height="17.408" Content="Repository:" Padding="0" Width="64"/>
-        <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="76,0,0,35" x:Name="Repository" Width="150" 
-                  ItemsSource="{Binding Indices}" SelectedItem="{Binding SelectedIndex}" VerticalAlignment="Bottom" Height="22" />
-
-    	<Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,224,35.98" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Grid.Row="1" Click="Head_Click" />
-    	<Button x:Name="All" HorizontalAlignment="Right" Margin="0,0,182,35.98" Width="38" Content="All" Grid.Row="1" VerticalAlignment="Bottom" Height="22" Click="All_Click" />
-    	<TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center">
-		  <Hyperlink>Help</Hyperlink>
+    	<TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextAlignment="Center">
+		  <Hyperlink Name="Help" Click="Help_Click">Help</Hyperlink>
 		</TextBlock>
 
         <!-- Summary -->

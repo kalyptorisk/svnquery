@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,20 +43,18 @@ namespace SvnFind.Views
             set { DataContext = value;}
         }
 
-        private void Query_Click(object sender, RoutedEventArgs e)
-        {
-            Cursor = Cursors.Wait;
-            ViewModel.Query();
-            Cursor = null;
-        }
-
         private void QueryText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Return)
             {
                 QueryText.GetBindingExpression(TextBox.TextProperty).UpdateSource();
-                ViewModel.Query();
+                Query_Click(null, null);
             }
+        }
+
+        private void Query_Click(object sender, RoutedEventArgs e)
+        {
+            DoActionWithWaitCursor(ViewModel.Query);            
         }
 
         private void HitList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -65,13 +64,57 @@ namespace SvnFind.Views
 
         private void Head_Click(object sender, RoutedEventArgs e)
         {            
-            Revision.Text = "Head";
+            RevisionRange.Text = "Head";
         }
 
         private void All_Click(object sender, RoutedEventArgs e)
         {
-            Revision.Text = "All";
+            RevisionRange.Text = "All";
         }
 
+        private void SvnQuery_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("http://svnquery.tigris.org/");
+        }
+
+        private void Help_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("Help.htm");
+        }
+
+        private void HitItemLink_Click(object sender, RoutedEventArgs e)
+        {
+            DoActionWithWaitCursor(delegate
+            {
+                HitViewModel hitViewModel = (HitViewModel) ((FrameworkContentElement) e.Source).DataContext;
+                ViewModel.QueryResult.OpenHit(hitViewModel);
+            });
+        }
+
+        void DoActionWithWaitCursor(Action a)
+        {
+            try 
+            {
+                Cursor = Cursors.Wait;
+                a(); 
+            }
+            finally
+            {
+                Cursor = null;
+            }
+        }
+
+        private void RevisionRange_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke((Action)delegate
+            {
+                RevisionRange.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+            });
+        }
+
+        private void RevisionRange_GotFocus(object sender, RoutedEventArgs e)
+        {
+            RevisionRange.SelectAll();
+        }
     }
 }

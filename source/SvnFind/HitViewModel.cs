@@ -18,14 +18,13 @@
 
 using System;
 using System.Linq;
-using SvnQuery.Lucene;
 using SvnQuery;
 
 namespace SvnFind
 {
     public class HitViewModel
     {
-        Hit _hit;
+        readonly Hit _hit;
 
         public HitViewModel(Hit hit)
         {
@@ -35,6 +34,16 @@ namespace SvnFind
         public string Path
         {
             get { return _hit.Path; }
+        }
+
+        public string File
+        {
+            get { return _hit.File; }
+        }
+
+        public string Folder
+        {
+            get { return _hit.Folder; }
         }
 
         public string Author
@@ -47,14 +56,24 @@ namespace SvnFind
             get { return _hit.LastModification.ToShortDateString() + " " + _hit.LastModification.ToShortTimeString(); }
         }
 
-        public string Revision
+        public int Revision
         {
-            get { return _hit.RevisionFirst + ":" + _hit.RevisionLast;}
+            get { return _hit.Revision; }
+        }
+
+        public string RevisionRange
+        {
+            get { return _hit.RevisionFirst + ":" + _hit.RevisionLast; }
         }
 
         public string Size
         {
             get { return _hit.Size; }
+        }
+
+        public int SizeInBytes
+        {
+            get { return _hit.SizeInBytes; }
         }
 
         public override string ToString()

@@ -272,7 +272,7 @@ namespace SvnQuery.Svn
             SvnClient client = AllocSvnClient();
             try
             {
-                using (MemoryStream stream = new MemoryStream(size))
+                using (MemoryStream stream = new MemoryStream(size + 512))
                 {
                     client.Write(MakeTarget(path, revision), stream);
                     stream.Position = 0;

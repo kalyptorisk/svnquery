@@ -17,17 +17,15 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
-using SvnQuery;
+using System.Text.RegularExpressions;
 using System.Windows;
+using SvnQuery;
 
 namespace SvnFind
 {
-
-    public class MainViewModel: ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
         public MainViewModel()
         {
@@ -36,43 +34,107 @@ namespace SvnFind
             Indices.Add(new Index(@"\\moria\SodaIndex"));
             SelectedIndex = Indices[0];
             QueryText = "";
+            RevisionRange = "Head";
         }
 
         public string QueryText { get; set; }
 
-        public ICommand QueryCommand { get; private set; }
+        public string RevisionRange
+        {
+            get { return _revisionRange; }
+            set
+            {
+                string first, last;
+                _revisionRange = GetRevisionRange(value, out first, out last);
+                OnPropertyChanged(() => RevisionRange);
+            }
+        }
 
-        public ObservableCollection<Index> Indices { get; private set;}
+        string _revisionRange;
+
+        public ObservableCollection<Index> Indices { get; private set; }
 
         public Index SelectedIndex
         {
-            get { return _selectedIndex;} 
-            set 
-            { 
-                _selectedIndex = value; 
-                OnPropertyChanged(() => SelectedIndex); 
+            get { return _selectedIndex; }
+            set
+            {
+                _selectedIndex = value;
+                OnPropertyChanged(() => SelectedIndex);
                 OnPropertyChanged(() => RevisionRangeVisibility);
             }
         }
+
         Index _selectedIndex;
 
         public Visibility RevisionRangeVisibility
         {
-            get { return SelectedIndex.IsSingleRevision ? Visibility.Visible : Visibility.Hidden; }
+            get { return SelectedIndex.IsSingleRevision ? Visibility.Hidden : Visibility.Visible; }
         }
 
         public ResultViewModel QueryResult
         {
             get { return _queryResult; }
-            set { _queryResult = value; OnPropertyChanged(() => QueryResult); }
+            set
+            {
+                _queryResult = value;
+                OnPropertyChanged(() => QueryResult);
+            }
         }
+
         ResultViewModel _queryResult;
 
         public void Query()
-        {            
-            QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText));
+        {
+            string first, last;
+            GetRevisionRange(RevisionRange, out first, out last);
+            QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText, first, last));
         }
-        
 
+        /// <summary>
+        /// Validates and normalized the RevisionRange representation. As a side effect also
+        /// deliverst the first and last revision of the range in a form suitable for the query api.
+        /// </summary>
+        static string GetRevisionRange(string revisionRange, out string first, out string last)
+        {
+            string text = revisionRange.ToLowerInvariant();
+
+            if (text.Contains("all"))
+            {
+                first = last = Revision.AllString;
+                return "All";
+            }
+
+            Match m = Regex.Match(text, @"\d{1,8}");
+            if (m.Success)
+            {
+                int nfirst = int.Parse(m.ToString());
+                m = m.NextMatch();
+                if (m.Success)
+                {
+                    int nlast = int.Parse(m.ToString());
+                    if (nfirst < nlast)
+                    {
+                        first = nfirst.ToString();
+                        last = nlast.ToString();
+                    }
+                    else
+                    {
+                        first = nlast.ToString();
+                        last = nfirst.ToString();
+                    }
+                    return first + " : " + last;
+                }
+                if (text.Contains("head"))
+                {
+                    first = nfirst.ToString();
+                    last = Revision.HeadString;
+                    return first + " : Head";
+                }
+                return first = last = nfirst.ToString();
+            }
+            first = last = Revision.HeadString;
+            return "Head";
+        }
     }
 }

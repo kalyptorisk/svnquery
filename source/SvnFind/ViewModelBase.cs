@@ -29,6 +29,14 @@ namespace SvnFind
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public static bool IsDesignTime
+        {
+            get
+            {
+                 return DesignerProperties.GetIsInDesignMode(new DependencyObject());                   
+            }
+        }
+
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs args)
         {
             // args should be created through MakePropertyChangedEventArgs 

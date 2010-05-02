@@ -17,22 +17,34 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Xml.Linq;
 using SvnQuery;
 
 namespace SvnFind
 {
     public class MainViewModel : ViewModelBase
     {
-        public MainViewModel()
-        {
-            var repositories = XmlConfiguration.GetSection("repositories");
-            var indices = from r in repositories.Elements("repository")
-                          select new Index(r.Attribute("index").Value);
+        public MainViewModel() : this(RepositoriesFromAppConfig)
+        {}
 
+        static IEnumerable<Index> RepositoriesFromAppConfig
+        {
+            get
+            {
+                XElement repositories = XmlConfiguration.GetSection("repositories");
+                return from r in repositories.Elements("repository")
+                       select new Index(r.Attribute("index").Value);
+            }
+        }
+
+        MainViewModel(IEnumerable<Index> indices)
+        {
             Indices = new ObservableCollection<Index>(indices);
             if (Indices.Count == 0)
             {
@@ -42,6 +54,29 @@ namespace SvnFind
             SelectedIndex = Indices[0];
             QueryText = "";
             RevisionRange = "Head";
+        }
+
+        public static MainViewModel Instance
+        {
+            get
+            {
+#if DEBUG
+                if (IsDesignTime)
+                {
+                    var indices = new[]
+                                  {
+                                      new Index(@"C:\_Entwicklung\SvnQuery\SvnQueryDemos\SvnQueryDemo_Subversion\IndexData"),
+                                  };
+
+                    var model = new MainViewModel(indices);
+                    model.RevisionRange = "All";
+                    model.QueryText = "bla";
+                    model.Query();
+                    return model;
+                }
+#endif
+                return new MainViewModel();
+            }
         }
 
         public string QueryText { get; set; }
@@ -66,6 +101,7 @@ namespace SvnFind
             get { return _selectedIndex; }
             set
             {
+                Debug.Assert(value != null);
                 _selectedIndex = value;
                 OnPropertyChanged(() => SelectedIndex);
                 OnPropertyChanged(() => RevisionRangeVisibility);

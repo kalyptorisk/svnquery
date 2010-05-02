@@ -3,31 +3,29 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:SvnFind="clr-namespace:SvnFind"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" x:Class="SvnFind.Views.MainView"
-    Title="SvnFind" Height="500" Width="768"
-        
-        DataContext="{x:Static SvnFind:DesignData.MainViewModel}"
-        
+    Title="SvnFind" 
+    DataContext="{x:Static SvnFind:MainViewModel.Instance}"
+    Height="500" Width="768"
         mc:Ignorable="d" MinWidth="675" MinHeight="300"
-        
         >
-	<Window.Background>
-		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-			<GradientStop Color="#FFCDDDFF" Offset="1"/>
-			<GradientStop Color="#FFEDF2FF"/>
-		</LinearGradientBrush>
-	</Window.Background>
-	<Window.Resources>
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="#FFCDDDFF" Offset="1"/>
+            <GradientStop Color="#FFEDF2FF"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <Window.Resources>
+        
+        <DataTemplate x:Key="HitDataTemplate">
 
-        	<DataTemplate x:Key="HitDataTemplate">
-				
-        			<Grid Margin="4,2,0,1">
-        				<Grid.RowDefinitions>
-        					<RowDefinition Height="Auto"/>
-        					<RowDefinition Height="Auto"/>
-        				</Grid.RowDefinitions>
-						
-        				<TextBlock FontSize="13"><Hyperlink Name="HitItemLink" Click="HitItemLink_Click"><TextBlock Text="{Binding Path}" /></Hyperlink></TextBlock>
-        				<TextBlock TextWrapping="Wrap" Grid.Row="1" FontSize="11.5">
+            <Grid Margin="4,2,0,1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock FontSize="13"><Hyperlink Name="HitItemLink" Click="HitItemLink_Click"><TextBlock Text="{Binding Path}" /></Hyperlink></TextBlock>
+                <TextBlock TextWrapping="Wrap" Grid.Row="1" FontSize="11.5">
         					<TextBlock.Foreground>
         						<SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GrayTextColorKey}}"/>
         					</TextBlock.Foreground>
@@ -36,55 +34,54 @@
 							<TextBlock Text="{Binding RevisionRange}"/> - 
 							<TextBlock Text="{Binding Size}"/>							
 						</TextBlock>
-        			</Grid>
-				
-        	</DataTemplate>
-        	
-	</Window.Resources>
+            </Grid>
+
+        </DataTemplate>
+
+    </Window.Resources>
     <Grid>
-    	<Grid.RowDefinitions>
+        <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-    		<RowDefinition Height="67"/>
-    		<RowDefinition Height="Auto" MinHeight="22" />
-    		<RowDefinition/>          
-    	</Grid.RowDefinitions>
+            <RowDefinition Height="67"/>
+            <RowDefinition Height="Auto" MinHeight="22" />
+            <RowDefinition/>
+        </Grid.RowDefinitions>
 
         <Label Grid.Row="1" HorizontalAlignment="Left" Margin="8,0,0,37.552" x:Name="label1" VerticalAlignment="Bottom" Height="17.408" Content="Repository:" Padding="0" Width="64" />
-        <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="76,0,0,35" x:Name="Repository" Width="150" ItemsSource="{Binding Indices}" SelectedItem="{Binding SelectedIndex}" VerticalAlignment="Bottom" Height="22" />
-
+        <ComboBox Grid.Row="1" HorizontalAlignment="Left" Margin="76,0,0,35" x:Name="Repository" Width="150" SelectedItem="{Binding SelectedIndex}" ItemsSource="{Binding Indices}" VerticalAlignment="Bottom" Height="22" />
         <Grid x:Name="Revision" Margin="0,0,182,35" VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1" Visibility="{Binding RevisionRangeVisibility}">
-    		<TextBlock Margin="0,0,184,3.04" Text="Revision:" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" HorizontalAlignment="Right" />
-    		<TextBox x:Name="RevisionRange" Margin="54,0,84,0" Text="{Binding RevisionRange}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" LostFocus="RevisionRange_LostFocus" GotFocus="RevisionRange_GotFocus" />
-    		<Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,42,0" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Click="Head_Click" />
-    		<Button x:Name="All" HorizontalAlignment="Right" Width="38" Content="All" VerticalAlignment="Bottom" Height="22" Click="All_Click" />
-    	</Grid>
+            <TextBlock Margin="0,0,184,3.04" Text="Revision:" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" HorizontalAlignment="Right" />
+            <TextBox x:Name="RevisionRange" Margin="54,0,84,0" Text="{Binding RevisionRange}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" LostFocus="RevisionRange_LostFocus" GotFocus="RevisionRange_GotFocus" />
+            <Button x:Name="Head" HorizontalAlignment="Right" Margin="0,0,42,0" VerticalAlignment="Bottom" Width="38" Height="22" Content="Head" Click="Head_Click" />
+            <Button x:Name="All" HorizontalAlignment="Right" Width="38" Content="All" VerticalAlignment="Bottom" Height="22" Click="All_Click" />
+        </Grid>
         <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="0,8,8,7" Width="85" TextAlignment="Center" TextWrapping="Wrap"><Run FontStyle="Italic" Text="powered by" /><LineBreak /><Hyperlink FontSize="16" FontWeight="Bold" FontStyle="Italic" Name="SvnQuery" Click="SvnQuery_Click"><Run Text="SvnQuery" /></Hyperlink><LineBreak /><Run Text="1.0.2.0" /></TextBlock>
 
         <TextBox x:Name="QueryText" Grid.Row="1" Margin="6,0,182,8" Text="{Binding QueryText}" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="23" KeyDown="QueryText_KeyDown" />
         <Button Grid.Row="1" Margin="0,0,106,7" IsDefault="True" Content="Search" HorizontalAlignment="Right" Width="72" Click="Query_Click" x:Name="Search" Height="24" VerticalAlignment="Bottom" />
 
-        
-    	<TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextAlignment="Center">
+
+        <TextBlock HorizontalAlignment="Right" Margin="0,12.04,106,0" VerticalAlignment="Top" Width="72" Grid.Row="1" TextAlignment="Center">
 		  <Hyperlink Name="Help" Click="Help_Click">Help</Hyperlink>
-		</TextBlock>
+        </TextBlock>
 
         <!-- Summary -->
         <Border Grid.Row="2" Background="#FFCC99" BorderBrush="#CC6600" BorderThickness="0,1,0,0" Margin="0">
-        	<Grid Margin="0,0,0,-1">
-        		<Grid.ColumnDefinitions>
-        			<ColumnDefinition Width="*"/>
-        			<ColumnDefinition Width="Auto" />
-        		</Grid.ColumnDefinitions>
-        		<TextBlock x:Name="HitCount" Grid.Column="0" HorizontalAlignment="Left" Width="Auto" Margin="8,2,0,2" Padding="0,0,4,0">
+            <Grid Margin="0,0,0,-1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="HitCount" Grid.Column="0" HorizontalAlignment="Left" Width="Auto" Margin="8,2,0,2" Padding="0,0,4,0">
         				<TextBlock Text="{Binding QueryResult.HitCount}" FontWeight="Bold" />        		
         				<TextBlock Text="{Binding QueryResult.HitsFor}" />        			
         				<TextBlock Text="{Binding QueryResult.Query}" FontWeight="Bold" />        			
 				</TextBlock>
-        		<TextBlock x:Name="QueryStatistics" Grid.Column="1" Text="{Binding QueryResult.Statistics}" Foreground="#707060" HorizontalAlignment="Right" Margin="0,2,8,2" Width="Auto" Padding="4,0,0,0" />
-        	</Grid>        
+                <TextBlock x:Name="QueryStatistics" Grid.Column="1" Text="{Binding QueryResult.Statistics}" Foreground="#707060" HorizontalAlignment="Right" Margin="0,2,8,2" Width="Auto" Padding="4,0,0,0" />
+            </Grid>
         </Border>
-        
-		<!-- Results -->
+
+        <!-- Results -->
         <ListBox  x:Name="HitList" Grid.Row="3" Background="{x:Null}" 
 			ItemsSource="{Binding QueryResult.Hits}" 
 			ItemTemplate="{DynamicResource HitDataTemplate}"

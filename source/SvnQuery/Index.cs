@@ -37,7 +37,10 @@ namespace SvnQuery
         public Index(string pathToIndex)
         {
             _pathToIndex = pathToIndex;
-            Name = QueryProperties().RepositoryName;
+
+            var props = QueryProperties();
+            Name = props.RepositoryName;
+            IsSingleRevision = props.SingleRevision;
         }
 
         public string Name { get; private set; }

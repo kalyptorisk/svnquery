@@ -31,7 +31,9 @@ namespace SvnFind
     public class MainViewModel : ViewModelBase
     {
         public MainViewModel() : this(RepositoriesFromAppConfig)
-        {}
+        {
+            QueryText = "$Revision 8710";
+        }
 
         static IEnumerable<Index> RepositoriesFromAppConfig
         {

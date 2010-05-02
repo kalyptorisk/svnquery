@@ -39,11 +39,11 @@ namespace SvnFind.Views
 
         MainViewModel ViewModel
         {
-            get { return (MainViewModel) DataContext;}
-            set { DataContext = value;}
+            get { return (MainViewModel) DataContext; }
+            set { DataContext = value; }
         }
 
-        private void QueryText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        void QueryText_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return)
             {
@@ -52,37 +52,37 @@ namespace SvnFind.Views
             }
         }
 
-        private void Query_Click(object sender, RoutedEventArgs e)
+        void Query_Click(object sender, RoutedEventArgs e)
         {
-            DoActionWithWaitCursor(ViewModel.Query);            
+            DoActionWithWaitCursor(ViewModel.Query);
         }
 
-        private void HitList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        void HitList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             HitList.SelectedItem = null;
         }
 
-        private void Head_Click(object sender, RoutedEventArgs e)
-        {            
+        void Head_Click(object sender, RoutedEventArgs e)
+        {
             RevisionRange.Text = "Head";
         }
 
-        private void All_Click(object sender, RoutedEventArgs e)
+        void All_Click(object sender, RoutedEventArgs e)
         {
             RevisionRange.Text = "All";
         }
 
-        private void SvnQuery_Click(object sender, RoutedEventArgs e)
+        void SvnQuery_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://svnquery.tigris.org/");
         }
 
-        private void Help_Click(object sender, RoutedEventArgs e)
+        void Help_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("Help.htm");
         }
 
-        private void HitItemLink_Click(object sender, RoutedEventArgs e)
+        void HitItemLink_Click(object sender, RoutedEventArgs e)
         {
             DoActionWithWaitCursor(delegate
             {
@@ -93,10 +93,10 @@ namespace SvnFind.Views
 
         void DoActionWithWaitCursor(Action a)
         {
-            try 
+            try
             {
                 Cursor = Cursors.Wait;
-                a(); 
+                a();
             }
             finally
             {
@@ -104,15 +104,12 @@ namespace SvnFind.Views
             }
         }
 
-        private void RevisionRange_LostFocus(object sender, RoutedEventArgs e)
+        void RevisionRange_LostFocus(object sender, RoutedEventArgs e)
         {
-            Dispatcher.BeginInvoke((Action)delegate
-            {
-                RevisionRange.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-            });
+            Dispatcher.BeginInvoke((Action) delegate { RevisionRange.GetBindingExpression(TextBox.TextProperty).UpdateTarget(); });
         }
 
-        private void RevisionRange_GotFocus(object sender, RoutedEventArgs e)
+        void RevisionRange_GotFocus(object sender, RoutedEventArgs e)
         {
             RevisionRange.SelectAll();
         }

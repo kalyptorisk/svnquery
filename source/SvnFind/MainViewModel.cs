@@ -29,9 +29,16 @@ namespace SvnFind
     {
         public MainViewModel()
         {
-            Indices = new ObservableCollection<Index>();
-            Indices.Add(new Index(@"\\moria\DavidIndex"));
-            Indices.Add(new Index(@"\\moria\SodaIndex"));
+            var repositories = XmlConfiguration.GetSection("repositories");
+            var indices = from r in repositories.Elements("repository")
+                          select new Index(r.Attribute("index").Value);
+
+            Indices = new ObservableCollection<Index>(indices);
+            if (Indices.Count == 0)
+            {
+                MessageBox.Show("No repository configured, please check your config file.", "SvnFind Configuration Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(-1);
+            }
             SelectedIndex = Indices[0];
             QueryText = "";
             RevisionRange = "Head";

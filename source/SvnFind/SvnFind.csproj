@@ -56,6 +56,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Diagnostics\CrashDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -71,6 +75,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Diagnostics\CrashDialog.xaml.cs">
+      <DependentUpon>CrashDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Diagnostics\CrashMonitor.cs" />
+    <Compile Include="Diagnostics\Dump.cs" />
     <Compile Include="HitViewModel.cs" />
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

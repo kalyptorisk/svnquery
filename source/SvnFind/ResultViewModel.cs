@@ -22,6 +22,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows;
+using SvnFind.Diagnostics;
 using SvnQuery;
 using SvnQuery.Svn;
 
@@ -83,13 +85,19 @@ namespace SvnFind
 
         public void OpenHit(HitViewModel hit)
         {
-            string shrinked = Path.Combine(Temp, GetShrinkedPath(hit.Folder));
-            if (!Directory.Exists(shrinked)) Directory.CreateDirectory(shrinked);
-
-            string path = Path.Combine(shrinked, Path.GetFileNameWithoutExtension(hit.File) + "@" + hit.Revision + Path.GetExtension(hit.File));
-            File.WriteAllText(path, _svn.GetPathContent(hit.Path, hit.Revision, hit.SizeInBytes));
-            Process.Start(path);
-            Thread.Sleep(500); // starting the viewer application could take a while, therefore we display the wait cursor for at least half a second
+            try
+            {
+                string shrinked = Path.Combine(Temp, GetShrinkedPath(hit.Folder));
+                if (!Directory.Exists(shrinked)) Directory.CreateDirectory(shrinked);
+                string path = Path.Combine(shrinked, Path.GetFileNameWithoutExtension(hit.File) + "@" + hit.Revision + Path.GetExtension(hit.File));
+                    File.WriteAllText(path, _svn.GetPathContent(hit.Path, hit.Revision, hit.SizeInBytes));
+                Process.Start(path);
+                Thread.Sleep(500); // starting the viewer application could take a while, therefore we display the wait cursor for at least half a second
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show("Could not open file." + Environment.NewLine + Dump.ExceptionMessage(x), "SvnFind", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         static string GetShrinkedPath(string path)

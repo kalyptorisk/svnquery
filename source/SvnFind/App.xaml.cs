@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Windows;
+using SvnFind.Diagnostics;
 
 namespace SvnFind
 {
@@ -26,5 +27,11 @@ namespace SvnFind
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
-    {}
+    {
+        public App()
+        {
+            CrashMonitor.Start(this, "SvnFind");
+        }        
+
+    }
 }

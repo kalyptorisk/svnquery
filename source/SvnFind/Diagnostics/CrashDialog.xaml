@@ -1,0 +1,36 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+    x:Class="SvnFind.Diagnostics.CrashDialog"
+    Title="SvnFind crashed" Height="235" Width="490" ResizeMode="NoResize" 
+    WindowStyle="SingleBorderWindow"
+     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+	
+    <Grid Margin="8">
+    	<Grid.RowDefinitions>
+    		<RowDefinition Height="*"/>
+    		<RowDefinition Height="Auto"/>
+    	</Grid.RowDefinitions>
+    	<Grid.ColumnDefinitions>
+    		<ColumnDefinition Width="Auto" />
+    		<ColumnDefinition Width="*"/>
+    	</Grid.ColumnDefinitions>
+      
+      <StackPanel Margin="0,0,0,10" Grid.ColumnSpan="1" Grid.Column="1" VerticalAlignment="Top">
+      	<TextBlock Height="Auto" FontSize="30" FontWeight="Bold"  Width="Auto" d:LayoutOverrides="Width" Text="Don't panic!" />
+            <TextBlock x:Name="txbDescription" Width="Auto" TextWrapping="Wrap" FontSize="14"  Height="Auto" Margin="0,8,0,0"> 
+                <Run Text="SvnFind has encountered a problem:" /> 
+                <Hyperlink x:Name="lnkReport"></Hyperlink>                                
+                <LineBreak/>
+                <LineBreak/>
+                <TextBlock x:Name="txbProblem" />                
+            </TextBlock>
+    	</StackPanel>
+
+      <Button Grid.Column="1" Padding="10,0,10,0" HorizontalAlignment="Left" Content="Copy to clipboard" Grid.Row="1" VerticalAlignment="Top" x:Name="btnCopy"  d:LayoutOverrides="VerticalAlignment" Height="24"/>
+        <Button  Margin="0,0,90,0" Grid.Column="1" HorizontalAlignment="Right" Width="80" Content="Restart" Grid.Row="1" VerticalAlignment="Top" x:Name="btnRestart" Height="24"/>
+        <Button  Content="Close" Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" x:Name="btnClose" Width="80" HorizontalAlignment="Right" Height="24" IsCancel="True" />
+    </Grid>
+
+</Window>

@@ -201,7 +201,7 @@ namespace SvnQuery.Lucene
                         while (term != null)
                         {
                             if (--maxTerms < 0)
-                                throw new Exception("too many matches for wildcard query, please be more specific");
+                                throw new Exception("Too many matches for wildcard query, please be more specific.");
 
                             yield return new SpanTermQuery(term);
                             termEnum.Next();

@@ -31,22 +31,15 @@ namespace SvnFind
 {
     public class ResultViewModel
     {
-        static readonly string Temp;
-
         readonly Result _result;
-        readonly ISvnApi _svn;
-
-        static ResultViewModel()
-        {
-            Temp = Path.Combine(Path.GetTempPath(), "SvnFind");
-            if (!Directory.Exists(Temp)) Directory.CreateDirectory(Temp);
-        }
 
         public ResultViewModel(Result result)
         {
             _result = result;
-            _svn = new SharpSvnApi(result.Index.RepositoryExternalUri);
+            Svn = new SharpSvnApi(_result.Index.RepositoryExternalUri);
         }
+
+        public ISvnApi Svn {get; private set;}
 
         public string HitCount
         {
@@ -83,37 +76,5 @@ namespace SvnFind
             }
         }
 
-        public void OpenHit(HitViewModel hit)
-        {
-            try
-            {
-                string shrinked = Path.Combine(Temp, GetShrinkedPath(hit.Folder));
-                if (!Directory.Exists(shrinked)) Directory.CreateDirectory(shrinked);
-                string path = Path.Combine(shrinked, Path.GetFileNameWithoutExtension(hit.File) + "@" + hit.Revision + Path.GetExtension(hit.File));
-                    File.WriteAllText(path, _svn.GetPathContent(hit.Path, hit.Revision, hit.SizeInBytes));
-                Process.Start(path);
-                Thread.Sleep(500); // starting the viewer application could take a while, therefore we display the wait cursor for at least half a second
-            }
-            catch (Exception x)
-            {
-                MessageBox.Show("Could not open file." + Environment.NewLine + Dump.ExceptionMessage(x), "SvnFind", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        static string GetShrinkedPath(string path)
-        {
-            string shrinked = "";
-            bool separator = false;
-            foreach (char c in path)
-            {
-                if (separator && c != '/')
-                {
-                    shrinked += c;
-                    separator = false;
-                }
-                else if (c == '/') separator = true;
-            }
-            return shrinked;
-        }
     }
 }

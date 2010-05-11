@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Linq;
 using SvnQuery;
+using SvnFind.Diagnostics;
 
 namespace SvnFind
 {
@@ -32,7 +33,7 @@ namespace SvnFind
     {
         public MainViewModel() : this(RepositoriesFromAppConfig)
         {
-            QueryText = "$Revision 8710";
+           
         }
 
         static IEnumerable<Index> RepositoriesFromAppConfig
@@ -67,7 +68,7 @@ namespace SvnFind
                 {
                     var indices = new[]
                                   {
-                                      new Index(@"C:\_Entwicklung\SvnQuery\SvnQueryDemos\SvnQueryDemo_Subversion\IndexData"),
+                                      new Index(@"\\moria\DavidIndex"),
                                   };
 
                     var model = new MainViewModel(indices);
@@ -131,9 +132,16 @@ namespace SvnFind
 
         public void Query()
         {
-            string first, last;
-            GetRevisionRange(RevisionRange, out first, out last);
-            QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText, first, last));
+            try
+            {
+                string first, last;
+                GetRevisionRange(RevisionRange, out first, out last);
+                QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText, first, last));
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(Dump.ExceptionMessage(x), "Search failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>

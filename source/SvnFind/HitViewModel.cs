@@ -17,8 +17,16 @@
 #endregion
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Windows;
+using SvnFind.Diagnostics;
 using SvnQuery;
+using SvnQuery.Svn;
+using IOPath = System.IO.Path;
+using IOFile = System.IO.File;
 
 namespace SvnFind
 {
@@ -74,6 +82,67 @@ namespace SvnFind
         public int SizeInBytes
         {
             get { return _hit.SizeInBytes; }
+        }
+
+        public void ShowContent(ISvnApi svn)
+        {
+            if (Path[0] == '$')
+            {
+                ShowLogMessage(svn);
+                return;
+            }
+
+            try
+            {
+                string path = GetTempPath();
+                IOFile.WriteAllText(path, svn.GetPathContent(Path, Revision, SizeInBytes));
+                Process.Start(path);
+                Thread.Sleep(500); // starting the viewer application could take a while, therefore we display the wait cursor for at least half a second
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(Dump.ExceptionMessage(x), "Could not open file", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        public void ShowLogMessage(ISvnApi svn)
+        {
+            try
+            {
+                MessageBox.Show(svn.GetLogMessage(Revision), "Log Message");
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show(Dump.ExceptionMessage(x), "Could not get log message", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        static HitViewModel()
+        {
+            Temp = IOPath.Combine(IOPath.GetTempPath(), "SvnFind");
+            if (!Directory.Exists(Temp)) Directory.CreateDirectory(Temp);
+        }
+
+        static readonly string Temp;
+
+        string GetTempPath()
+        {
+            string foldername = "";
+            bool separator = false;
+            foreach (char c in Folder)
+            {
+                if (separator && c != '/')
+                {
+                    foldername += c;
+                    separator = false;
+                }
+                else if (c == '/') separator = true;
+            }
+            foldername = IOPath.Combine(Temp, foldername);
+            if (!Directory.Exists(foldername)) Directory.CreateDirectory(foldername);
+            string filename = IOPath.GetFileNameWithoutExtension(File) + "@" + Revision + IOPath.GetExtension(File);
+
+            return IOPath.Combine(foldername, filename);
         }
 
         public override string ToString()

@@ -21,7 +21,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using SvnQuery.Svn;
 
 namespace SvnFind.Views
 {
@@ -34,7 +36,8 @@ namespace SvnFind.Views
         {
             InitializeComponent();
 
-            ViewModel = new MainViewModel();
+            //ViewModel = new MainViewModel();
+            QueryText.Focus();
         }
 
         MainViewModel ViewModel
@@ -64,15 +67,15 @@ namespace SvnFind.Views
 
         void Head_Click(object sender, RoutedEventArgs e)
         {
-            RevisionRange.Text = "Head";
+            ViewModel.RevisionRange = "Head";
         }
 
         void All_Click(object sender, RoutedEventArgs e)
         {
-            RevisionRange.Text = "All";
+            ViewModel.RevisionRange = "All";
         }
 
-        void SvnQuery_Click(object sender, RoutedEventArgs e)
+        void SvnQueryHome_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://svnquery.tigris.org/");
         }
@@ -86,8 +89,17 @@ namespace SvnFind.Views
         {
             DoActionWithWaitCursor(delegate
             {
-                HitViewModel hitViewModel = (HitViewModel) ((FrameworkContentElement) e.Source).DataContext;
-                ViewModel.QueryResult.OpenHit(hitViewModel);
+                var hitViewModel = (HitViewModel) ((Hyperlink) e.Source).DataContext;
+                hitViewModel.ShowContent(ViewModel.QueryResult.Svn);
+            });
+        }
+
+        private void ShowMessage_Click(object sender, RoutedEventArgs e)
+        {
+            DoActionWithWaitCursor(delegate
+            {
+                var hitViewModel = (HitViewModel) ((MenuItem) e.Source).DataContext;
+                hitViewModel.ShowLogMessage(ViewModel.QueryResult.Svn);
             });
         }
 
@@ -106,6 +118,8 @@ namespace SvnFind.Views
 
         void RevisionRange_LostFocus(object sender, RoutedEventArgs e)
         {
+            // ViewModel modifies value on set, target needs manual update if wpf < 4.0
+            // TODO: Remove this when migrating to .NET 4.0
             Dispatcher.BeginInvoke((Action) delegate { RevisionRange.GetBindingExpression(TextBox.TextProperty).UpdateTarget(); });
         }
 
@@ -113,5 +127,7 @@ namespace SvnFind.Views
         {
             RevisionRange.SelectAll();
         }
+
+      
     }
 }

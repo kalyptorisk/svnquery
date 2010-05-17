@@ -17,8 +17,6 @@
 #endregion
 
 using System;
-using System.IO;
-using System.Reflection;
 using System.Threading;
 
 namespace SvnIndex
@@ -70,14 +68,10 @@ namespace SvnIndex
             Exception x = e.ExceptionObject as Exception;
             if (x != null)
             {
-                Console.Error.WriteLine(x.Message);
-                File.AppendAllText(
-                    Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "crash.txt"),
-                    Environment.CommandLine + Environment.NewLine + x);
+                Console.WriteLine("ERROR");
+                Console.Error.WriteLine(x);  
             }
-#if !DEBUG
             Environment.Exit(-1);
-#endif
         }
     }
 }

@@ -1,6 +1,6 @@
 #region Apache License 2.0
 
-// Copyright 2008-2009 Christian Rodemeyer
+// Copyright 2008-2010 Christian Rodemeyer
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SharpSvn;
 
@@ -32,7 +33,7 @@ namespace SvnQuery.Svn
         readonly string _password;
         readonly Dictionary<int, string> _messages = new Dictionary<int, string>();
         readonly List<SvnClient> _clientPool = new List<SvnClient>();
-        
+
         public SharpSvnApi(string repositoryUri) : this(repositoryUri, "", "")
         {}
 
@@ -85,16 +86,17 @@ namespace SvnQuery.Svn
                 return _info;
             }
         }
+
         SvnInfoEventArgs _info;
 
         public int GetYoungestRevision()
         {
-            return (int)Info.LastChangeRevision;
+            return (int) Info.LastChangeRevision;
         }
 
         public Guid GetRepositoryId()
         {
-            return Info.RepositoryId;                  
+            return Info.RepositoryId;
         }
 
         public string GetLogMessage(int revision)
@@ -138,9 +140,9 @@ namespace SvnQuery.Svn
                     data.Author = e.Author ?? "";
                     data.Message = e.LogMessage ?? "";
                     data.Timestamp = e.Time;
-                    AddChanges(data, e.ChangedPaths);                    
+                    AddChanges(data, e.ChangedPaths);
                     revisions.Add(data);
-                                
+
                     lock (_messages) _messages[data.Revision] = data.Message;
                 }
             }
@@ -159,7 +161,7 @@ namespace SvnQuery.Svn
                 data.Changes.Add(new PathChange
                                  {
                                      Change = ConvertActionToChange(item.Action),
-                                     Revision = data.Revision,                                     
+                                     Revision = data.Revision,
                                      Path = item.Path,
                                      IsCopy = item.CopyFromPath != null
                                  });
@@ -170,10 +172,14 @@ namespace SvnQuery.Svn
         {
             switch (action)
             {
-                case SvnChangeAction.Add: return Change.Add;
-                case SvnChangeAction.Modify: return Change.Modify;
-                case SvnChangeAction.Delete: return Change.Delete;
-                case SvnChangeAction.Replace: return Change.Replace;
+                case SvnChangeAction.Add:
+                    return Change.Add;
+                case SvnChangeAction.Modify:
+                    return Change.Modify;
+                case SvnChangeAction.Delete:
+                    return Change.Delete;
+                case SvnChangeAction.Replace:
+                    return Change.Replace;
                 default:
                     throw new Exception("Invalid SvnChangeAction: " + (int) action);
             }
@@ -235,14 +241,14 @@ namespace SvnQuery.Svn
                     return null;
                 }
                 throw;
-            }              
+            }
             finally
             {
                 FreeSvnClient(client);
             }
         }
 
-        static readonly char[] InvalidPathChars = new[] { ':', '$', '\\' };
+        static readonly char[] InvalidPathChars = new[] {':', '$', '\\'};
 
         public IDictionary<string, string> GetPathProperties(string path, int revision)
         {
@@ -282,6 +288,13 @@ namespace SvnQuery.Svn
                     }
                 }
             }
+            catch (SvnException x)
+            {
+                if (x.SvnErrorCode != SvnErrorCode.SVN_ERR_IO_INCONSISTENT_EOL) throw;
+
+                Console.WriteLine("WARNIG: Could not read " + path);
+                return "";
+            }
             finally
             {
                 FreeSvnClient(client);
@@ -299,6 +312,5 @@ namespace SvnQuery.Svn
             sb.Length -= 1;
             return new SvnUriTarget(new Uri(_uri + sb.ToString()), revision);
         }
-
     }
 }

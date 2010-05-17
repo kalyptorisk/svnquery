@@ -23,7 +23,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using SvnQuery.Svn;
+using SvnFind.Properties;
+using Point=System.Drawing.Point;
+using Size=System.Drawing.Size;
 
 namespace SvnFind.Views
 {
@@ -36,8 +38,23 @@ namespace SvnFind.Views
         {
             InitializeComponent();
 
-            //ViewModel = new MainViewModel();
+            var settings = Settings.Default;
+            Width = settings.Size.Width;
+            Height = settings.Size.Height;
+            Left = settings.Position.X;
+            Top = settings.Position.Y;
+
             QueryText.Focus();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            var settings = Settings.Default;
+            settings.Size = new Size((int)ActualWidth,  (int)ActualHeight);
+            settings.Position = new Point((int)Left, (int)Top);
+            settings.Save();
         }
 
         MainViewModel ViewModel
@@ -126,6 +143,11 @@ namespace SvnFind.Views
         void RevisionRange_GotFocus(object sender, RoutedEventArgs e)
         {
             RevisionRange.SelectAll();
+        }
+
+        private void OpenIndex_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OpenIndex();
         }
 
       

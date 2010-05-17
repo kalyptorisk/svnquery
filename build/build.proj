@@ -19,8 +19,6 @@
     <RemoveDir Directories="$(PublishFolder)" />    
   </Target>
 
-  
-
   <Target Name="Build" DependsOnTargets="SetVersion;GetPublishFolder">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Configuration=$(Configuration)" />
   </Target>
@@ -82,7 +80,18 @@
           DestinationFolder="$(PublishFolder)\SvnIndex"   />
   </Target>
 
-  <Target Name="Publish" DependsOnTargets="GetVersion;SetVersion;PublishSvnIndex;PublishSvnWebQuery" >
+  <Target Name="PublishSvnFind" DependsOnTargets="Build;GetPublishFolder">
+    <ItemGroup>
+      <SvnFind Include="..\source\SvnFind\bin\$(Configuration)\*"
+                Exclude="..\source\SvnFind\bin\$(Configuration)\*.xml;
+                         ..\source\SvnFind\bin\$(Configuration)\SharpSvn.pdb;
+                         ..\source\Svnfind\bin\$(Configuration)\*.vshost.exe;" />
+    </ItemGroup>
+    <RemoveDir Directories="$(PublishFolder)\SvnFind"/>
+    <Copy SourceFiles="@(SvnFind)" DestinationFolder="$(PublishFolder)\SvnFind" />
+  </Target>
+  
+  <Target Name="Publish" DependsOnTargets="GetVersion;SetVersion;PublishSvnIndex;PublishSvnWebQuery;PublishSvnFind" >
     <Error Condition="$(Configuration)!=Release" Text="Only release builds can be published" />
 
     <ItemGroup>

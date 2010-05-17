@@ -21,40 +21,36 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Xml.Linq;
-using SvnQuery;
+using System.Windows.Forms;
 using SvnFind.Diagnostics;
+using SvnFind.Properties;
+using SvnQuery;
+using MessageBox=System.Windows.MessageBox;
 
 namespace SvnFind
 {
     public class MainViewModel : ViewModelBase
     {
         public MainViewModel() : this(RepositoriesFromAppConfig)
-        {
-           
-        }
+        {}
 
-        static IEnumerable<Index> RepositoriesFromAppConfig
+        static IEnumerable<string> RepositoriesFromAppConfig
         {
             get
             {
-                XElement repositories = XmlConfiguration.GetSection("repositories");
-                return from r in repositories.Elements("repository")
-                       select new Index(r.Attribute("index").Value);
+                foreach (string index in Settings.Default.Repositories)
+                    yield return index;
             }
         }
 
-        MainViewModel(IEnumerable<Index> indices)
+        MainViewModel(IEnumerable<string> indexPathList)
         {
+            var indices = indexPathList.Select(path => OpenIndex(path)).Where(i => i != null);
             Indices = new ObservableCollection<Index>(indices);
-            if (Indices.Count == 0)
-            {
-                MessageBox.Show("No repository configured, please check your config file.", "SvnFind Configuration Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(-1);
-            }
-            SelectedIndex = Indices[0];
+            if (Indices.Count > 0) SelectedIndex = Indices[0];
             QueryText = "";
             RevisionRange = "Head";
         }
@@ -68,13 +64,13 @@ namespace SvnFind
                 {
                     var indices = new[]
                                   {
-                                      new Index(@"\\moria\DavidIndex"),
+                                      @"D:\Repositories\SvnQuery\index",
                                   };
 
                     var model = new MainViewModel(indices);
-                    model.RevisionRange = "All";
-                    model.QueryText = "bla";
-                    model.Query();
+                    //model.RevisionRange = "All";
+                    //model.QueryText = "bla";
+                    //model.Query();
                     return model;
                 }
 #endif
@@ -104,18 +100,40 @@ namespace SvnFind
             get { return _selectedIndex; }
             set
             {
-                Debug.Assert(value != null);
+                if (value == _selectedIndex) return;
                 _selectedIndex = value;
+                QueryResult = null;
+
+                int i = Indices.IndexOf(value);
+                if (i > 0) UpdateMostRecentUsedIndex(i);
+
                 OnPropertyChanged(() => SelectedIndex);
                 OnPropertyChanged(() => RevisionRangeVisibility);
+                OnPropertyChanged(() => CanQuery);
+                OnPropertyChanged(() => Title);
             }
         }
 
         Index _selectedIndex;
 
+        public string Title
+        {
+            get { return "SvnFind" + (SelectedIndex == null ? "" : (" - " + SelectedIndex.Name)); }
+        }
+
+        public string Version
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
+        }
+
         public Visibility RevisionRangeVisibility
         {
-            get { return SelectedIndex.IsSingleRevision ? Visibility.Hidden : Visibility.Visible; }
+            get
+            {
+                return SelectedIndex != null && SelectedIndex.IsSingleRevision
+                           ? Visibility.Hidden
+                           : Visibility.Visible;
+            }
         }
 
         public ResultViewModel QueryResult
@@ -129,6 +147,11 @@ namespace SvnFind
         }
 
         ResultViewModel _queryResult;
+
+        public bool CanQuery
+        {
+            get { return SelectedIndex != null; }
+        }
 
         public void Query()
         {
@@ -188,6 +211,54 @@ namespace SvnFind
             }
             first = last = Revision.HeadString;
             return "Head";
+        }
+
+        public void OpenIndex()
+        {
+            var dlg = new FolderBrowserDialog();
+            dlg.RootFolder = Environment.SpecialFolder.Desktop; // to enable network browsing
+            dlg.ShowNewFolderButton = false;
+            dlg.Description = "Select the folder that contains the index for an repository.";
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                int i = Settings.Default.Repositories.IndexOf(dlg.SelectedPath);
+                if (i < 0)
+                {
+                    var index = OpenIndex(dlg.SelectedPath);
+                    if (index == null) return;
+                    Settings.Default.Repositories.Insert(0, dlg.SelectedPath);
+                    Settings.Default.Save();
+                    Indices.Insert(0, index);
+                }
+                else if (i > 0) 
+                {
+                    UpdateMostRecentUsedIndex(i);
+                }
+                SelectedIndex = Indices[0];
+            }
+        }
+
+        void UpdateMostRecentUsedIndex(int i)
+        {
+            string path = Settings.Default.Repositories[i];
+            Settings.Default.Repositories.RemoveAt(i);     
+            Settings.Default.Repositories.Insert(0, path);
+            Settings.Default.Save();
+            Indices.Move(i, 0);   
+        }
+
+        static Index OpenIndex(string path)
+        {
+            try
+            {
+                return new Index(path);
+            }
+            catch (Exception x)
+            {
+                MessageBox.Show("Could not open index " + path + Environment.NewLine + Dump.ExceptionMessage(x), "Could not open index", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null;
+            }
         }
     }
 }

@@ -1,4 +1,10 @@
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><p>1.0.1.0: 2010-01-13</p>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><p>1.1.0.0: 2010-05-17</p>
+<ul>
+  <li>workaround for unreadable files due to &quot;inconsistent line ending&quot; exceptions thrown by the subversion api</li>
+  <li>internal refactoring of the SvnQuery Api </li>
+  <li>added SvnFind as a rich client frontend, no need to use a web application if you don&#39;t like it </li>
+</ul>
+<p>1.0.1.0: 2010-01-13</p>
 <ul>
     <li>SvnIndex: option -f&nbsp; (filter) now defaults to &quot;/tags/&quot;. This should prevent novice users from mistakenly indexing tags which could make the index extremely big.</li>
     <li>Fix: If the external repository needs authentication SvnWebQuery didn&#39;t work. Now the credentials provided to SvnIndex with the -u and -p options are stored as index properties inside the index. This allows SvnWebQuery to actually read content from the repository and show it on the View page.</li>

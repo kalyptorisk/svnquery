@@ -31,6 +31,13 @@ namespace SvnFind
         public App()
         {
             CrashMonitor.Start(this, "SvnFind");
+
+            var settings = SvnFind.Properties.Settings.Default;
+            if (!settings.Upgraded)
+            {
+                settings.Upgrade();
+                settings.Upgraded = true;
+            }
         }        
 
     }

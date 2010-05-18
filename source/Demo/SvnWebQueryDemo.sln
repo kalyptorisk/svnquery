@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnQueryDemo", "SvnQueryDemo.csproj", "{3D8A7761-1CDE-451A-911A-F5E396927661}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvnWebQueryDemo", "SvnWebQueryDemo.csproj", "{3D8A7761-1CDE-451A-911A-F5E396927661}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

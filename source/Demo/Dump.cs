@@ -24,7 +24,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Win32;
 
-namespace SvnFind.Diagnostics
+namespace SvnWebQueryDemo
 {
     /// <summary>
     /// Provides static methods for dumping various kinds of information which

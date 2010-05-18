@@ -114,7 +114,7 @@ namespace SvnWebQuery
                 _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.Hits.Count, htmlQuery);
                 _statisticsLabel.Text =
                     string.Format("<span style='color:#808080'>{0} documents searched in {1}ms. Index revision {2}</span>",
-                                  r.Index.TotalCount, r.SearchTime, r.Index.Revision);
+                                  r.Index.TotalCount, (int)r.SearchTime.TotalMilliseconds, r.Index.Revision);
 
                 _dataPager.Visible = (_dataPager.MaximumRows < r.Hits.Count);
                 // Reset to page 0

@@ -50,8 +50,12 @@ namespace SvnWebQueryDemo
 
         static string GetCurrentDir(string[] args)
         {
-            if (args.Length == 1 && Directory.Exists(args[0])) 
+            if (args.Length == 1)
+            {
+                if (!Directory.Exists(args[0]))
+                    throw new Exception("Invalid directory " + args[0]);
                 return args[0];
+            }
 
             return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         }

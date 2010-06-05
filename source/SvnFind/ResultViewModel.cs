@@ -69,6 +69,8 @@ namespace SvnFind
         {
             get
             {
+                // LINQ: return from h in _result.Hits select new HitViewModel(h);
+
                 foreach (Hit hit in _result.Hits)
                 {
                     yield return new HitViewModel(hit);

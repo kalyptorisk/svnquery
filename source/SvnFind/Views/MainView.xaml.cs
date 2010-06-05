@@ -23,6 +23,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Threading;
 using SvnFind.Properties;
 using Point=System.Drawing.Point;
 using Size=System.Drawing.Size;
@@ -75,6 +76,7 @@ namespace SvnFind.Views
         void Query_Click(object sender, RoutedEventArgs e)
         {
             DoActionWithWaitCursor(ViewModel.Query);
+            if (HitList.Items.Count > 0) HitList.ScrollIntoView(HitList.Items[0]);
         }
 
         void HitList_SelectionChanged(object sender, SelectionChangedEventArgs e)

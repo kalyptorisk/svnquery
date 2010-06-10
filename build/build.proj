@@ -28,10 +28,8 @@
   <Target Name="RunTests" DependsOnTargets="Build">
     <ItemGroup>
       <Tests Include="..\source\**\bin\$(Configuration)\*Test.dll" />
-    </ItemGroup>    
-    <NUnit Assemblies="@(Tests)" 
-           DisableShadowCopy="true" 
-           ToolPath="$(MSBuildProjectDirectory)\..\3rdParty\nunit" />
+    </ItemGroup>
+    <Exec Command="..\3rdParty\nunit\nunit-console-x86.exe @(Tests) /noshadow" />
   </Target>
 
   <Target Name="GetVersion">

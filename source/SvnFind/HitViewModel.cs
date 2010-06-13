@@ -27,6 +27,7 @@ using SvnQuery;
 using SvnQuery.Svn;
 using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
+using SvnFind.Properties;
 
 namespace SvnFind
 {
@@ -96,7 +97,7 @@ namespace SvnFind
             {
                 string path = GetTempPath();
                 IOFile.WriteAllText(path, svn.GetPathContent(Path, Revision, SizeInBytes));
-                Process.Start(path);
+                Process.Start(Settings.Default.ViewWith, '"' + path + '"');
                 Thread.Sleep(500); // starting the viewer application could take a while, therefore we display the wait cursor for at least half a second
             }
             catch (Exception x)

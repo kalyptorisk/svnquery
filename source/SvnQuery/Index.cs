@@ -30,18 +30,18 @@ namespace SvnQuery
     /// </summary>
     public class Index
     {
-        readonly string _pathToIndex;
         IndexSearcher _searcher;
         readonly object _sync = new object();
 
         public Index(string pathToIndex)
         {
-            _pathToIndex = pathToIndex;
-
+            Path = pathToIndex;
             var props = QueryProperties();
             Name = props.RepositoryName;
             IsSingleRevision = props.SingleRevision;
         }
+
+        public string Path { get; private set; }
 
         public string Name { get; private set; }
 
@@ -98,7 +98,7 @@ namespace SvnQuery
                 if (_searcher == null || !_searcher.Reader.IsCurrent())
                 {
                     if (_searcher != null) _searcher.Close();
-                    _searcher = new IndexSearcher(_pathToIndex);
+                    _searcher = new IndexSearcher(Path);
                 }
             }
             return _searcher;

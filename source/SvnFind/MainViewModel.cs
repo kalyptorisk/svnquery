@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -35,7 +36,14 @@ namespace SvnFind
     public class MainViewModel : ViewModelBase
     {
         public MainViewModel() : this(RepositoriesFromAppConfig)
-        {}
+        {
+            Settings.Default.Repositories.Clear();
+            foreach (var index in Indices)
+            {
+                Settings.Default.Repositories.Add(index.Path);
+            }
+            Settings.Default.Save();
+        }
 
         static IEnumerable<string> RepositoriesFromAppConfig
         {
@@ -48,7 +56,7 @@ namespace SvnFind
 
         MainViewModel(IEnumerable<string> indexPathList)
         {
-            var indices = indexPathList.Select(path => OpenIndex(path)).Where(i => i != null);
+            var indices = indexPathList.Select(path => OpenIndexWithoutException(path)).Where(i => i != null);
             Indices = new ObservableCollection<Index>(indices);
             if (Indices.Count > 0) SelectedIndex = Indices[0];
             QueryText = "";
@@ -222,21 +230,34 @@ namespace SvnFind
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                int i = Settings.Default.Repositories.IndexOf(dlg.SelectedPath);
-                if (i < 0)
+                string path = dlg.SelectedPath;
+                if (TryOpenIndex(path) || TryOpenIndex(Path.Combine(path, "index")))
                 {
-                    var index = OpenIndex(dlg.SelectedPath);
-                    if (index == null) return;
-                    Settings.Default.Repositories.Insert(0, dlg.SelectedPath);
-                    Settings.Default.Save();
-                    Indices.Insert(0, index);
+                    SelectedIndex = Indices[0];
                 }
-                else if (i > 0) 
+                else
                 {
-                    UpdateMostRecentUsedIndex(i);
+                    MessageBox.Show("Could not open index: \n\"" + path + "\"", "SvnFind", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
-                SelectedIndex = Indices[0];
             }
+        }
+
+        bool TryOpenIndex(string path)
+        {
+            int i = Settings.Default.Repositories.IndexOf(path);
+            if (i < 0)
+            {
+                var index = OpenIndexWithoutException(path);
+                if (index == null) return false;
+                Settings.Default.Repositories.Insert(0, path);
+                Settings.Default.Save();
+                Indices.Insert(0, index);
+            }
+            else if (i > 0)
+            {
+                UpdateMostRecentUsedIndex(i);
+            }
+            return true;
         }
 
         void UpdateMostRecentUsedIndex(int i)
@@ -248,7 +269,7 @@ namespace SvnFind
             Indices.Move(i, 0);   
         }
 
-        static Index OpenIndex(string path)
+        static Index OpenIndexWithoutException(string path)
         {
             try
             {
@@ -256,7 +277,7 @@ namespace SvnFind
             }
             catch (Exception x)
             {
-                MessageBox.Show("Could not open index " + path + Environment.NewLine + Dump.ExceptionMessage(x), "Could not open index", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Debug.WriteLine(Dump.ExceptionMessage(x));
                 return null;
             }
         }

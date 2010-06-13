@@ -122,16 +122,16 @@ namespace SvnFind.Views
             });
         }
 
-        void DoActionWithWaitCursor(Action a)
+        static void DoActionWithWaitCursor(Action a)
         {
             try
             {
-                Cursor = Cursors.Wait;
+                Mouse.SetCursor(Cursors.Wait);
                 a();
             }
             finally
             {
-                Cursor = null;
+                Mouse.UpdateCursor();
             }
         }
 

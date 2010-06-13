@@ -15,5 +15,8 @@
     <Setting Name="Upgraded" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="ViewWith" Type="System.String" Scope="User">
+      <Value Profile="(Default)">notepad.exe</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

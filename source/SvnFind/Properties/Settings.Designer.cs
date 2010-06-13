@@ -71,5 +71,17 @@ namespace SvnFind.Properties {
                 this["Upgraded"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("notepad.exe")]
+        public string ViewWith {
+            get {
+                return ((string)(this["ViewWith"]));
+            }
+            set {
+                this["ViewWith"] = value;
+            }
+        }
     }
 }

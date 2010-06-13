@@ -124,7 +124,7 @@ namespace SvnQuery.Lucene
             var path = ParsePathTerm(FieldName.Path, term);
 
             // Heuristic to detect path terms, scan for 
-            if (Regex.IsMatch(term, @"(^/|\.)|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
+            if (Regex.IsMatch(term, @"(^(/|\.))|(/$)|(\*\.)|(\.\*)|(/\*\*/)"))
                 return path;
 
             var content = ParseSimpleTerm(FieldName.Content, term);

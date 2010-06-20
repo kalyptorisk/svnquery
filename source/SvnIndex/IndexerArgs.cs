@@ -138,6 +138,10 @@ SvnIndex action index_path repository_uri [Options]
                             IndexPath = Path.GetFullPath(arg);
                             break;
                         case 2: // third is the uri used to index the repository
+                            if (!Uri.IsWellFormedUriString(arg, UriKind.Absolute))
+                            {
+                                arg = Path.GetFullPath(arg);
+                            }
                             RepositoryLocalUri = arg.Replace('\\', '/').TrimEnd('/');
                             break;
                     }

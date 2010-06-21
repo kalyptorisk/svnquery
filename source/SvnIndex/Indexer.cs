@@ -38,7 +38,7 @@ namespace SvnIndex
         readonly IndexerArgs _args;
         readonly Directory _indexDirectory;
         readonly ISvnApi _svn;
-        
+
         readonly PendingJobs _pendingAnalyzeJobs = new PendingJobs();
         readonly PendingJobs _pendingFetchJobs = new PendingJobs();
         readonly Dictionary<string, IndexJobData> _headJobs = new Dictionary<string, IndexJobData>();
@@ -72,7 +72,7 @@ namespace SvnIndex
         public enum Command
         {
             Create,
-            Update, 
+            Update,
             Check
         } ;
 
@@ -89,7 +89,7 @@ namespace SvnIndex
             public int RevisionLast;
             public PathInfo Info;
             public string Content;
-            public IDictionary<string, string> Properties;        
+            public IDictionary<string, string> Properties;
         }
 
         public Indexer(IndexerArgs args)
@@ -114,7 +114,7 @@ namespace SvnIndex
         /// <summary>
         /// This constructor is intended for tests in RAMDirectory only
         /// </summary>
-        public Indexer(IndexerArgs args, Directory dir): this(args)
+        public Indexer(IndexerArgs args, Directory dir) : this(args)
         {
             _indexDirectory = dir;
         }
@@ -135,9 +135,9 @@ namespace SvnIndex
         {
             Console.WriteLine("Begin indexing ...");
             DateTime start = DateTime.UtcNow;
-            int startRevision = 1; 
+            int startRevision = 1;
             int stopRevision = Math.Min(_args.MaxRevision, _svn.GetYoungestRevision());
-            bool optimize; 
+            bool optimize;
 
             Thread indexThread = new Thread(ProcessIndexQueue);
             indexThread.Name = "IndexThread";
@@ -146,10 +146,8 @@ namespace SvnIndex
 
             if (Command.Create == _args.Command)
             {
-                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);                
+                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);
                 IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
-                _args.RepositoryExternalUri = _args.RepositoryExternalUri ?? _args.RepositoryLocalUri;
-                _args.RepositoryName = _args.RepositoryName ?? _args.RepositoryExternalUri.Split('/').Last();
                 QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
                 optimize = true;
             }
@@ -164,13 +162,13 @@ namespace SvnIndex
                 optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             }
             IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
-            if (_args.RepositoryExternalUri != null) IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
-            if (_args.RepositoryName != null) IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
+            IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
+            IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
             IndexProperty.SetRepositoryCredentials(_indexWriter, _args.Credentials);
 
-            while (startRevision <= stopRevision) 
+            while (startRevision <= stopRevision)
             {
-                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));                
+                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));
                 startRevision += _args.CommitInterval;
 
                 if (startRevision <= stopRevision)
@@ -190,7 +188,7 @@ namespace SvnIndex
                 _indexWriter.Optimize();
             }
             CommitIndex();
-            TimeSpan time = DateTime.UtcNow - start;            
+            TimeSpan time = DateTime.UtcNow - start;
             Console.WriteLine("Finished in {0:00}:{1:00}:{2:00}", time.Hours, time.Minutes, time.Seconds);
         }
 
@@ -235,13 +233,13 @@ namespace SvnIndex
         void QueueAnalyzeJobRecursive(PathChange change)
         {
             if (IgnorePath(change.Path)) return;
-            QueueAnalyzeJob(new AnalyzeJobData { Change = change, Recursive = true });
+            QueueAnalyzeJob(new AnalyzeJobData {Change = change, Recursive = true});
         }
 
         void QueueAnalyzeJob(PathChange change)
         {
             if (IgnorePath(change.Path)) return;
-            QueueAnalyzeJob(new AnalyzeJobData { Change = change, Recursive = false });
+            QueueAnalyzeJob(new AnalyzeJobData {Change = change, Recursive = false});
         }
 
         bool IgnorePath(string path)
@@ -254,7 +252,7 @@ namespace SvnIndex
             _pendingAnalyzeJobs.Increment();
             ThreadPool.QueueUserWorkItem(AnalyzeJob, jobData);
         }
-        
+
         // The ThreadPool entry point for an AnalyzeJob.
         // ThreadPool Exceptions are catched by the AppDomain Unhandled Exception Handler
         void AnalyzeJob(object data)
@@ -267,7 +265,7 @@ namespace SvnIndex
         {
             string path = jobData.Change.Path;
             int revision = jobData.Change.Revision;
-         
+
             if (_args.Verbosity > 3)
                 Console.WriteLine("Analyze " + jobData.Change.Change.ToString().PadRight(7) + path + "   " + revision);
             switch (jobData.Change.Change)
@@ -278,7 +276,7 @@ namespace SvnIndex
                 case Change.Replace:
                     DeletePath(path, revision, jobData.Recursive);
                     AddPath(path, revision, jobData.Recursive && jobData.Change.IsCopy);
-                    break;                    
+                    break;
                 case Change.Modify:
                     DeletePath(path, revision, false);
                     AddPath(path, revision, false);
@@ -290,7 +288,7 @@ namespace SvnIndex
         }
 
         void AddPath(string path, int revision, bool recursive)
-        {            
+        {
             if (!_highestRevision.Set(path, revision)) return;
 
             IndexJobData jobData = new IndexJobData();
@@ -304,7 +302,7 @@ namespace SvnIndex
             if (recursive && jobData.Info.IsDirectory)
             {
                 _svn.ForEachChild(path, revision, Change.Add, QueueAnalyzeJob);
-            }            
+            }
         }
 
         void DeletePath(string path, int revision, bool recursive)
@@ -328,7 +326,7 @@ namespace SvnIndex
             jobData.RevisionLast = revision - 1;
             _highestRevision.Set(path, 0);
 
-            if (jobData.Info == null) return;  // workaround for issues with forbidden characters in local repository access
+            if (jobData.Info == null) return; // workaround for issues with forbidden characters in local repository access
             if (recursive && jobData.Info.IsDirectory)
             {
                 _svn.ForEachChild(path, revision, Change.Delete, QueueAnalyzeJob);
@@ -387,11 +385,11 @@ namespace SvnIndex
         /// <summary>
         /// processes the index queue until there are no more pending reads and the queue is empty
         /// </summary>
-        void ProcessIndexQueue()       
+        void ProcessIndexQueue()
         {
             WaitHandle[] wait = new WaitHandle[] {_indexQueueHasData, _stopIndexThread};
             while (wait[WaitHandle.WaitAny(wait)] != _stopIndexThread)
-            {                
+            {
                 for (;;)
                 {
                     IndexJobData data;
@@ -421,7 +419,7 @@ namespace SvnIndex
             string idText = data.Path[0] == '$' ? data.Path : data.Path + "@" + data.RevisionFirst;
             Term id = _idTerm.CreateTerm(idText);
             _indexWriter.DeleteDocuments(id);
-            
+
             if (_args.SingleRevision && data.RevisionLast != Revision.Head)
                 return;
 
@@ -474,7 +472,7 @@ namespace SvnIndex
                 }
                 else
                 {
-                    doc.Add(new Field(prop.Key, new SimpleTokenStream{Text = prop.Value}));
+                    doc.Add(new Field(prop.Key, new SimpleTokenStream {Text = prop.Value}));
                 }
             }
         }
@@ -491,6 +489,5 @@ namespace SvnIndex
             doc.Add(_pathField);
             return doc;
         }
-
     }
 }

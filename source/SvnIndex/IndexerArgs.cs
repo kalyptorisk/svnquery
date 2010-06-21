@@ -109,7 +109,7 @@ SvnIndex action index_path repository_uri [Options]
                                 RepositoryName = NextArg(args, ref i);
                                 break;
                             case 'x':
-                                RepositoryExternalUri = NextArg(args, ref i).Replace('\\', '/').TrimEnd('/');
+                                RepositoryExternalUri = GetUriOrFullPath(NextArg(args, ref i));
                                 break;
                             case 'v':
                                 Verbosity = int.Parse(NextArg(args, ref i));
@@ -138,11 +138,7 @@ SvnIndex action index_path repository_uri [Options]
                             IndexPath = Path.GetFullPath(arg);
                             break;
                         case 2: // third is the uri used to index the repository
-                            if (!Uri.IsWellFormedUriString(arg, UriKind.Absolute))
-                            {
-                                arg = Path.GetFullPath(arg);
-                            }
-                            RepositoryLocalUri = arg.Replace('\\', '/').TrimEnd('/');
+                            RepositoryLocalUri = GetUriOrFullPath(arg);
                             break;
                     }
                 }
@@ -151,11 +147,23 @@ SvnIndex action index_path repository_uri [Options]
 
             if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
             if (Filter == null) Filter = new Regex("/tags/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            if (RepositoryExternalUri == null) RepositoryExternalUri = RepositoryLocalUri;
+            if (RepositoryName == null) RepositoryName = RepositoryExternalUri.Split('/').Last();
         }
 
         static string NextArg(string[] args, ref int pos)
         {
             return (args[pos].Length == 2) ? args[++pos] : args[pos].Substring(2);
+        }
+
+        static string GetUriOrFullPath(string uri)
+        {
+            uri = uri.Replace('\\', '/').TrimEnd('/');
+            if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+            {
+                uri = Path.GetFullPath(uri).Replace('\\', '/').TrimEnd('/');
+            }
+            return uri;
         }
 
         static Indexer.Command ParseCommand(string command)
@@ -175,7 +183,7 @@ SvnIndex action index_path repository_uri [Options]
             uri = uri.ToLowerInvariant();
             if (uri.StartsWith("http")) return 16; // includes https
             if (uri.StartsWith("svn")) return 8;
-            if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 4; // local file repository            
+            if (uri.StartsWith("file") || Regex.IsMatch(uri, @"^[a-z]\:")) return 4; // local file repository
             return 4; // unknown protocol
         }
     }

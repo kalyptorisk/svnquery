@@ -11,4 +11,12 @@
         revision.value = "$hidden$";
         optGroup.style.display = "";
     }
-}              
+}
+
+function init() {
+    var input = document.getElementById('_inputQuery');
+    input.focus();
+    input.value = input.value;        
+}
+
+window.onload = init;

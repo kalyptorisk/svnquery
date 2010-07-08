@@ -56,14 +56,22 @@ namespace SvnQuery.Svn
                     _clientPool.RemoveAt(last);
                 }
             }
-
-            if (client == null) client = new SvnClient();
-            client.Authentication.UserNameHandlers += (s, e) => e.UserName = _user;
-            client.Authentication.UserNamePasswordHandlers += (s, e) =>
+            if (client == null)
             {
-                e.UserName = _user;
-                e.Password = _password;
-            };
+                client = new SvnClient();
+
+                client.Authentication.UserNameHandlers += (s, e) => e.UserName = _user;
+                client.Authentication.UserNamePasswordHandlers += (s, e) =>
+                {
+                    e.UserName = _user;
+                    e.Password = _password;
+                };
+                client.Authentication.SslServerTrustHandlers += (s, e) =>
+                {
+                    e.AcceptedFailures = SharpSvn.Security.SvnCertificateTrustFailures.MaskAllFailures;
+                };
+            }
+
             return client;
         }
 

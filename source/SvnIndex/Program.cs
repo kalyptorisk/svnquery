@@ -69,7 +69,7 @@ namespace SvnIndex
             if (x != null)
             {
                 Console.WriteLine("ERROR");
-                Console.Error.WriteLine(x);  
+                Console.WriteLine(x);  
             }
             Environment.Exit(-1);
         }

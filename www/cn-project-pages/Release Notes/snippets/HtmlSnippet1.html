@@ -1,4 +1,17 @@
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><p>1.1.0.0: 2010-05-17</p>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<p>1.1.1.0: 2010-07-22</p>
+<ul>
+    <li>SvnQuery: fixed resource leak in SvnApi (event handlers were not removed when putting a SvnClient back to the pool)</li>
+    <li>SvnQuery: fixed wrong detection of path query when querying for dot separated identifiers like "Status.OK"</li>
+    <li>SvnIndex: all logging is done to stdout including all error messages</li>
+    <li>SvnIndex: If you ommit options like -x or -n on the update command and they were set on the last call, then now those are overwritten with the default values</li>
+    <li>SvnWebQuery: set focus back to query input control after postback/refresh</li>
+    <li>SvnFind: fixed multiple UI issues</li>
+    <li>SvnFind: viewing application can be configured with ViewWith parameter, default is now notepad.exe</li>
+    <li>SvnFind: if an repository contains an index folder, you can directly open the repository as an index</li>
+    <li>upgraded to ReSharper 5</li>
+</ul>
+<p>1.1.0.0: 2010-05-17</p>
 <ul>
   <li>added SvnFind as a rich windows client frontend, no need to use a web server</li>
   <li>workaround for unreadable files due to &quot;inconsistent line ending&quot; exceptions thrown by the subversion api</li>

@@ -210,7 +210,7 @@
 .syntaxhighlighter .toolbar .item.copyToClipboard
 {
 	text-indent: 0 !important;
-	background: none !important;
+	background-image: url(page_white_copy.png) !important;
 	overflow: visible !important;
 }
 

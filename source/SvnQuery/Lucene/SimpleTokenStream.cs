@@ -31,7 +31,7 @@ namespace SvnQuery.Lucene
     public class SimpleTokenStream : TokenStream
     {
         const int MinTokenLength = 1;
-        const int MaxTokenLength = 100;
+        const int MaxTokenLength = 127;
 
         string _text;
         int _offset;

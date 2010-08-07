@@ -35,6 +35,9 @@ namespace SvnIndex
     /// </summary>
     public class Indexer
     {
+        const int MaxNumberOfTermsPerDocument = 50000;
+        const int MaxDocumentSize =  1024 * 1024;
+
         readonly IndexerArgs _args;
         readonly Directory _indexDirectory;
         readonly ISvnApi _svn;
@@ -143,10 +146,11 @@ namespace SvnIndex
             indexThread.Name = "IndexThread";
             indexThread.IsBackground = true;
             indexThread.Start();
-
+                                                    
             if (Command.Create == _args.Command)
             {
                 _indexWriter = new IndexWriter(_indexDirectory, false, null, true);
+                _indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
                 IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
                 QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
                 optimize = true;
@@ -159,6 +163,7 @@ namespace SvnIndex
                 _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
                 if (_args.SingleRevision) Console.WriteLine("SingleRevision index");
                 _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
+                _indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
                 optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             }
             IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
@@ -362,8 +367,8 @@ namespace SvnIndex
                 jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);
                 string mime;
                 bool isText = !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");
-                const int maxFileSize = 2 * 1024 * 1024;
-                if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < maxFileSize)
+               
+                if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < MaxDocumentSize)
                 {
                     jobData.Content = _svn.GetPathContent(jobData.Path, jobData.RevisionFirst, jobData.Info.Size);
                 }

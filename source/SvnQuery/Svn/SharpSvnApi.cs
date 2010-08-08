@@ -56,21 +56,35 @@ namespace SvnQuery.Svn
                     _clientPool.RemoveAt(last);
                 }
             }
-            if (client == null)
-            {
-                client = new SvnClient();
+            return client ?? MakeNewSvnClient();
+        }
 
-                client.Authentication.UserNameHandlers += (s, e) => e.UserName = _user;
-                client.Authentication.UserNamePasswordHandlers += (s, e) =>
-                {
-                    e.UserName = _user;
-                    e.Password = _password;
-                };
-                client.Authentication.SslServerTrustHandlers += (s, e) =>
-                {
-                    e.AcceptedFailures = SharpSvn.Security.SvnCertificateTrustFailures.MaskAllFailures;
-                };
+        SvnClient MakeNewSvnClient()
+        {
+            SvnClient client = new SvnClient();
+
+            try
+            {
+                // load configuration right away so exceptions during loading can be catched
+                client.LoadConfigurationDefault();
             }
+            catch (SvnFormatException)
+            {
+                // workaround for exception "Can't determine the user's config path" for special users like NetworkService
+                // -> try again loading from some specific path
+                client.LoadConfiguration(Path.Combine(Path.GetTempPath(), "SharpSvnApi"));
+            }
+
+            client.Authentication.UserNameHandlers += (s, e) => e.UserName = _user;
+            client.Authentication.UserNamePasswordHandlers += (s, e) =>
+            {
+                e.UserName = _user;
+                e.Password = _password;
+            };
+            client.Authentication.SslServerTrustHandlers += (s, e) =>
+            {
+                e.AcceptedFailures = SharpSvn.Security.SvnCertificateTrustFailures.MaskAllFailures;
+            };
 
             return client;
         }

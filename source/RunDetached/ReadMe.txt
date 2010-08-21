@@ -10,6 +10,6 @@ to a subversion hook process.
 
 Usage:
   RunDetached <program.exe> [arguments]
-  starts program.exe with arguments as a detached process.
+  starts program.exe with arguments as a detached process 
 
 

@@ -149,8 +149,7 @@ namespace SvnIndex
                                                     
             if (Command.Create == _args.Command)
             {
-                _indexWriter = new IndexWriter(_indexDirectory, false, null, true);
-                _indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
+                _indexWriter = CreateIndexWriter(true);
                 IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
                 QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
                 optimize = true;
@@ -162,8 +161,7 @@ namespace SvnIndex
                 startRevision = IndexProperty.GetRevision(reader) + 1;
                 _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
                 if (_args.SingleRevision) Console.WriteLine("SingleRevision index");
-                _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
-                _indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
+                _indexWriter = CreateIndexWriter(false);
                 optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
             }
             IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
@@ -181,7 +179,7 @@ namespace SvnIndex
                     if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
                     CommitIndex();
                     _highestRevision.Reader = IndexReader.Open(_indexDirectory);
-                    _indexWriter = new IndexWriter(_indexDirectory, false, null, false);
+                    _indexWriter = CreateIndexWriter(false);
                 }
             }
             _stopIndexThread.Set();
@@ -195,6 +193,13 @@ namespace SvnIndex
             CommitIndex();
             TimeSpan time = DateTime.UtcNow - start;
             Console.WriteLine("Finished in {0:00}:{1:00}:{2:00}", time.Hours, time.Minutes, time.Seconds);
+        }
+
+        IndexWriter CreateIndexWriter(bool pCreateNewIndex)
+        {
+            var indexWriter = new IndexWriter(_indexDirectory, false, null, pCreateNewIndex);
+            indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
+            return indexWriter;
         }
 
         void CommitIndex()

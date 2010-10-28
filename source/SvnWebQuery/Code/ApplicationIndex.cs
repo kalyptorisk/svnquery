@@ -18,7 +18,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.Configuration;
 using SvnQuery;
 using SvnQuery.Svn;
@@ -39,7 +42,7 @@ namespace SvnWebQuery.Code
 
         static ApplicationIndex()
         {
-            Index = new Index(WebConfigurationManager.AppSettings["IndexPath"]);
+            Index = OpenIndex();
             var props = Index.QueryProperties(); 
             Name = props.RepositoryName;
             IsSingleRevision = props.SingleRevision;
@@ -79,6 +82,27 @@ namespace SvnWebQuery.Code
             }
             result.LastAccess = DateTime.Now;
             return result.Result;
+        }
+
+        static Index OpenIndex()
+        {
+            string indexPath = WebConfigurationManager.AppSettings["IndexPath"];
+            string indexParentPath = WebConfigurationManager.AppSettings["IndexParentPath"];
+
+            if (!String.IsNullOrEmpty(indexPath) && !String.IsNullOrEmpty(indexParentPath))
+                throw new ApplicationException("Invalid web configuration: Both IndexPath and IndexParentPath are set but only one may be set.");
+
+            if (String.IsNullOrEmpty(indexPath) && String.IsNullOrEmpty(indexParentPath))
+                throw new ApplicationException("Invalid web configuration: Neither IndexPath nor IndexParentPath is set.");
+
+            if (!String.IsNullOrEmpty(indexParentPath))
+            {
+                // build index path by combining parent path and name of virtual web
+                indexPath = Path.Combine(indexParentPath, Path.GetFileName(HttpRuntime.AppDomainAppVirtualPath.TrimEnd('/')));
+            }
+
+            Index index = new Index(indexPath);
+            return index;
         }
 
         // removes too old entries from the cache

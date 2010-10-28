@@ -32,14 +32,36 @@ namespace SvnFind
     public class ResultViewModel
     {
         readonly Result _result;
+        readonly string _indexPath;
+        ISvnApi _svn;
 
-        public ResultViewModel(Result result)
+        public ResultViewModel(Result result, string indexPath)
         {
             _result = result;
-            Svn = new SharpSvnApi(_result.Index.RepositoryExternalUri);
+            _indexPath = indexPath;
         }
 
-        public ISvnApi Svn {get; private set;}
+        public ISvnApi Svn
+        {
+            get
+            {
+                if (_svn == null)
+                {
+                    // check if a local repository relative to the index path is available
+                    _svn = new SharpSvnApi(Path.GetDirectoryName(_indexPath));
+                    try
+                    {
+                        _svn.GetYoungestRevision();
+                    }
+                    catch
+                    {
+                        // if not, use the external uri stored inside the index
+                        _svn = new SharpSvnApi(_result.Index.RepositoryExternalUri);
+                    }
+                }
+                return _svn;
+            }
+        }
 
         public string HitCount
         {
@@ -69,8 +91,6 @@ namespace SvnFind
         {
             get
             {
-                // LINQ: return from h in _result.Hits select new HitViewModel(h);
-
                 foreach (Hit hit in _result.Hits)
                 {
                     yield return new HitViewModel(hit);

@@ -139,8 +139,7 @@ namespace SvnFind
             get
             {
                 return SelectedIndex != null && SelectedIndex.IsSingleRevision
-                           ? Visibility.Hidden
-                           : Visibility.Visible;
+                       ? Visibility.Hidden : Visibility.Visible;
             }
         }
 
@@ -167,7 +166,7 @@ namespace SvnFind
             {
                 string first, last;
                 GetRevisionRange(RevisionRange, out first, out last);
-                QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText, first, last));
+                QueryResult = new ResultViewModel(SelectedIndex.Query(QueryText, first, last), SelectedIndex.Path);
             }
             catch (Exception x)
             {

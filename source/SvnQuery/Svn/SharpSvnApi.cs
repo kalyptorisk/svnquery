@@ -101,9 +101,15 @@ namespace SvnQuery.Svn
                 if (_info == null)
                 {
                     SvnClient client = AllocSvnClient();
-                    SvnTarget target = new SvnUriTarget(_uri);
-                    client.GetInfo(target, out _info);
-                    FreeSvnClient(client);
+                    try
+                    {
+                        SvnTarget target = new SvnUriTarget(_uri);
+                        client.GetInfo(target, out _info);
+                    }
+                    finally
+                    {
+                        FreeSvnClient(client);
+                    }
                 }
                 return _info;
             }

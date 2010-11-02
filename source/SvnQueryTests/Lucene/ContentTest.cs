@@ -68,5 +68,12 @@ namespace SvnQuery.Tests.Lucene
             TestIndex.AssertQueryFromHeadRevision("c:\"**\"");  
             TestIndex.AssertQueryFromHeadRevision("c:\"**/\"");  
         }
+
+        [Test]
+        public void LargeData_NoMoreThanMaxNumberOfTermsPerDocumentAreIndexed()
+        {
+            TestIndex.AssertQueryFromHeadRevision("c:a49", 27);
+            TestIndex.AssertQueryFromHeadRevision("c:a50"); // should not be indexed
+        }
     }
 }

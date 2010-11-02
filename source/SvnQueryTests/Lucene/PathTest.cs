@@ -41,7 +41,6 @@ namespace SvnQuery.Tests.Lucene
             TestIndex.AssertQuery(PathQuery("/shared/"), 1, 2, 3, 4, 5, 6, 7);
         }
 
-
         [Test]
         public void CsExtension()
         {

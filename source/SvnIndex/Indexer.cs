@@ -35,7 +35,7 @@ namespace SvnIndex
     /// </summary>
     public class Indexer
     {
-        const int MaxNumberOfTermsPerDocument = 50000;
+        const int MaxNumberOfTermsPerDocument = 500000;
         const int MaxDocumentSize =  1024 * 1024;
 
         readonly IndexerArgs _args;
@@ -195,9 +195,9 @@ namespace SvnIndex
             Console.WriteLine("Finished in {0:00}:{1:00}:{2:00}", time.Hours, time.Minutes, time.Seconds);
         }
 
-        IndexWriter CreateIndexWriter(bool pCreateNewIndex)
+        IndexWriter CreateIndexWriter(bool createNewIndex)
         {
-            var indexWriter = new IndexWriter(_indexDirectory, false, null, pCreateNewIndex);
+            var indexWriter = new IndexWriter(_indexDirectory, false, null, createNewIndex);
             indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
             return indexWriter;
         }

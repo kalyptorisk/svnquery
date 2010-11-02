@@ -120,6 +120,12 @@ limitations under the License.
           <Kind Name="FIELD" />
         </ElementKinds>
       </UserRule>
+      <UserRule Inspect="True" Prefix="" Suffix="" Style="Aa_bb" StaticnessKind="Static, Instance" AccessRight="Public" Description="">
+        <ElementKinds>
+          <Kind Name="TEST_TYPE" />
+          <Kind Name="TEST_MEMBER" />
+        </ElementKinds>
+      </UserRule>
     </Naming2>
   </CodeStyleSettings>
 </Configuration>

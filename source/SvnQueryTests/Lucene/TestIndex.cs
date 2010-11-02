@@ -17,22 +17,25 @@
 #endregion
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
 using SvnQuery.Lucene;
+using Directory = Lucene.Net.Store.Directory;
 
 namespace SvnQuery.Tests.Lucene
 {
     public static class TestIndex
     {
-        const string longContentA = "#include \"FileIO.h\" // another comment that is just here to generate some text that can be searched";
-        const string longContentB = "#include <general/path/bla.h> // some very funky and long comment that is total useless";
+        const string LongContentA = "#include \"FileIO.h\" // another comment that is just here to generate some text that can be searched";
+        const string LongContentB = "#include <general/path/bla.h> // some very funky and long comment that is total useless";
 
-        static readonly string[,] data = {
+        static readonly string[,] Data = {
                                              {" 0", "/csharp/fileio.cs", "The quick brown fox jumps over the lazy dog", ""},
                                              {" 1", "/shared/general/FileIO/FileIO.cpp", "class Special:Abstract", ""},
                                              {" 2", "/shared/general/FileIO/FileIO.design.cpp", "obj.method(arg1, arg2, arg3) < 4711", ""},
@@ -41,8 +44,8 @@ namespace SvnQuery.Tests.Lucene
                                              {" 5", "/shared/general/flip/FileIO/FileIO.h", "cc dd ee ff", ""},
                                              {" 6", "/shared/general/FileIO/anders.h", "flip fileio cpp shared general", ""},
                                              {" 7", "/shared/general/FileIO/anders.cpp", "", ""},
-                                             {" 8", "/tags/shared/general/FileIO/FileIO.cpp", longContentA, ""},
-                                             {" 9", "/tags/shared/general/FileIO/FileIO.h", longContentB, ""},
+                                             {" 8", "/tags/shared/general/FileIO/FileIO.cpp", LongContentA, ""},
+                                             {" 9", "/tags/shared/general/FileIO/FileIO.h", LongContentB, ""},
                                              {"10", "/tags/shared/general/FileIO/anders.h", "max und moritz sind anders", ""},
                                              {"11", "/tags/shared/general/FileIO/anders.cpp", "anders sind moritz und max", ""},
                                              {"12", "/woanders/FileIO.cpp", "elephant", ""},
@@ -61,43 +64,54 @@ namespace SvnQuery.Tests.Lucene
                                              {"24", "/revisions/bla.cpp", "9", null},
                                              {"25", "/revisions/deleted.cpp", "6", "8"},
                                              {"26", "/revisions/current.cpp", "9", null},
+                                             // large data
+                                             {"27", "/large/data.txt", GenerateLargeContent(), ""}
                                          };
 
-        static readonly IndexSearcher searcher;
+        public const int MaxNumberOfTermsPerDocument = 50;
 
-        public static IndexSearcher Searcher
+        static string GenerateLargeContent()
         {
-            get { return searcher; }
+            var sb = new StringBuilder();
+            for (int i = 0; i < MaxNumberOfTermsPerDocument + 1; ++i)
+            {
+                sb.Append('a');
+                sb.Append(i);
+                sb.Append(' ');
+            }            
+            return sb.ToString();
         }
+
+        static readonly IndexSearcher Searcher;
 
         public static IndexReader Reader
         {
-            get { return searcher.Reader; }
+            get { return Searcher.Reader; }
         }
 
         public static string GetId(int i)
         {
-            return data[i, 1];
+            return Data[i, 1];
         }
 
         public static string GetPath(int i)
         {
-            return data[i, 1];
+            return Data[i, 1];
         }
 
         public static string GetContent(int i)
         {
-            return data[i, 2];
+            return Data[i, 2];
         }
 
         public static string GetExternals(int i)
         {
-            return data[i, 3];
+            return Data[i, 3];
         }
 
         public static Hits Search(Query q, int revFirst, int revLast)
         {
-            return searcher.Search(q, new RevisionFilter(revFirst, revLast));
+            return Searcher.Search(q, new RevisionFilter(revFirst, revLast));
         }
 
         public static Hits SearchHeadRevision(Query q)
@@ -145,17 +159,16 @@ namespace SvnQuery.Tests.Lucene
             else
             {
                 Console.WriteLine("Hits: " + hits.Length());
-                // Console.WriteLine();
 
-                //// iterate over the first few results.
+                // iterate over the first few results.
                 for (int i = 0; i < 50 && i < hits.Length(); i++)
                 {
                     var doc = hits.Doc(i);
                     string id = doc.Get("id");
                     int n;
-                    for (n = 0; n < data.GetLength(0); ++n)
+                    for (n = 0; n < Data.GetLength(0); ++n)
                     {
-                        if (id == data[n, 1])
+                        if (id == Data[n, 1])
                         {
                             Console.WriteLine("{0}: {1}  ==>  {2} {3}", n, GetPath(n), GetContent(n), GetExternals(n));
                             break;
@@ -199,11 +212,11 @@ namespace SvnQuery.Tests.Lucene
             return Revision.HeadString;
         }
 
-
         static TestIndex()
         {
             Directory directory = new RAMDirectory();
             IndexWriter writer = new IndexWriter(directory, null, true);
+            writer.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
             var pathTokenStream = new PathTokenStream();
             var contentTokenStream = new SimpleTokenStream();
             var externalsTokenStream = new PathTokenStream();
@@ -217,9 +230,9 @@ namespace SvnQuery.Tests.Lucene
             doc.Add(new Field(FieldName.Externals, externalsTokenStream));
             doc.Add(field_rev_first);
             doc.Add(field_rev_last);
-            for (int i = 0; i < data.GetLength(0); ++i)
+            for (int i = 0; i < Data.GetLength(0); ++i)
             {
-                string id = data[i, 1];
+                string id = Data[i, 1];
                 field_id.SetValue(id);
                 pathTokenStream.Text = id;
                 int rev_first = Revision.Head;
@@ -227,18 +240,18 @@ namespace SvnQuery.Tests.Lucene
                 {
                     contentTokenStream.Text = "";
                     externalsTokenStream.Text = "";
-                    rev_first = int.Parse(data[i, 2]);
+                    rev_first = int.Parse(Data[i, 2]);
                 }
                 else
                 {
-                    contentTokenStream.Text = data[i, 2];
-                    externalsTokenStream.Text = data[i, 3];
+                    contentTokenStream.Text = Data[i, 2];
+                    externalsTokenStream.Text = Data[i, 3];
                 }
                 field_rev_first.SetValue(RevisionFieldValue(rev_first));
                 field_rev_last.SetValue(HeadRevisionFieldValue());
                 writer.AddDocument(doc);
 
-                if (id.StartsWith("/revisions") && data[i, 3] != null) // update last revision
+                if (id.StartsWith("/revisions") && Data[i, 3] != null) // update last revision
                 {
                     // Change the last revision
                     // Warning: It is not possible to load a document from the index
@@ -247,10 +260,10 @@ namespace SvnQuery.Tests.Lucene
                     pathTokenStream.Text = id;
                     contentTokenStream.Text = "";
                     externalsTokenStream.Text = "";
-                    int rev_last = int.Parse(data[i, 3]);
+                    int rev_last = int.Parse(Data[i, 3]);
                     field_rev_last.SetValue(RevisionFieldValue(rev_last));
                     id += "@" + rev_first;
-                    data[i, 1] = id;
+                    Data[i, 1] = id;
                     field_id.SetValue(id);
                     writer.AddDocument(doc);
                 }
@@ -262,8 +275,8 @@ namespace SvnQuery.Tests.Lucene
             writer.Optimize();
             writer.Close();
 
-            searcher = new IndexSearcher(directory);
-            Assert.AreEqual(data.GetLength(0), searcher.MaxDoc()); // smoke test for index creation 
+            Searcher = new IndexSearcher(directory);
+            Assert.AreEqual(Data.GetLength(0), Searcher.MaxDoc()); // smoke test for index creation 
         }
     }
 }

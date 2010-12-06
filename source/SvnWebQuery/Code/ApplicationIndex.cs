@@ -38,10 +38,14 @@ namespace SvnWebQuery.Code
         static readonly Dictionary<string, CachedResult> Cache = new Dictionary<string, CachedResult>();
         static readonly TimeSpan CacheCleanupIntervall = TimeSpan.FromSeconds(90);
         static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-        static DateTime _lastCacheCleanup = DateTime.Now;
+        static DateTime _lastCacheCleanup = DateTime.UtcNow;
 
         static ApplicationIndex()
         {
+            string cacheDurationText = WebConfigurationManager.AppSettings["CacheDuration"];
+            if (!String.IsNullOrEmpty(cacheDurationText))
+                CacheDuration = TimeSpan.Parse(WebConfigurationManager.AppSettings["CacheDuration"]);
+
             Index = OpenIndex();
             var props = Index.QueryProperties(); 
             Name = props.RepositoryName;
@@ -69,18 +73,19 @@ namespace SvnWebQuery.Code
             return new HitViewModel(Index.GetHitById(id));
         }
 
-        public static Result Query(string query, string revFirst, string revLast)
+        public static Result Query(string query, string revFirst, string revLast, bool useCache)
         {
             CleanupCache();
-            CachedResult result;
-            string key = query + revFirst + revLast;
-            lock (Cache) Cache.TryGetValue(key, out result);
+            CachedResult result = null;
+            string key = query + "|" + revFirst + "|" + revLast;
+            if (useCache)
+                lock (Cache) Cache.TryGetValue(key, out result);
             if (result == null)
             {
                 result = new CachedResult(Index.Query(query, revFirst, revLast));
                 lock (Cache) Cache[key] = result;
             }
-            result.LastAccess = DateTime.Now;
+            result.LastAccess = DateTime.UtcNow;
             return result.Result;
         }
 
@@ -108,7 +113,7 @@ namespace SvnWebQuery.Code
         // removes too old entries from the cache
         static void CleanupCache()
         {
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
 
             if (now - _lastCacheCleanup < CacheCleanupIntervall)
                 return;
@@ -139,16 +144,14 @@ namespace SvnWebQuery.Code
 
         public static IEnumerable<HitViewModel> Select(string query, string revFirst, string revLast, int maximumRows, int startRowIndex)
         {
-            Result r = Query(query, revFirst, revLast);
-            for (int i = startRowIndex; i < r.Hits.Count && i < startRowIndex + maximumRows; ++i)
-            {
-                yield return new HitViewModel(r.Hits[i]);
-            }
+            Result r = Query(query, revFirst, revLast, true);
+            var hits = r.Hits.OrderBy(hit => hit.Path, StringComparer.InvariantCultureIgnoreCase);
+            return hits.Skip(startRowIndex).Take(maximumRows).Select(hit => new HitViewModel(hit));
         }
 
         public static int SelectCount(string query, string revFirst, string revLast)
         {
-            return Query(query, revFirst, revLast).Hits.Count;
+            return Query(query, revFirst, revLast, true).Hits.Count;
         }
 
         #endregion

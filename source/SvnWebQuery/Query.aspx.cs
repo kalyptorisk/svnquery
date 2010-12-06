@@ -109,7 +109,7 @@ namespace SvnWebQuery
 
             try
             {
-                Result r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
+                Result r = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value, IsPostBack);
                 string htmlQuery = Server.HtmlEncode(r.Query);
                 _hitsLabel.Text = string.Format("<b>{0}</b> hits for <b>{1}</b>", r.Hits.Count, htmlQuery);
                 _statisticsLabel.Text =
@@ -228,7 +228,8 @@ namespace SvnWebQuery
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
-            foreach (Hit hit in ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value).Hits)
+            var result = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value, true);
+            foreach (Hit hit in result.Hits.OrderBy(hit => hit.Path, StringComparer.InvariantCultureIgnoreCase))
             {
                 Response.Write(Join(hit.Path, hit.File, hit.Author, hit.LastModification.ToString("g"), hit.RevisionFirst, hit.SizeInBytes.ToString()));
             }
@@ -246,8 +247,8 @@ namespace SvnWebQuery
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
             Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".txt");
 
-            var result = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value);
-            foreach (Hit hit in result.Hits)
+            var result = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value, true);
+            foreach (Hit hit in result.Hits.OrderBy(hit => hit.Path, StringComparer.InvariantCultureIgnoreCase))
             {
                 Response.Write(result.Index.RepositoryExternalUri + hit.Path + Environment.NewLine);
             }

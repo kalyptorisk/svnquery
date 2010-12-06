@@ -53,6 +53,7 @@ namespace SvnIndex
         readonly EventWaitHandle _indexQueueHasData = new ManualResetEvent(false);
         readonly EventWaitHandle _indexQueueIsEmpty = new ManualResetEvent(true);
         IndexWriter _indexWriter;
+        FilteredTextWriter _indexWriterMessageFilter;
 
         // reused objects for faster indexing
         readonly Term _idTerm = new Term(FieldName.Id, "");

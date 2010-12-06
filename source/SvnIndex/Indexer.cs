@@ -146,51 +146,63 @@ namespace SvnIndex
             indexThread.Name = "IndexThread";
             indexThread.IsBackground = true;
             indexThread.Start();
-                                                    
-            if (Command.Create == _args.Command)
-            {
-                _indexWriter = CreateIndexWriter(true);
-                IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
-                QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
-                optimize = true;
-            }
-            else // Command.Update
-            {
-                IndexReader reader = IndexReader.Open(_indexDirectory); // important: create reader before creating indexWriter!
-                _highestRevision.Reader = reader;
-                startRevision = IndexProperty.GetRevision(reader) + 1;
-                _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
-                if (_args.SingleRevision) Console.WriteLine("SingleRevision index");
-                _indexWriter = CreateIndexWriter(false);
-                optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
-            }
-            IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
-            IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
-            IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
-            IndexProperty.SetRepositoryCredentials(_indexWriter, _args.Credentials);
 
-            while (startRevision <= stopRevision)
-            {
-                IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));
-                startRevision += _args.CommitInterval;
+            // setup message filter for index writer
+            _indexWriterMessageFilter = new FilteredTextWriter(Console.Out,
+                // only allow messages starting with "maxFieldLength"
+                // example message: "maxFieldLength 500000 reached for field content, ignoring following tokens"
+                line => line.ToString().StartsWith("maxFieldLength"));
+            _indexWriterMessageFilter.DefaultLineLength = 256;
 
-                if (startRevision <= stopRevision)
+            using (_indexWriterMessageFilter)
+            {
+                if (Command.Create == _args.Command)
                 {
-                    if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
-                    CommitIndex();
-                    _highestRevision.Reader = IndexReader.Open(_indexDirectory);
-                    _indexWriter = CreateIndexWriter(false);
+                    _indexWriter = CreateIndexWriter(true);
+                    IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
+                    QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+                    optimize = true;
                 }
+                else // Command.Update
+                {
+                    IndexReader reader = IndexReader.Open(_indexDirectory); // important: create reader before creating indexWriter!
+                    _highestRevision.Reader = reader;
+                    startRevision = IndexProperty.GetRevision(reader) + 1;
+                    _args.SingleRevision = IndexProperty.GetSingleRevision(reader);
+                    if (_args.SingleRevision) Console.WriteLine("SingleRevision index");
+                    _indexWriter = CreateIndexWriter(false);
+                    optimize = stopRevision % _args.Optimize == 0 || stopRevision - startRevision > _args.Optimize;
+                }
+                IndexProperty.SetRepositoryLocalUri(_indexWriter, _args.RepositoryLocalUri);
+                IndexProperty.SetRepositoryExternalUri(_indexWriter, _args.RepositoryExternalUri);
+                IndexProperty.SetRepositoryName(_indexWriter, _args.RepositoryName);
+                IndexProperty.SetRepositoryCredentials(_indexWriter, _args.Credentials);
+
+                while (startRevision <= stopRevision)
+                {
+                    IndexRevisionRange(startRevision, Math.Min(startRevision + _args.CommitInterval - 1, stopRevision));
+                    startRevision += _args.CommitInterval;
+
+                    if (startRevision <= stopRevision)
+                    {
+                        if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
+                        CommitIndex();
+                        _highestRevision.Reader = IndexReader.Open(_indexDirectory);
+                        _indexWriter = CreateIndexWriter(false);
+                    }
+                }
+                _stopIndexThread.Set();
+                if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
+                _highestRevision.Reader = null;
+                if (optimize)
+                {
+                    Console.WriteLine("Optimizing index ...");
+                    _indexWriter.Optimize();
+                }
+                CommitIndex();
             }
-            _stopIndexThread.Set();
-            if (_highestRevision.Reader != null) _highestRevision.Reader.Close();
-            _highestRevision.Reader = null;
-            if (optimize)
-            {
-                Console.WriteLine("Optimizing index ...");
-                _indexWriter.Optimize();
-            }
-            CommitIndex();
+            _indexWriterMessageFilter = null;
+
             TimeSpan time = DateTime.UtcNow - start;
             Console.WriteLine("Finished in {0:00}:{1:00}:{2:00}", time.Hours, time.Minutes, time.Seconds);
         }
@@ -198,6 +210,7 @@ namespace SvnIndex
         IndexWriter CreateIndexWriter(bool createNewIndex)
         {
             var indexWriter = new IndexWriter(_indexDirectory, false, null, createNewIndex);
+            indexWriter.SetInfoStream(_indexWriterMessageFilter);
             indexWriter.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
             return indexWriter;
         }

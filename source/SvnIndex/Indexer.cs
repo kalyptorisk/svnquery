@@ -383,16 +383,23 @@ namespace SvnIndex
                 if (_args.Verbosity > 1)
                     Console.WriteLine("Fetch          " + jobData.Path + "   " + jobData.RevisionFirst + ":" + jobData.RevisionLast);
 
-                jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);
-                string mime;
-                bool isText = !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");
-               
-                if (!jobData.Info.IsDirectory && isText && 0 < jobData.Info.Size && jobData.Info.Size < MaxDocumentSize)
+                if (IsIndexable(jobData))
                 {
                     jobData.Content = _svn.GetPathContent(jobData.Path, jobData.RevisionFirst, jobData.Info.Size);
                 }
             }
             QueueIndexJob(jobData);
+        }
+
+        bool IsIndexable(IndexJobData jobData)
+        {
+            if (jobData.Info.IsDirectory) return false;
+            if (jobData.Info.Size <= 0 || jobData.Info.Size > MaxDocumentSize) return false;
+            if (_args.IgnoreBinaryFilter.IsMatch(jobData.Path)) return true;
+
+            jobData.Properties = _svn.GetPathProperties(jobData.Path, jobData.RevisionFirst);
+            string mime;
+            return !jobData.Properties.TryGetValue("svn:mime-type", out mime) || mime.StartsWith("text/");
         }
 
         void QueueIndexJob(IndexJobData jobData)

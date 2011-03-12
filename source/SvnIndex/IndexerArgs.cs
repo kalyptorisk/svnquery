@@ -35,7 +35,9 @@ SvnIndex action index_path repository_uri [Options]
   action := create | update
   Options:
   -r max revision to be included in the index
-  -f regex filter for items that should be ignored, default is ""/tags/""
+  -f regex filter for items that should be ignored. Default is ""/tags/""
+  -b regex filter for items to force indexing for binary files.
+     Default is "".(c|cpp|h|cs|js|vb|txt|html|aspx|ascx|htm|css)$""  
     
   -n name of the index (for display in clients e.g. SvnWebQuery)
   -x external visible repository uri (if different than repository_uri)
@@ -61,6 +63,7 @@ SvnIndex action index_path repository_uri [Options]
         public string RepositoryName;
         public Credentials Credentials = new Credentials();
         public Regex Filter; // pathes that match this regex are not indexed
+        public Regex IgnoreBinaryFilter; // pathes that match this regex will be included regardless of the mime type
         public int MaxRevision = 99999999;
         public int MaxThreads; // default is initialized depending on protocol (file:///, svn:// http://) 
         // as a general rule, the higher the latency the higher the number of threads should be
@@ -89,6 +92,9 @@ SvnIndex action index_path repository_uri [Options]
                                 break;
                             case 'f':
                                 Filter = new Regex(NextArg(args, ref i), RegexOptions.Compiled | RegexOptions.CultureInvariant);
+                                break;
+                            case 'b':
+                                IgnoreBinaryFilter = new Regex(NextArg(args, ref i), RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                                 break;
                             case 'u':
                                 Credentials.User = NextArg(args, ref i);
@@ -146,7 +152,8 @@ SvnIndex action index_path repository_uri [Options]
             if (iMandatory != 3) throw new IndexerArgsException("Not enough arguments");
 
             if (MaxThreads < 2) MaxThreads = GetMaxThreadsFromUri(RepositoryLocalUri);
-            if (Filter == null) Filter = new Regex("/tags/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            Filter = Filter ?? new Regex("/tags/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            IgnoreBinaryFilter = IgnoreBinaryFilter ?? new Regex(".(c|cpp|h|cs|js|vb|txt|html|aspx|ascx|htm|css)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             if (RepositoryExternalUri == null) RepositoryExternalUri = RepositoryLocalUri;
             if (RepositoryName == null) RepositoryName = RepositoryExternalUri.Split('/').Last();
         }

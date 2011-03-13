@@ -18,7 +18,6 @@
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 namespace SvnWebQuery
@@ -33,23 +32,24 @@ namespace SvnWebQuery
             {
                 {"AS3", "as3"},
                 //{"Bash", "bash"},
-                {"ColdFusion", "(cfm)|(cfml)"},
-                {"Cpp", "(c)|(h)|(hpp)|(cpp)|(inl)"},
+                {"ColdFusion", "cfm|cfml"},
+                {"Cpp", "c|h|hpp|cpp|inl"},
                 {"CSharp", "cs"},
                 {"Css", "css"},
                 {"Delphi", "pas"},
-                {"Diff", "(diff)|(patch)"},
-                {"Erlang", ".rl"},
+                {"Diff", "diff|patch"},
+                {"Erlang", "rl"},
                 {"Groovy", "groovy"},
                 {"Java", "java"},
                 {"JavaFX", "jvx"},
                 {"JScript", "js"},
-                {"Perl", "(perl)|(pl)"},
+                {"Perl", "perl|pl"},
                 {"Php", "php"},
                 {"PowerShell", "ps1"},
                 {"Python", "py"},
-                {"Ruby", "(rb)|(ruby)"},
-                {"Scala", "(scl)|(scala)"},
+                {"Ruby", "rb|ruby"},
+                {"Sass", "sass|scss"},
+                {"Scala", "scl|scala"},
                 {"Sql", "sql"},
                 {"Vb", "vb"},
                 {"Xml", "(.*ml)|(.*proj)|(targets)"}, // interpreting msbuild projects and targets as xml
@@ -60,7 +60,7 @@ namespace SvnWebQuery
         readonly string _brush;
 
         public SyntaxHighlightBrushMapper(string path)
-        {
+        {            
             string ext = path.Substring(path.LastIndexOf('.') + 1);
 
             for (int i = 0; i <= BrushToExtensions.GetUpperBound(0); ++i)

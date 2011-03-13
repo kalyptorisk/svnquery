@@ -39,11 +39,7 @@ namespace SvnIndexTests
 
         IndexSearcher Revision22
         {
-            get
-            {
-                if (_revision22 == null) _revision22 = new IndexSearcher(CreateIndex(22));
-                return _revision22;
-            }
+            get { return _revision22 ?? (_revision22 = new IndexSearcher(CreateIndex(22))); }
         }
 
         RAMDirectory CreateIndex(int revision)
@@ -274,6 +270,17 @@ namespace SvnIndexTests
                 Assert.That(expected, Has.Member(h.Doc(i).Get(FieldName.Id)));
             }
 
+        }
+
+        [Test]
+        public void BinaryMimeTypeForCSharp_ShouldBeIndexed()
+        {
+            var index = new IndexSearcher(CreateSingleRevisionIndex(24));
+            Parser p = new Parser(index.Reader);
+
+            Hits hits = index.Search(p.Parse("p:MainViewModel.cs Öttö"));
+
+            Assert.That(hits.Length() == 1);
         }
     
     }

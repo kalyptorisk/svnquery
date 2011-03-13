@@ -86,7 +86,6 @@ namespace SvnWebQuery
         void AddStartupScript()
         {
             StringBuilder code = new StringBuilder();
-            code.Append("SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';");
             code.Append("SyntaxHighlighter.defaults['gutter'] = true;");
             code.Append("SyntaxHighlighter.defaults['wrap-lines'] = false;");
             code.Append("SyntaxHighlighter.defaults['auto-links'] = false;");

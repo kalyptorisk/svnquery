@@ -55,7 +55,7 @@ namespace SvnQuery.Tests.Svn
         [Test]
         public void GetYoungestRevision()
         {
-            Assert.That(api.GetYoungestRevision(), Is.EqualTo(22));
+            Assert.That(api.GetYoungestRevision(), Is.EqualTo(24));
         }
 
         [Test]

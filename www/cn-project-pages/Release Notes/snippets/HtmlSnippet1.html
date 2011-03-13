@@ -1,6 +1,6 @@
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />                              
 
-<p>1.1.4.0: 2011-03-13</p>
+<p>1.2.0.0: 2011-03-13</p>
 <ul>
     <li> SvnIndex: added the -b option "IgnoreBinary". This is a regex and all files that match this
          regex will be indexed even if their mime-type is a binary one.
@@ -36,25 +36,25 @@
 <p>1.1.0.0: 2010-05-17</p>
 <ul>
   <li>added SvnFind as a rich windows client frontend, no need to use a web server</li>
-  <li>workaround for unreadable files due to &quot;inconsistent line ending&quot; exceptions thrown by the subversion api</li>
+  <li>workaround for unreadable files due to "inconsistent line ending" exceptions thrown by the subversion api</li>
   <li>internal refactoring of the SvnQuery Api </li>
 </ul>
 <p>1.0.1.0: 2010-01-13</p>
 <ul>
-    <li>SvnIndex: option -f&nbsp; (filter) now defaults to &quot;/tags/&quot;. This should prevent novice users from mistakenly indexing tags which could make the index extremely big.</li>
-    <li>Fix: If the external repository needs authentication SvnWebQuery didn&#39;t work. Now the credentials provided to SvnIndex with the -u and -p options are stored as index properties inside the index. This allows SvnWebQuery to actually read content from the repository and show it on the View page.</li>
+    <li>SvnIndex: option -f  (filter) now defaults to "/tags/". This should prevent novice users from mistakenly indexing tags which could make the index extremely big.</li>
+    <li>Fix: If the external repository needs authentication SvnWebQuery didn't work. Now the credentials provided to SvnIndex with the -u and -p options are stored as index properties inside the index. This allows SvnWebQuery to actually read content from the repository and show it on the View page.</li>
 </ul>
-<p>1.0.0.0:&nbsp; 2009-11-21</p>
+<p>1.0.0.0:  2009-11-21</p>
 <ul>
   <li>fine tuned syntax highlighting css styles</li>
   <li>query parameters are now encoded inside the url so you can send links to live query results</li>
   <li>additional testing for the first 1.0 release</li>
 </ul>
-<p>0.8.0.0:&nbsp; 2009-10-26</p>
+<p>0.8.0.0:  2009-10-26</p>
 <ul>
   <li>added syntax highlighting when displaying source code from the repository</li>
 </ul>
-<p>0.7.2.0:&nbsp; 2009-10-20</p>
+<p>0.7.2.0:  2009-10-20</p>
 <style>
 p {
   font-weight:bold; margin-bottom:0px;
@@ -67,5 +67,6 @@ ul {
   <li>Fix: Queries over a range of revisions or an explicit revision could throw a NullReferenceException</li>
   <li>Fix: Broken Layout on Firefox and IE7</li>
 </ul>
-<p><strong>0.7.1.0:&nbsp; 2009-10-19</strong></p><ul><li>SvnWebQuery: Moved from a table based layout to css based layout. Improves load time and fixes some layout problems with firefox.</li><li>build process uses 7zip instead of ZipFile task to prevent corrupted zip files</li><li>resharped the source a little with resharper 4.5</li></ul><p>0.7.0.0:&nbsp; 2009-06-15</p><ul><li>new option -s for generating 
-a &quot;single revision&quot; index, which contains only one revision of an index (without history)</li><li>much more documentation about how to install and use</li><li>fixed handling of thread pool exceptions</li></ul><p>0.6.0.0:&nbsp; 2009-04-07</p><ul><li>support for subversion 1.6</li><li>some documentation</li><li>cosmetic bugfixes</li></ul>
+<p><strong>0.7.1.0:  2009-10-19</strong></p><ul><li>SvnWebQuery: Moved from a table based layout to css based layout. Improves load time and fixes some layout problems with firefox.</li><li>build process uses 7zip instead of ZipFile task to prevent corrupted zip files</li><li>resharped the source a little with resharper 4.5</li></ul><p>0.7.0.0:  2009-06-15</p><ul><li>new option -s for generating 
+a "single revision" index, which contains only one revision of an index (without history)</li><li>much more documentation about how to install and use</li><li>fixed handling of thread pool exceptions</li></ul><p>0.6.0.0:  2009-04-07</p><ul><li>support for subversion 1.6</li><li>some documentation</li><li>cosmetic bugfixes</li></ul>
+              

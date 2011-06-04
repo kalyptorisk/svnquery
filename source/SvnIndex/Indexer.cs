@@ -161,7 +161,7 @@ namespace SvnIndex
                 {
                     _indexWriter = CreateIndexWriter(true);
                     IndexProperty.SetSingleRevision(_indexWriter, _args.SingleRevision);
-                    QueueAnalyzeJob(new PathChange {Path = "/", Revision = 1, Change = Change.Add}); // add root directory manually
+                    QueueAnalyzeJob(new PathChange {Path = "/", Revision = 0, Change = Change.Add}); // add root directory manually
                     optimize = true;
                 }
                 else // Command.Update

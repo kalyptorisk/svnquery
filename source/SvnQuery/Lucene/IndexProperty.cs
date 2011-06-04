@@ -61,7 +61,8 @@ namespace SvnQuery.Lucene
 
         public static int GetRevision(IndexReader reader)
         {
-            return int.Parse(GetProperty(reader, RevisionProperty));
+            string revision = GetProperty(reader, RevisionProperty);
+            return revision == null ? 0 : int.Parse(revision);
         }
 
         public static void SetRevision(IndexWriter writer, int revision)

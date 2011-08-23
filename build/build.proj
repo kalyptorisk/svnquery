@@ -27,9 +27,9 @@
 
   <Target Name="RunTests" DependsOnTargets="Build">
     <ItemGroup>
-      <Tests Include="..\source\**\bin\$(Configuration)\*Test.dll" />
+      <Tests Include="..\source\**\bin\$(Configuration)\*Tests.dll" />
     </ItemGroup>
-    <Exec Command="..\3rdParty\nunit\nunit-console-x86.exe @(Tests) /noshadow" />
+    <Exec Command="..\3rdParty\nunit\nunit-console-x86.exe @(Tests, ' ') /noshadow" />
   </Target>
 
   <Target Name="GetVersion">

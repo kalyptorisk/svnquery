@@ -17,7 +17,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using Lucene.Net.Analysis;
 
 namespace SvnQuery.Lucene
@@ -44,7 +43,6 @@ namespace SvnQuery.Lucene
 
         public void SetText(string text)
         {
-           // if (text == null) Debugger.Break();
             _text = text ?? "";
             _offset = 0;
         }

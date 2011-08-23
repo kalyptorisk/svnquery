@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery.Lucene;
 
 namespace SvnQuery.Tests.Lucene

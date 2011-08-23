@@ -141,12 +141,12 @@ namespace SvnQuery.Lucene
 
         public Query ParseSimpleTerm(string field, string term)
         {
-            return _phraseParser.Parse(field, new SimpleWildcardTokenStream {Text = term}, _reader);
+            return _phraseParser.Parse(field, new SimpleWildcardTokenStream(term), _reader);
         }
 
         public Query ParsePathTerm(string field, string path)
         {
-            return _phraseParser.Parse(field, new PathTokenStream {Text = path}, _reader);
+            return _phraseParser.Parse(field, new PathTokenStream(path), _reader);
         }
 
         public static Query ParseAuthorTerm(string author)

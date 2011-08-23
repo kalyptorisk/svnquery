@@ -19,7 +19,6 @@
 using System;
 using NUnit.Framework;
 using Lucene.Net.Analysis;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery.Lucene;
 
 namespace SvnQuery.Tests.Lucene
@@ -36,8 +35,7 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void SimpleTokenStream()
         {
-            var ts = new SimpleTokenStream();
-            ts.Text = @"Hullebulle * trallala #include <bli\bla\blub>";
+            var ts = new SimpleTokenStream(@"Hullebulle * trallala #include <bli\bla\blub>");
             var t = new Token();            
 
             Assert.That(NextToken(ts, t), Is.EqualTo("HULLEBULLE"));
@@ -52,8 +50,7 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void SimpleWildcardTokenStream()
         {
-            var ts = new SimpleWildcardTokenStream();
-            ts.Text = @"Hull*bulle tra??ala * bla";
+            var ts = new SimpleWildcardTokenStream(@"Hull*bulle tra??ala * bla");
             var t = new Token();            
 
             Assert.That(NextToken(ts, t), Is.EqualTo("HULL*BULLE"));
@@ -66,8 +63,7 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void PathTokenStream()
         {
-            var ts = new PathTokenStream();
-            ts.Text = "/Internals/White Space/str#nge.net/file.des*n?r.ext";
+            var ts = new PathTokenStream("/Internals/White Space/str#nge.net/file.des*n?r.ext");
             var t = new Token();
 
             Assert.That(NextToken(ts, t), Is.EqualTo("/"));
@@ -92,8 +88,7 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void PathTokenStream_GapQuery()
         {
-            var ts = new PathTokenStream();
-            ts.Text = "Fileio/**/fileio.*";
+            var ts = new PathTokenStream("Fileio/**/fileio.*");
             var t = new Token();
 
             Assert.That(NextToken(ts, t), Is.EqualTo("FILEIO/"));
@@ -107,9 +102,10 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void ExternalsTokenStream()
         {
-            PathTokenStream ts = new PathTokenStream();
-            ts.Text = "-r5000 ^/Internals/shared/ shared" + Environment.NewLine
-                      + "svn://moria/export mcl/dlls";
+            string text = "-r5000 ^/Internals/shared/ shared" + Environment.NewLine
+                          + "svn://moria/export mcl/dlls";
+
+            PathTokenStream ts = new PathTokenStream(text);
             Token t = new Token();
 
             Assert.That(NextToken(ts, t), Is.EqualTo("-R5000"));
@@ -136,8 +132,14 @@ namespace SvnQuery.Tests.Lucene
         [Test]
         public void Empty()
         {
-            SimpleTokenStream ts = new SimpleTokenStream();
-            ts.Text = "";
+            SimpleTokenStream ts = new SimpleTokenStream("");
+            Assert.IsNull(ts.Next());
+        }
+
+        [Test]
+        public void Null()
+        {
+            SimpleTokenStream ts = new SimpleTokenStream(null);
             Assert.IsNull(ts.Next());
         }
     }

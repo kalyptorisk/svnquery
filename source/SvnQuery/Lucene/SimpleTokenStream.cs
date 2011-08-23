@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Diagnostics;
 using Lucene.Net.Analysis;
 
 namespace SvnQuery.Lucene
@@ -36,13 +37,16 @@ namespace SvnQuery.Lucene
         string _text;
         int _offset;
 
-        public string Text
+        public SimpleTokenStream(string text)
         {
-            set
-            {
-                _text = value;
-                _offset = 0;
-            }
+            SetText(text);
+        }
+
+        public void SetText(string text)
+        {
+           // if (text == null) Debugger.Break();
+            _text = text ?? "";
+            _offset = 0;
         }
 
         public bool IsEmpty
@@ -117,6 +121,9 @@ namespace SvnQuery.Lucene
 
     public class SimpleWildcardTokenStream: SimpleTokenStream
     {
+        public SimpleWildcardTokenStream(string text) : base(text)
+        {}
+
         protected override bool IsWordCharacter(char c)
         {
             return base.IsWordCharacter(c) || (c == '*' || c == '?');
@@ -125,6 +132,9 @@ namespace SvnQuery.Lucene
 
     public class PathTokenStream: SimpleTokenStream
     {
+        public PathTokenStream(string text) : base(text)
+        {}
+
         protected override char NormalizeCharacter(char c)
         {
             return c == '\\' ? '/' : base.NormalizeCharacter(c);

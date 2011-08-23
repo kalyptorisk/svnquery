@@ -19,12 +19,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnIndex;
 using SvnQuery;
 using SvnQuery.Lucene;
@@ -34,8 +34,14 @@ namespace SvnIndexTests
     [TestFixture]
     public class IndexerTests
     {
-        readonly string _repository = "file:///" + Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\test_repository"));
+        static readonly string RepositoryPath; 
         IndexSearcher _revision22;
+
+        static IndexerTests()
+        {
+            string dll = Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", "").Replace("/", "\\");
+            RepositoryPath = "file:///" + Path.GetFullPath(Path.Combine(Path.GetDirectoryName(dll), @"..\..\..\..\test_repository"));
+        }
 
         IndexSearcher Revision22
         {
@@ -45,7 +51,7 @@ namespace SvnIndexTests
         RAMDirectory CreateIndex(int revision)
         {
             var dir = new RAMDirectory();
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-c3", "-n", "Test", "-v4" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", RepositoryPath, "-r", revision.ToString(), "-c3", "-n", "Test", "-v4" }), dir);
             indexer.Run();
             return dir;
         }
@@ -53,14 +59,14 @@ namespace SvnIndexTests
         RAMDirectory CreateSingleRevisionIndex(int revision)
         {
             var dir = new RAMDirectory();
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "create", "RAMDirectory", RepositoryPath, "-r", revision.ToString(), "-s", "-v4" }), dir);
             indexer.Run();
             return dir;
         }
 
         void UpdateSingleRevisionIndex(int revision, RAMDirectory dir)
         {
-            Indexer indexer = new Indexer(new IndexerArgs(new[] { "update", "RAMDirectory", _repository, "-r", revision.ToString(), "-s", "-v4" }), dir);
+            Indexer indexer = new Indexer(new IndexerArgs(new[] { "update", "RAMDirectory", RepositoryPath, "-r", revision.ToString(), "-s", "-v4" }), dir);
             indexer.Run();
         }
 

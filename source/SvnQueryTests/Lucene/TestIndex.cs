@@ -217,9 +217,9 @@ namespace SvnQuery.Tests.Lucene
             Directory directory = new RAMDirectory();
             IndexWriter writer = new IndexWriter(directory, null, true);
             writer.SetMaxFieldLength(MaxNumberOfTermsPerDocument);
-            var pathTokenStream = new PathTokenStream();
-            var contentTokenStream = new SimpleTokenStream();
-            var externalsTokenStream = new PathTokenStream();
+            var pathTokenStream = new PathTokenStream("");
+            var contentTokenStream = new SimpleTokenStream("");
+            var externalsTokenStream = new PathTokenStream("");
             Field field_id = new Field("id", "", Field.Store.YES, Field.Index.UN_TOKENIZED);
             Field field_rev_first = new Field(FieldName.RevisionFirst, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
             Field field_rev_last = new Field(FieldName.RevisionLast, "", Field.Store.NO, Field.Index.UN_TOKENIZED);
@@ -234,18 +234,18 @@ namespace SvnQuery.Tests.Lucene
             {
                 string id = Data[i, 1];
                 field_id.SetValue(id);
-                pathTokenStream.Text = id;
+                pathTokenStream.SetText(id);
                 int rev_first = Revision.Head;
                 if (id.StartsWith("/revisions"))
                 {
-                    contentTokenStream.Text = "";
-                    externalsTokenStream.Text = "";
+                    contentTokenStream.SetText("");
+                    externalsTokenStream.SetText("");
                     rev_first = int.Parse(Data[i, 2]);
                 }
                 else
                 {
-                    contentTokenStream.Text = Data[i, 2];
-                    externalsTokenStream.Text = Data[i, 3];
+                    contentTokenStream.SetText(Data[i, 2]);
+                    externalsTokenStream.SetText(Data[i, 3]);
                 }
                 field_rev_first.SetValue(RevisionFieldValue(rev_first));
                 field_rev_last.SetValue(HeadRevisionFieldValue());
@@ -257,9 +257,9 @@ namespace SvnQuery.Tests.Lucene
                     // Warning: It is not possible to load a document from the index
                     // We have to rebuild/reparse it from the scratch
                     writer.DeleteDocuments(new Term("id", id));
-                    pathTokenStream.Text = id;
-                    contentTokenStream.Text = "";
-                    externalsTokenStream.Text = "";
+                    pathTokenStream.SetText(id);
+                    contentTokenStream.SetText("");
+                    externalsTokenStream.SetText("");
                     int rev_last = int.Parse(Data[i, 3]);
                     field_rev_last.SetValue(RevisionFieldValue(rev_last));
                     id += "@" + rev_first;

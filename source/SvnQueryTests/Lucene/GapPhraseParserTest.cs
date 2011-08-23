@@ -18,7 +18,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery.Lucene;
 
 namespace SvnQuery.Tests.Lucene
@@ -28,7 +27,7 @@ namespace SvnQuery.Tests.Lucene
     {
         static string Parse(string content)
         {
-            return new GapPhraseParser().ParseToString(new SimpleWildcardTokenStream{Text = content});
+            return new GapPhraseParser().ParseToString(new SimpleWildcardTokenStream(content));
         }
 
         [Test]

@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery.Svn;
 
 namespace SvnQuery.Tests.Svn
@@ -63,7 +62,7 @@ namespace SvnQuery.Tests.Svn
         {
             var rev = api.GetRevisionData(1, 1); 
             
-            Assert.That(rev, Has.Count(1));
+            Assert.That(rev, Has.Count.EqualTo(1));
             Assert.That(rev[0].Author, Is.EqualTo("Christian"));
             Assert.IsTrue(rev[0].Changes.TrueForAll(c => api.GetPathInfo(c.Path, c.Revision).Author == rev[0].Author));
         }
@@ -162,7 +161,7 @@ namespace SvnQuery.Tests.Svn
         public void GetPathProperties_Revision17_Properties()
         {
             var properties = api.GetPathProperties("/Folder/Second", 17);
-            Assert.That(properties, Has.Count(3));
+            Assert.That(properties, Has.Count.EqualTo(3));
             Assert.That(properties["cr:test"], Is.EqualTo("nur ein test"));
             Assert.That(properties["cr:test2"], Is.EqualTo("another test"));
             Assert.That(properties["cr:test3"], Is.EqualTo("more tests"));

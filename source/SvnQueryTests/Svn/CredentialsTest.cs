@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using SvnQuery.Svn;
 
 namespace SvnQuery.Tests.Svn

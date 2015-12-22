@@ -1,0 +1,7 @@
+build/SvnQuery_*
+build/TestResult.xml
+bin/
+obj/
+*.suo
+*.user
+www/SvnQuery_*.zip

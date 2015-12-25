@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
 // Copyright 2008-2009 Christian Rodemeyer
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ using Lucene.Net.Analysis;
 namespace SvnQuery.Lucene
 {
     /// <summary>
-    /// Breaks text into tokens. A token is either a consecutive sequence of 
+    /// Breaks text into tokens. A token is either a consecutive sequence of
     /// one or more IsWordCharacter() or it is a single IsDelimiterCharacter()
     /// </summary>
     /// <remarks>
@@ -72,7 +72,7 @@ namespace SvnQuery.Lucene
                 else if (IsWordCharacter(c))
                 {
                     if (length < MaxTokenLength) buffer[length++] = c;
-                } 
+                }
                 else if (IsLastCharacter(c))
                 {
                     if (length < MaxTokenLength) buffer[length++] = c;
@@ -86,6 +86,9 @@ namespace SvnQuery.Lucene
             }
             if (length < MinTokenLength) return null;
 
+            int offset = _offset >= _text.Length ? _offset : _offset-1;
+            token.SetStartOffset(offset-length);
+            token.SetEndOffset(offset);
             token.SetTermLength(length);
             return token;
         }

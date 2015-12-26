@@ -225,7 +225,7 @@ namespace SvnWebQuery
         {
             Response.ContentType = "application/x-msdownload";
             string time = DateTime.Now.ToString("s").Replace(':', '-').Replace('T', '-');
-            Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".csv");
+            Response.AppendHeader("content-disposition", "attachment; filename=QueryResults_" + time + ".tsv");
 
             Response.Write(Join("Path", "File", "Author", "Modified", "Revision", "Size"));
             var result = ApplicationIndex.Query(_query.Value, _revFirst.Value, _revLast.Value, true);
@@ -238,7 +238,7 @@ namespace SvnWebQuery
 
         static string Join(params string[] strings)
         {
-            return string.Join(";", strings) + "\n";
+            return string.Join("\t", strings) + "\n";
         }
 
         protected void DownloadTargets_Click(object sender, EventArgs e)

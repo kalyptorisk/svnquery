@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
 // Copyright 2008-2010 Christian Rodemeyer
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,15 +54,20 @@ namespace SvnQuery
         {
             IndexSearcher s = GetSearcher();
             Hits hits = s.Search(new TermQuery(new Term(FieldName.Id, id)));
-            return hits.Length() == 1 ? new Hit(hits.Doc(0)) : null; 
+            return hits.Length() == 1 ? new Hit(hits.Doc(0), null) : null;
         }
 
         public Result Query(string query)
         {
-            return Query(query, Revision.HeadString, Revision.HeadString);
+            return Query(query, Revision.HeadString, Revision.HeadString, null);
         }
 
         public Result Query(string query, string revFirst, string revLast)
+        {
+            return Query(query, revFirst, revLast, null);
+        }
+
+        public Result Query(string query, string revFirst, string revLast, Highlight highlight)
         {
             Stopwatch sw = Stopwatch.StartNew();
 
@@ -88,7 +93,8 @@ namespace SvnQuery
             }
 
             var properties = new IndexProperties(searcher.Reader);
-            return new Result(query, sw.Elapsed, properties, hits);
+            return new Result(query, sw.Elapsed, properties, hits,
+                highlight != null ? highlight.GetFragments(q, hits) : null);
         }
 
         IndexSearcher GetSearcher()

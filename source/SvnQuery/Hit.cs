@@ -26,10 +26,12 @@ namespace SvnQuery
     public class Hit
     {
         readonly Document _doc;
+        readonly string   _fragment;
 
-        internal Hit(Document doc)
+        internal Hit(Document doc, string fragment)
         {
             _doc = doc;
+            _fragment = fragment;
         }
 
         public string Id
@@ -106,6 +108,11 @@ namespace SvnQuery
         public DateTime LastModification
         {
             get { return DateTime.Parse(_doc.Get(FieldName.Timestamp)); }
+        }
+
+        public string HighlightedFragment
+        {
+            get { return _fragment; }
         }
 
         public override string ToString()

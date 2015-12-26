@@ -55,6 +55,10 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Highlighter.Net, Version=2.3.2.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\3rdParty\Lucene.Net\Highlighter.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Lucene.Net, Version=2.3.1.2, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdParty\Lucene.Net\Lucene.Net.dll</HintPath>
@@ -71,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Highlight.cs" />
     <Compile Include="Hit.cs" />
     <Compile Include="HitList.cs" />
     <Compile Include="Index.cs" />

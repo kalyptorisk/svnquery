@@ -27,10 +27,12 @@ namespace SvnQuery
     public class HitList : IEnumerable<Hit>
     {
         readonly Hits _hits;
+        readonly string[] _fragments;
 
-        internal HitList(Hits hits)
+        internal HitList(Hits hits, string[] fragments)
         {
             _hits = hits;
+            _fragments = fragments;
         }
 
         public IEnumerator<Hit> GetEnumerator()
@@ -53,7 +55,7 @@ namespace SvnQuery
 
         public Hit this[int index]
         {
-            get { return new Hit(_hits.Doc(index)); }
+            get { return new Hit(_hits.Doc(index), _fragments != null ? _fragments[index] : null); }
         }
     }
 

@@ -1,13 +1,13 @@
 #region Apache License 2.0
 
 // Copyright 2008-2010 Christian Rodemeyer
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,22 +47,22 @@ namespace SvnWebQuery.Code
                 CacheDuration = TimeSpan.Parse(WebConfigurationManager.AppSettings["CacheDuration"]);
 
             Index = OpenIndex();
-            var props = Index.QueryProperties(); 
+            var props = Index.QueryProperties();
             Name = props.RepositoryName;
             IsSingleRevision = props.SingleRevision;
             SvnApi = new SharpSvnApi(props.RepositoryLocalUri, props.RepositoryCredentials.User, props.RepositoryCredentials.Password);
         }
-        
+
         public static string Name
         {
-            get; private set; 
+            get; private set;
         }
 
         public static bool IsSingleRevision
         {
             get; private set;
         }
-   
+
         public static ISvnApi SvnApi
         {
             get; private set;
@@ -82,7 +82,7 @@ namespace SvnWebQuery.Code
                 lock (Cache) Cache.TryGetValue(key, out result);
             if (result == null)
             {
-                result = new CachedResult(Index.Query(query, revFirst, revLast));
+                result = new CachedResult(Index.Query(query, revFirst, revLast, new LineHighlight(SvnApi)));
                 lock (Cache) Cache[key] = result;
             }
             result.LastAccess = DateTime.UtcNow;

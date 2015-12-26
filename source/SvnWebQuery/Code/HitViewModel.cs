@@ -93,6 +93,11 @@ namespace SvnWebQuery.Code
             get { return _hit.LastModification.ToString("g"); }
         }
 
+        public string HighlightedFragment
+        {
+            get { return _hit.HighlightedFragment; }
+        }
+
         public string Summary
         {
             get

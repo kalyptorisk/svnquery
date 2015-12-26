@@ -64,8 +64,7 @@
                 <ItemTemplate>
                     <p class="hit">
                         <a href='<%# Eval("Link") %>'>
-                            <%# Eval("Path") %></a>
-                        <br />
+                            <%# Eval("Path") %></a><div class="fragment"><%# Eval("HighlightedFragment") %></div>
                         <span class="summary">
                             <%# Eval("Summary") %>
                         </span>

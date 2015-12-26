@@ -112,4 +112,14 @@
   font-size: 8pt; 
   color: #707060;
 }
-
+.fragment {
+  font-size: 9pt;
+  font-family: monospace;
+  white-space: pre;
+}
+.fragment .line {
+    color: blue;
+}
+.fragment b {
+    color: red;
+}
